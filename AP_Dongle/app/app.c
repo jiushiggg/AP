@@ -142,24 +142,27 @@ void *mainThread(void *arg0)
     init_nvs_spi_flash();
     while (1) {
 
-        send();
 
-        set_rf_parameters(DATA_RATE_100K, RF_TX_POWER_0DB , 2400+(2/2), 2%2);
-        Rf_rx_package(rfHandle, &dataQueue, AP_ID, 26, TRUE , (4 * 100000));
-        xStatus =  Mailbox_pend (rf_rx_timeout_mailbox, &rf_get_msg, (4 * 100000));
-        RF_yield(rfHandle);    //使射频进入sleep状态
-        if(xStatus == TRUE)
-        {
-            if(rf_get_msg.val == RF_RX_DONE)
-            {
-                currentDataEntry = RFQueue_getDataEntry();
-                packetDataPointer = (uint8_t*)(&currentDataEntry->data);
-                memcpy(buf, packetDataPointer, 26);
-                RFQueue_nextEntry();
-            }
-        }
 
 
     }
 }
 
+#if 0
+send();
+
+set_rf_parameters(DATA_RATE_100K, RF_TX_POWER_0DB , 2400+(2/2), 2%2);
+Rf_rx_package(rfHandle, &dataQueue, AP_ID, 26, TRUE , (4 * 100000));
+xStatus =  Mailbox_pend (rf_rx_timeout_mailbox, &rf_get_msg, (4 * 100000));
+//      RF_yield(rfHandle);    //使射频进入sleep状态
+if(xStatus == TRUE)
+{
+    if(rf_get_msg.val == RF_RX_DONE)
+    {
+        currentDataEntry = RFQueue_getDataEntry();
+        packetDataPointer = (uint8_t*)(&currentDataEntry->data);
+        memcpy(buf, packetDataPointer, 26);
+        RFQueue_nextEntry();
+    }
+}
+#endif

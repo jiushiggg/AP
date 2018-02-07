@@ -114,7 +114,7 @@ RF_EventMask Rf_tx_package(RF_Handle h, uint32_t syncWord, uint8_t pktLen, uint8
     RF_cmdPropTxAdv.pPkt = pPkt;
     RF_cmdPropTxAdv.syncWord = syncWord;
     RF_EventMask result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
-    RF_yield(rfHandle);
+  //  RF_yield(rfHandle);
     return result;
 }
 

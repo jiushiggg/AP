@@ -1,8 +1,6 @@
 
 #if 1
-
 #include "device.h"
-#include "hw_config.h"
 
 void Device_Init(void)
 {
@@ -19,17 +17,17 @@ INT32 Device_Open(UINT8 type, UINT8 *ip, UINT16 port)
 
 INT32 Device_Send(INT32 d, UINT8 *src, INT32 len, INT32 timeout)
 {
-	return USBD_Write(src, len);
+	//return USBD_Write(src, len);  todo
 }
 
 INT32 Device_Recv(INT32 d, UINT8 *dst, INT32 len, INT32 timeout)
 {
-	return USBD_Read(dst, len);
+	//return USBD_Read(dst, len); todo
 }
 
 INT32 Device_Select(INT32 d, INT32 timeout)
 {
-	return 1
+	return 1;
 }
 
 void Device_Close(INT32 d)

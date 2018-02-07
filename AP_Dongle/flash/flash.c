@@ -1,6 +1,6 @@
-#include "flashchip.h"
-#include "flash.h"
 #include <stdio.h>
+#include "flash.h"
+#include "../peripheral/extern_flash.h"
 
 #define FLASH_SECTOR_NUM  	1024
 #define FLASH_SECTOR_SIZE	4096
@@ -71,7 +71,7 @@ UINT8 Flash_Check(void)
 			if (CMD_SE(FLASH_BASE_ADDR) == FlashOperationSuccess)
 			{
 				flag = FLASH_USE_FLAG;
-				if (CMD_PP(FLASH_BASE_ADDR, &flag, sizeof(flag)) == FlashOperationSuccess)
+				if (CMD_PP(FLASH_BASE_ADDR, (UINT32)&flag, sizeof(flag)) == FlashOperationSuccess)
 				{
 					ret = FLASH_CHECK_NEW;
 				}
@@ -91,10 +91,8 @@ UINT8 Flash_Init(void)
 {
 	UINT8 ret = 0;
 	int id = 0;
-	//³õÊ¼»¯IO
-//	MX25L3206E_IOInit();
-//	InitialGpio();
 	
+	init_nvs_spi_flash();
 	//¶ÁÈ¡
 	id = CMD_RDID();
 	if ((id!=FlashID) && (id!=FlashID_GD))
@@ -183,13 +181,13 @@ find_loop:
 	return ret;
 }
 
-BOOL Flash_Write(UINT32 addr, UINT8* src, UINT16 len)
+BOOL Flash_Write(UINT32 addr, UINT8* src, UINT32 len)
 {
 	BOOL ret = FALSE;
-	UINT16 left_len = len;
+	UINT32 left_len = len;
 	UINT32 w_addr = addr;
 	UINT8 *ptr = src;
-	UINT16 w_len = 0;
+	UINT32 w_len = 0;
 
 	if((w_addr>= ((DATA_SECTER_END+1)*FLASH_SECTOR_SIZE)) || (w_addr < (DATA_SECTER_START*FLASH_SECTOR_SIZE)))
 	{
@@ -224,7 +222,7 @@ BOOL Flash_Write(UINT32 addr, UINT8* src, UINT16 len)
 				}
 			}
 
-			if (CMD_PP(w_addr, ptr, w_len) == FlashOperationSuccess)
+			if (CMD_PP(w_addr, (UINT32)ptr, w_len) == FlashOperationSuccess)
 			{
 				w_addr += w_len;
 				addr += w_len;
@@ -248,9 +246,9 @@ done:
 	return ret;
 }
 
-BOOL Flash_Read(UINT32 addr, UINT8* dst, UINT16 len)
+BOOL Flash_Read(UINT32 addr, UINT8* dst, UINT32 len)
 {
-	CMD_FASTREAD(addr, dst, len);
+	CMD_FASTREAD(addr, (UINT32)dst, len);
 	return TRUE;
 }
 

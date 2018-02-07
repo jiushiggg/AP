@@ -41,16 +41,27 @@
 
 /* RTOS header files */
 #include <ti/sysbios/BIOS.h>
+#include <ti/sysbios/knl/Task.h>
+#include <ti/sysbios/knl/Clock.h>
 
 /* Example/Board Header files */
 #include "Board.h"
 #include "rf.h"
-#include "app.h"
-
-extern void *mainThread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE    1024
+#define TASK0_STACKSIZE   (1024)
+#define TASK2_STACKSIZE   1024
+
+static void app_init(void);
+static void mailbox_semaphore_init(void);
+extern void *mainThread(void *arg0);
+
+
+Char task0_Stack[TASK0_STACKSIZE];
+//Char task2_Stack[TASK2_STACKSIZE];
+Task_Struct task0_Struct;
+//Task_Struct task2_Struct;
 
 /*
  *  ======== main ========
@@ -65,5 +76,33 @@ int main(void)
 
     BIOS_start();    /* Start BIOS */
     return (0);
+
+}
+
+void app_init(void)
+{
+    Task_Params taskParams_0,taskParams_2;
+    //
+    //    Power_setConstraint(PowerCC26XX_SB_VIMS_CACHE_RETAIN);
+    //    Power_setConstraint(PowerCC26XX_NEED_FLASH_IN_IDLE);
+    //
+    //
+    Task_Params_init(&taskParams_0);
+    taskParams_0.arg0 = 1000000 / Clock_tickPeriod;
+    taskParams_0.stackSize = TASK0_STACKSIZE;
+    taskParams_0.stack = &task0_Stack;
+    taskParams_0.priority = 2;
+    Task_construct(&task0_Struct, (Task_FuncPtr)mainThread, &taskParams_0, NULL);
+    //
+    //    Task_Params_init(&taskParams_2);
+    //    taskParams_2.arg0 = 1000000 / Clock_tickPeriod;
+    //    taskParams_2.stackSize = TASK2_STACKSIZE;
+    //    taskParams_2.stack = &task2_Stack;
+    //    taskParams_2.priority = 1;
+    //    Task_construct(&task2_Struct, (Task_FuncPtr)protocol_Fxn, &taskParams_2, NULL);
+}
+
+void mailbox_semaphore_init(void)
+{
 
 }
