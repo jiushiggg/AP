@@ -471,7 +471,7 @@ UINT8 m1_updata_loop(updata_table_t *table)
 	UINT16 leftime = 0;
 		
 	pdebug("m1_updata_loop().\r\nfirst rount timeout is %d.\r\n", timeout);	
-	if((timer=TIM_Open(100, timeout, 0)) == 0)
+	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
 	{
 		goto done;
 	}
@@ -485,7 +485,7 @@ UINT8 m1_updata_loop(updata_table_t *table)
 	}
 	timeout = table->esl_work_duration * 10 * 15 / 100 + leftime;
 	pdebug("first round left %d ms.\r\nsecond timeout is %d.\r\n", leftime, timeout);
-	if((timer=TIM_Open(100, timeout, 0)) == 0)
+	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
 	{
 		goto done;
 	}

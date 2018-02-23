@@ -102,7 +102,7 @@ UINT8 bdc_updata_loop(updata_table_t *table)
 	UINT8 timer = 0;
 	UINT16 timeout = table->esl_work_duration * 10;
 		
-	if((timer=TIM_Open(100, timeout, 0)) == 0)
+	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
 	{
 		perr("bdc_updata_loop open timer\r\n");
 		goto done;

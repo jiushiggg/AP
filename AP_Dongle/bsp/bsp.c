@@ -19,7 +19,7 @@ void BSP_ExitCri(void)
 
 void BSP_Delay1S(INT32 n)
 {
-	int d;
+    volatile int d;
 
 	while((n--) > 0)
 	{
@@ -27,49 +27,46 @@ void BSP_Delay1S(INT32 n)
 	}
 }
 
-void BSP_Delay1MS(INT32 n)
+void BSP_Delay1MS(INT32 delayMs)
 {
-	int d;
-
-	while((n--) > 0)
-	{
-		for(d = 0; d < 12000; d++);
-	}
+    volatile uint32_t j;
+    /* by experimination, this is in ms (approx) */
+    for (j = 0; j < 4010 * delayMs; j++)
+    {
+        asm(" NOP");
+    }
 }
 
-void BSP_Delay100US(INT32 n)
+void BSP_Delay100US(INT32 delayUs)
 {
-	int d;
-
-	while((n--) > 0)
-	{
-		for(d = 0; d < 1200; d++);
-	}
+    volatile  uint32_t j;
+    for (j = 0; j < 400 * delayUs; j++)
+    {
+        asm(" NOP");
+    }
 }
 
-void BSP_Delay10US(INT32 n)
+void BSP_Delay10US(INT32 delayUs)
 {
-	int d;
-
-	while((n--) > 0)
-	{
-		for(d = 0; d < 80; d++);
-	}
+    volatile  uint32_t j;
+    for (j = 0; j < 40 * delayUs; j++)
+    {
+        asm(" NOP");
+    }
 }
 
-void BSP_Delay1US(INT32 n)
+void BSP_Delay1US(INT32 delayUs)
 {
-	int d;
-
-	while((n--) > 0)
-	{
-		for(d = 0; d < 1; d++);
-	}
+    volatile  uint32_t j;
+    for (j = 0; j < 4 * delayUs; j++)
+    {
+        asm(" NOP");
+    }
 }
 
 void BSP_Nop(void)
 {
-//	__NOP();
+    asm(" NOP");
 }
 
 void BSP_Reboot(void)

@@ -3,9 +3,25 @@
 
 #include "datatype.h"
 
-#define TABLE_BUF_SIZE	14500
+
+#define ESL_NUM 300
+#define UPDATA_BUF_SIZE (ESL_NUM*sizeof(mode1_esl_t)+100)
+#define TABLE_BUF_SIZE  UPDATA_BUF_SIZE
+
+#define MAX_FAILED_PKG_NUM  10
 
 #pragma pack(1)
+typedef struct {
+    UINT8  esl_id[4];
+    UINT8  ack;
+    UINT8  sleep_flag;
+    UINT32 first_pkg_addr;
+    UINT16 total_pkg_num;
+    UINT16 failed_pkg_offset;
+    UINT16  failed_pkg_num;
+    UINT8  failed_pkg[MAX_FAILED_PKG_NUM*2];
+} mode1_esl_t;
+
 
 typedef struct {
 	//para area

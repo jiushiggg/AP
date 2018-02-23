@@ -5,11 +5,10 @@
  *      Author: ggg
  */
 
+#include <hw_rf.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <stddef.h>
-#include "../rf/rf.h"
-/* Driver Header files */
 #include <ti/drivers/GPIO.h>
 // #include <ti/drivers/I2C.h>
 // #include <ti/drivers/SDSPI.h>

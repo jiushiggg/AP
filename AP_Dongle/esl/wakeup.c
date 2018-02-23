@@ -81,7 +81,7 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 		duration_ms = duration * 1000 - 500;
 	}
 	
-	if((timer=TIM_Open(slot_duration, duration_ms/slot_duration, 1)) == 0)
+	if((timer=TIM_Open(slot_duration, duration_ms/slot_duration, TIMER_DOWN_CNT)) == ALL_TIMER_ACTIVE)
 	{
 		perr("g3_wkup() open timer.\r\n");
 		ret = -4;

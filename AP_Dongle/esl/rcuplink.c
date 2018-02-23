@@ -35,7 +35,7 @@ static UINT8 rcreq_set_timer(UINT32 timeout)
 			pinfo("warning: rcreq timeout change to 60000.\r\n");
 		}
 		
-		if((rcreq_timeout_timer=TIM_Open(1000, timeout, 0)) == 0)
+		if((rcreq_timeout_timer=TIM_Open(1000, timeout, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
 		{
 			perr("open rcreq_timeout_timer, timer: %d, timeout: %d\r\n", 
 				rcreq_timeout_timer, timeout);

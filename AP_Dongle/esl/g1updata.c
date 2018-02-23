@@ -1,6 +1,5 @@
 #include "g1updata.h"
 #include "timer.h"
-#include "rfchip.h"
 #include "bsp.h"
 #include "flash.h"
 #include "debug.h"

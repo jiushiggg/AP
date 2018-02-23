@@ -35,7 +35,7 @@ static UINT8 frame1_mode0(UINT32 addr, UINT8 num, INT32 duration)
 	UINT8 timer = 0;
 	UINT32 cur = 0;
 	
-	if((timer=TIM_Open(1, duration, 0)) == 0)
+	if((timer=TIM_Open(1, duration, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
 	{
 		perr("g3_send_frame1_mode0() open timer.\r\n");
 		goto done;
@@ -107,7 +107,7 @@ static UINT8 _frame2(UINT32 addr, UINT8 num, INT32 duration)
 	UINT32 cur = 0;
 	UINT16 timercount=0, crc = 0;
 	
-	if((timer=TIM_Open(10, duration/10, 1)) == 0)
+	if((timer=TIM_Open(10, duration/10, TIMER_DOWN_CNT)) == ALL_TIMER_ACTIVE)
 	{
 		perr("frame2_mode0() open timer.\r\n");
 		goto done;

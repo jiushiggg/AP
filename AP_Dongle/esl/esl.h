@@ -2,9 +2,8 @@
 #define _ESL_H_
 
 #include "datatype.h"
-#include "updata.h"
+#include "updata1.h"
 
-#define UPDATA_BUF_SIZE	(400*35+100)
 
 #pragma pack(1)
 typedef struct{

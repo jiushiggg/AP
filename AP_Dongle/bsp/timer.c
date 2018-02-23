@@ -1,279 +1,188 @@
 #include "timer.h"
 #include "debug.h"
+#include <ti/drivers/timer/GPTimerCC26XX.h>
+#include <ti/sysbios/BIOS.h>
+#include "CC2640R2_LAUNCHXL.h"
 
-
-typedef UINT8 TIM_TypeDef ;
 
 typedef struct
 {
-	UINT8 sn;
-	TIM_TypeDef TIMn;
-	volatile UINT8 inuse;
-	volatile INT32 count;
-	volatile UINT8 timeout;
-	volatile INT32 order;
+    GPTimerCC26XX_Handle TIMn;
+    GPTimerCC26XX_HwiFxn fnx;
+    volatile INT32 count;
+    volatile INT32 direction;
+    volatile UINT8 timeout;
+    CC2640R2_LAUNCHXL_GPTimerName sn;
 }timer_t;
 
-timer_t ts[] = {
-	{1, 1, 0, 0, 0, 0},
-	{2, 2, 0, 0, 0, 0},
-	{3, 3, 0, 0, 0, 0},
-//	{4, 4, 0, 0, 0, 0},
+void hwi_timerCallback0(GPTimerCC26XX_Handle handle, GPTimerCC26XX_IntMask interruptMask);
+void hwi_timerCallback1(GPTimerCC26XX_Handle handle, GPTimerCC26XX_IntMask interruptMask);
+void hwi_timerCallback2(GPTimerCC26XX_Handle handle, GPTimerCC26XX_IntMask interruptMask);
+static void ISR_Handle(timer_t* n);
+
+
+static timer_t ts[] = {
+	{NULL, hwi_timerCallback0, 0, 0, 0, CC2640R2_LAUNCHXL_GPTIMER0A},
+	{NULL, hwi_timerCallback1, 0, 0, 0, CC2640R2_LAUNCHXL_GPTIMER0B},
+	{NULL, hwi_timerCallback2, 0, 0, 0, CC2640R2_LAUNCHXL_GPTIMER1A},
 };
 
 static UINT8 get_a_free_timer(void)
 {
 	INT32 i;
-	UINT8 t = 0;
+	UINT8 t = ALL_TIMER_ACTIVE;
 	UINT8 timer_num = sizeof(ts)/sizeof(timer_t);
-//
-//	for(i = 0; i < timer_num; i++)
-//	{
-//		if(ts[i].inuse == 0)
-//		{
-//			t = ts[i].sn;
-//			break;
-//		}
-//	}
-//
+
+	for(i = 0; i < timer_num; i++)
+	{
+		if(ts[i].TIMn == NULL)
+		{
+			t = ts[i].sn;
+			break;
+		}
+	}
+
 	return t;
 }
 
-static TIM_TypeDef *get_real_timer(UINT8 t)
+static GPTimerCC26XX_Handle get_real_timer(UINT8 t)
 {
-//	if((t > 0) && (t <= (sizeof(ts)/sizeof(timer_t))))
-//	{
-//		return ts[t-1].TIMn;
-//	}
-//	else
-//	{
-//		return NULL;
-//	}
+	if(t <= (sizeof(ts)/sizeof(timer_t)))
+	{
+
+		return ts[t].TIMn;
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
-static UINT8 get_timer_sn(TIM_TypeDef *tim)
+UINT8 TIM_Open(INT32 nms, UINT16 cnt, UINT8 direction)
 {
-	UINT8 t = 0;
+	UINT8 t = ALL_TIMER_ACTIVE;
+	xdc_runtime_Types_FreqHz  freq;
+	GPTimerCC26XX_Params timer;
+	uint32_t period = 0;
+	GPTimerCC26XX_Value loadVal;
 
-//	if(tim == TIM1)
-//	{
-//		t = 1;
-//	}
-//	else if(tim == TIM2)
-//	{
-//		t = 2;
-//	}
-//	else if(tim == TIM3)
-//	{
-//		t = 3;
-//	}
-//	else if(tim == TIM4)
-//	{
-//		t = 4;
-//	}
-//	else
-//	{
-//		t = 0;
-//	}
-	
-	return t;
-}
+	period = nms*1000;
+	if(period > 0xFFFF)
+	{
+		goto done;
+	}
 
-/*
-** Tout=(arr+1)*(pcs+1)/Fclk
-** Tout 单位是 us
-** Fclk 单位是 Mhz
-*/
-UINT8 TIM_Open(INT32 nms, UINT16 cnt, UINT8 down)
-{
-	UINT8 t = 0;
-//	TIM_TimeBaseInitTypeDef timer;
-//	TIM_TypeDef *tim;
-	INT32 period = 0;
-//
-//	period = nms*10 - 1;
-//	if((period > 60000) || (period <= 0))
-//	{
-//		goto done;
-//	}
-//
-//	if((t=get_a_free_timer()) == 0)
-//	{
-//		goto done;
-//	}
-//	ts[t-1].inuse = 1;
-//	ts[t-1].timeout = 0;
-//	tim = ts[t-1].TIMn;
-//
-//	TIM_TimeBaseStructInit(&timer);
-//	TIM_DeInit(tim);
-//
-//	timer.TIM_Period = period;
-//	timer.TIM_Prescaler = 7199; //100us
-//
-//	if(down == 0) //up count
-//	{
-//		ts[t-1].count = 0;
-//		ts[t-1].order = cnt;
-//	}
-//	else //down count
-//	{
-//		ts[t-1].count = cnt;
-//		ts[t-1].order = 0;
-//	}
-//
-//	TIM_TimeBaseInit(tim, &timer);
-//	TIM_ClearFlag(tim, TIM_IT_Update);
-//	TIM_ITConfig(tim, TIM_IT_Update, ENABLE);
-//	TIM_ARRPreloadConfig(tim, DISABLE);
-//	TIM_Cmd(tim, ENABLE);
-//
-//done:
+	if((t=get_a_free_timer()) == ALL_TIMER_ACTIVE)
+	{
+		goto done;
+	}
+
+	if(direction == TIMER_UP_CNT)
+	{
+		ts[t].count = 0;
+		ts[t].direction = cnt;
+	}
+	else
+	{
+		ts[t].count = cnt;
+		ts[t].direction = 0;
+	}
+	ts[t].timeout = 0;
+
+    GPTimerCC26XX_Params_init(&timer);
+    timer.width          = GPT_CONFIG_16BIT;
+    timer.mode           = GPT_MODE_PERIODIC_UP;
+    timer.debugStallMode = GPTimerCC26XX_DEBUG_STALL_OFF;
+    ts[t].TIMn = GPTimerCC26XX_open(CC2640R2_LAUNCHXL_GPTIMER0B, &timer);
+    if(ts[t].TIMn == NULL) {
+        while(1);
+    }
+	BIOS_getCpuFreq(&freq);
+	loadVal = freq.lo / period - 1; //47999
+	GPTimerCC26XX_setLoadValue(ts[t].TIMn, loadVal);
+	GPTimerCC26XX_registerInterrupt(ts[t].TIMn, ts[t].fnx, GPT_INT_TIMEOUT);
+	GPTimerCC26XX_start(ts[t].TIMn);
+
+done:
 	return t;
 }
 
 void TIM_SetSoftTimeout(UINT8 t)
 {
-//	if(get_real_timer(t) != NULL)
-//	{
-//		ts[t-1].timeout = 1;
-//	}
+	if(get_real_timer(t) != NULL)
+	{
+		ts[t].timeout = 1;
+	}
 }
 
 void TIM_Close(UINT8 t)
 {
-//	if(get_real_timer(t) != NULL)
-//	{
-//		ts[t-1].inuse = 0;
-//
-//		TIM_Cmd(get_real_timer(t), DISABLE);
-//		TIM_ITConfig(get_real_timer(t), TIM_IT_Update, DISABLE);
-//	}
+	if(get_real_timer(t) != NULL)
+	{
+		GPTimerCC26XX_close(ts[t].TIMn);
+		ts[t].TIMn = NULL;
+	}
 }
 
 UINT8 TIM_CheckTimeout(UINT8 t)
 {
-//	if(get_real_timer(t) != NULL)
-//	{
-////		pdebug("timecnt=%d\r\n", ts[t-1].count);
-//		return ts[t-1].timeout;
-//	}
-//	else
-//	{
-//		return 1;
-//	}
+	if(get_real_timer(t) != NULL)
+	{
+//		pdebug("timecnt=%d\r\n", ts[t-1].count);
+		return ts[t].timeout;
+	}
+	else
+	{
+		return 1;
+	}
 }
 
 INT32 TIM_GetCount(UINT8 t)
 {
-//	if((t > 0) && (t <= (sizeof(ts)/sizeof(timer_t))))
-//	{
-//		return ts[t-1].count;
-//	}
-//	else
-//	{
-//		return -1;
-//	}
+	if(t <= (sizeof(ts)/sizeof(timer_t)))
+	{
+		return ts[t].count;
+	}
+	else
+	{
+		return -1;
+	}
 }
 
-UINT8 TIM_Delay1MS(UINT16 n)
+void hwi_timerCallback0(GPTimerCC26XX_Handle handle, GPTimerCC26XX_IntMask interruptMask)
 {
-	UINT8 t;
-	
-//	if((t=TIM_Open(1, n, 0)) == 0)
-//	{
-//		goto done;
-//	}
-//
-//	while(TIM_CheckTimeout(t));
-//	TIM_Close(t);
-	
-done:
-	return t;
+    ISR_Handle(&ts[0]);
+}
+void hwi_timerCallback1(GPTimerCC26XX_Handle handle, GPTimerCC26XX_IntMask interruptMask)
+{
+    ISR_Handle(&ts[1]);
+}
+void hwi_timerCallback2(GPTimerCC26XX_Handle handle, GPTimerCC26XX_IntMask interruptMask)
+{
+    ISR_Handle(&ts[2]);
+}
+static void ISR_Handle(timer_t* n)
+{
+	if(n->TIMn != NULL)
+	{
+		if(n->direction > 0)
+		{
+			if((++n->count) >= n->direction)
+			{
+				n->timeout = 1;
+			}
+		}
+		else
+		{
+			if((--n->count) <= 0)
+			{
+				n->timeout = 1;
+			}
+		}
+	}
 }
 
-void TIM_ISR(void)
-{
-//	if(TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET)
-//	{
-//		TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
-//		/* user tim1 isr */
-//		if(ts[get_timer_sn(TIM1)-1].order > 0)
-//		{
-//			if((++ts[get_timer_sn(TIM1)-1].count) >= ts[get_timer_sn(TIM1)-1].order)
-//			{
-//				ts[get_timer_sn(TIM1)-1].timeout = 1;
-//			}
-//		}
-//		else
-//		{
-//			if((--ts[get_timer_sn(TIM1)-1].count) <= 0)
-//			{
-//				ts[get_timer_sn(TIM1)-1].timeout = 1;
-//			}
-//		}
-//	}
-//
-//	if(TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)
-//	{
-//		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-//
-//		if(ts[get_timer_sn(TIM2)-1].order > 0)
-//		{
-//			if((++ts[get_timer_sn(TIM2)-1].count) >= ts[get_timer_sn(TIM2)-1].order)
-//			{
-//				ts[get_timer_sn(TIM2)-1].timeout = 1;
-//			}
-//		}
-//		else
-//		{
-//			if((--ts[get_timer_sn(TIM2)-1].count) <= 0)
-//			{
-//				ts[get_timer_sn(TIM2)-1].timeout = 1;
-//			}
-//		}
-//	}
-//
-//	if(TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)
-//	{
-//		TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
-//
-//		if(ts[get_timer_sn(TIM3)-1].order > 0)
-//		{
-//			if((++ts[get_timer_sn(TIM3)-1].count) >= ts[get_timer_sn(TIM3)-1].order)
-//			{
-//				ts[get_timer_sn(TIM3)-1].timeout = 1;
-//			}
-//		}
-//		else
-//		{
-//			if((--ts[get_timer_sn(TIM3)-1].count) <= 0)
-//			{
-//				ts[get_timer_sn(TIM3)-1].timeout = 1;
-//			}
-//		}
-//	}
-	
-//	if(TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET) 
-//	{
-//		TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
-//		
-//		if(ts[get_timer_sn(TIM4)-1].order > 0)
-//		{
-//			if((++ts[get_timer_sn(TIM4)-1].count) >= ts[get_timer_sn(TIM4)-1].order)
-//			{
-//				ts[get_timer_sn(TIM4)-1].timeout = 1;
-//			}		
-//		}
-//		else
-//		{
-//			if((--ts[get_timer_sn(TIM4)-1].count) <= 0)
-//			{
-//				ts[get_timer_sn(TIM4)-1].timeout = 1;
-//			}	
-//		}
-//	}
-}
+
 
 void (*tim_soft_callback)(void);
 

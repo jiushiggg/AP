@@ -1,3 +1,4 @@
+#include <hw_rf.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -20,7 +21,6 @@
 
 /* Board Header file */
 #include "Board.h"
-#include "../rf/rf.h"
 #include "../common/datatype.h"
 #include "../peripheral/extern_flash.h"
 #include "core.h"
@@ -58,8 +58,6 @@ void Core_ResetQuitStatus()
 
 void Core_Init(void)
 {
-//	Event_Reset();
-	
 	heartbeat_init();
 	
 	core_idel_flag = 0;
@@ -234,7 +232,7 @@ void Core_Mainloop(void)
             pinfo("core g3 hb start.\r\n");
             hb_table = Core_Malloc(sizeof(g3_hb_table_t));
 
-            BSP_Delay1MS(100);
+            //BSP_Delay1MS(100);
             if(hb_table == NULL)
             {
                 perr("core malloc g3 hb table!\r\n");
@@ -258,7 +256,7 @@ void Core_Mainloop(void)
             pinfo("core enter handle rc req\r\n");
             rcreq_table = Core_Malloc(sizeof(rcreq_table_t));
 
-            BSP_Delay1MS(100);
+            //BSP_Delay1MS(100);
 
             if(rcreq_table == NULL)
             {

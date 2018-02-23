@@ -23,7 +23,7 @@ UINT8 set_timer(INT32 timeout)
 			pinfo("warning: set_timer timeout change to 36000.\r\n");
 		}
 		
-		if((timer=TIM_Open(1000, timeout, 0)) == 0)
+		if((timer=TIM_Open(1000, timeout, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
 		{
 			perr("set_timer open.\r\n");
 		}

@@ -1,3 +1,4 @@
+#include <hw_rf.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -6,7 +7,6 @@
 #include "timer.h"
 #include "bsp.h"
 #include "debug.h"
-#include "rf.h"
 #include "crc16.h"
 #include "corefunc.h"
 

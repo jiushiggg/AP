@@ -112,7 +112,13 @@ void send(void){
 
     while(count)
     {
-        RF_EventMask result = Rf_tx_package(rfHandle, AP_ID, 26, buf1);
+        RF_EventMask result;
+        //RF_EventMask result = Rf_tx_package(rfHandle, AP_ID, 26, buf1);
+        RF_cmdPropTxAdv.pktLen = 26;
+        RF_cmdPropTxAdv.pPkt = buf1;
+        RF_cmdPropTxAdv.syncWord = AP_ID;
+        result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
+      //  RF_yield(rfHandle);
         if(!(result & RF_EventLastCmdDone))
         {
             while(1);
