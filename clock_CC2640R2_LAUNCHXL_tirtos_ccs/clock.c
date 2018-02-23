@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,80 +25,122 @@
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
  * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
- *  ======== main_tirtos.c ========
+ *  ======== clock.c ========
  */
-#include <stdint.h>
 
-/* POSIX Header files */
-#include <pthread.h>
+/* XDC module Headers */
+#include <xdc/std.h>
+#include <xdc/runtime/System.h>
 
-/* RTOS header files */
+/* BIOS module Headers */
 #include <ti/sysbios/BIOS.h>
-#include <ti/sysbios/knl/Task.h>
 #include <ti/sysbios/knl/Clock.h>
+#include <ti/sysbios/knl/Task.h>
+#include <ti/drivers/GPIO.h>
 
 /* Example/Board Header files */
 #include "Board.h"
-#include "rf.h"
 
-/* Stack size in bytes */
-#define THREADSTACKSIZE    1024
+Void clk0Fxn(UArg arg0);
+Void clk1Fxn(UArg arg0);
+
+Clock_Struct clk0Struct, clk1Struct;
+Clock_Handle clk2Handle;
+
 #define TASK0_STACKSIZE   (1024)
-#define TASK2_STACKSIZE   1024
-
-static void app_init(void);
-extern void *mainThread(void *arg0);
-
-
 Char task0_Stack[TASK0_STACKSIZE];
-//Char task2_Stack[TASK2_STACKSIZE];
 Task_Struct task0_Struct;
-//Task_Struct task2_Struct;
 
+
+void *mainThread(void *arg0)
+{
+    UInt32 time;
+    while(1){
+        time = Clock_getTicks();
+        if (time < 500){
+            System_printf("System time in clk0Fxn = %lu\n", (ULong)time);
+            System_flush();
+        }
+        Task_sleep(5000/Clock_tickPeriod);
+    }
+
+}
 /*
  *  ======== main ========
  */
-int main(void)
+int main()
 {
+    /* Construct BIOS Objects */
+    Clock_Params clkParams;
+    Task_Params taskParams_0;
+
+    /* Call driver init functions */
     Board_initGeneral();
-//    Board_initWatchdog();
-    rf_init();
-    semaphore_init();
-    app_init();
 
-    BIOS_start();    /* Start BIOS */
-    return (0);
+    GPIO_init();
+    GPIO_write(Board_GPIO_LED0, Board_GPIO_LED_ON);
 
-}
+    Clock_Params_init(&clkParams);
+    clkParams.period = 4000000/Clock_tickPeriod;
+    clkParams.startFlag = TRUE;
 
-void app_init(void)
-{
-    Task_Params taskParams_0,taskParams_2;
-    //
-    //    Power_setConstraint(PowerCC26XX_SB_VIMS_CACHE_RETAIN);
-    //    Power_setConstraint(PowerCC26XX_NEED_FLASH_IN_IDLE);
-    //
-    //
+    /* Construct a periodic Clock Instance */
+    Clock_construct(&clk0Struct, (Clock_FuncPtr)clk0Fxn,
+                    4000000/Clock_tickPeriod, &clkParams);
+
+
     Task_Params_init(&taskParams_0);
     taskParams_0.arg0 = 1000000 / Clock_tickPeriod;
     taskParams_0.stackSize = TASK0_STACKSIZE;
     taskParams_0.stack = &task0_Stack;
     taskParams_0.priority = 2;
     Task_construct(&task0_Struct, (Task_FuncPtr)mainThread, &taskParams_0, NULL);
-    //
-    //    Task_Params_init(&taskParams_2);
-    //    taskParams_2.arg0 = 1000000 / Clock_tickPeriod;
-    //    taskParams_2.stackSize = TASK2_STACKSIZE;
-    //    taskParams_2.stack = &task2_Stack;
-    //    taskParams_2.priority = 1;
-    //    Task_construct(&task2_Struct, (Task_FuncPtr)protocol_Fxn, &taskParams_2, NULL);
+
+
+//    clkParams.period = 0;
+//    clkParams.startFlag = FALSE;
+//
+//    /* Construct a one-shot Clock Instance */
+//    Clock_construct(&clk1Struct, (Clock_FuncPtr)clk1Fxn,
+//                    11000/Clock_tickPeriod, &clkParams);
+//
+//    clk2Handle = Clock_handle(&clk1Struct);
+//
+//    Clock_start(clk2Handle);
+
+    BIOS_start();    /* does not return */
+    return(0);
 }
 
+/*
+ *  ======== clk0Fxn =======
+ */
+Void clk0Fxn(UArg arg0)
+{
+    UInt32 time;
+    GPIO_toggle(Board_GPIO_LED0);
+    time = Clock_getTicks();
+    if (time < 500){
+    System_printf("System time in clk0Fxn = %lu\n", (ULong)time);
+    System_flush();
+    }
+}
 
+/*
+ *  ======== clk1Fxn =======
+ */
+Void clk1Fxn(UArg arg0)
+{
+    UInt32 time;
+
+    time = Clock_getTicks();
+    System_printf("System time in clk1Fxn = %lu\n", (ULong)time);
+    System_printf("Calling BIOS_exit() from clk1Fxn\n");
+    BIOS_exit(0);
+}

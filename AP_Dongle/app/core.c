@@ -157,9 +157,13 @@ void Core_RxHandler(void)
 done:
 	return;
 }
+extern INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type);
 void Core_Mainloop(void)
 {
     uint32_t event;
+    while(1){
+        wakeup_start(1,1,0);
+    }
     while (1) {
         event = Event_PentCore();
 

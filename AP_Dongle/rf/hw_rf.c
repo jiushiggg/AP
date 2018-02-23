@@ -1,5 +1,6 @@
 #include <hw_rf.h>
 #include <ti/sysbios/BIOS.h>
+#include <xdc/runtime/Error.h>
 
 #include "datatype.h"
 #include <ti/drivers/pin/PINCC26XX.h>
@@ -45,6 +46,47 @@ rfc_dataEntryGeneral_t* currentDataEntry;
 RF_Object rfObject;
 RF_Handle rfHandle;
 dataQueue_t dataQueue;
+
+Semaphore_Handle txDoneSem;
+Semaphore_Handle rxDoneSem;
+
+void txcallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
+{
+    if(e & RF_EventRxEntryDone)
+    {
+        Semaphore_post(txDoneSem);
+    }
+    if(e & RF_EventLastCmdDone)
+    {
+          //指令已经执行完成
+    }
+}
+
+void rxcallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
+{
+    if(e & RF_EventRxEntryDone)
+    {
+        Semaphore_post(rxDoneSem);
+    }
+    if(e & RF_EventLastCmdDone)
+    {
+          //指令已经执行完成
+    }
+}
+void semaphore_init(void)
+{
+    Semaphore_Params params;
+    Error_Block eb;
+
+    /* Init params */
+    Semaphore_Params_init(&params);
+    Error_init(&eb);
+
+    /* Create semaphore instance */
+    txDoneSem = Semaphore_create(0, &params, &eb);
+    rxDoneSem = Semaphore_create(0, &params, &eb);
+}
+
 
 void rf_init(void)
 {
@@ -108,30 +150,39 @@ void set_rf_parameters(uint8_t Data_rate, uint16_t Tx_power, uint16_t  Frequency
 //    RF_yield(rfHandle);  // Force a power down using RF_yield() API. This will power down RF after all pending radio commands are complete.
 }
 
-RF_EventMask Rf_tx_package(RF_Handle h, uint32_t syncWord, uint8_t pktLen, uint8_t* pPkt)
+//RF_EventMask Rf_tx_package(RF_Handle h, uint32_t syncWord, uint8_t pktLen, uint8_t* pPkt)
+//{
+//    RF_cmdPropTxAdv.pktLen = pktLen;
+//    RF_cmdPropTxAdv.pPkt = pPkt;
+//    RF_cmdPropTxAdv.syncWord = syncWord;
+//    RF_EventMask result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
+//  //  RF_yield(rfHandle);
+//    return result;
+//}
+void send_data_init(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT8 datarate, UINT32 timeout)
 {
-    RF_cmdPropTxAdv.pktLen = pktLen;
-    RF_cmdPropTxAdv.pPkt = pPkt;
-    RF_cmdPropTxAdv.syncWord = syncWord;
-    RF_EventMask result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
-  //  RF_yield(rfHandle);
+    set_rf_parameters(datarate, RF_TX_POWER_0DB , 2400+(ch/2), ch%2);
+    RF_cmdPropTxAdv.startTrigger.triggerType = TRIG_ABSTIME;
+    RF_cmdPropTxAdv.startTrigger.pastTrig = 1;
+    RF_cmdPropTxAdv.startTime = 0;
+    RF_cmdPropTxAdv.pktLen = len;
+    RF_cmdPropTxAdv.pPkt = data;
+    RF_cmdPropTxAdv.syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+}
+RF_EventMask send_async(uint32_t interal)
+{
+    RF_EventMask result;
+    RF_cmdPropTxAdv.startTime += interal;
+    result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
     return result;
 }
 
-void callback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
+void send_pend(RF_EventMask result)
 {
-    if(e & RF_EventRxEntryDone)
-    {
-        MsgObj  rf_rx_msg;
-        rf_rx_msg.id = 2;
-        rf_rx_msg.val = RF_RX_DONE;
-        Mailbox_post(rf_rx_timeout_mailbox, &rf_rx_msg ,BIOS_WAIT_FOREVER);
-    }
-    if(e & RF_EventLastCmdDone)
-    {
-          //指令已经执行完成
-    }
+    RF_pendCmd(rfHandle, result, RF_EventTxEntryDone);
 }
+
+
 RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord, uint8_t pktLen,uint8_t enableTrigger,  uint32_t  timeout)
 {
     /* Modify CMD_PROP_RX command for application needs */
@@ -144,7 +195,7 @@ RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord
     RF_cmdPropRxAdv.endTime += RF_convertMsToRatTicks(timeout);  //10us
 //    RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropRx, RF_PriorityNormal, &callback, IRQ_RX_ENTRY_DONE);
 //    RF_yield(rfHandle);
-    RF_EventMask result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropRxAdv, RF_PriorityNormal, &callback, IRQ_RX_ENTRY_DONE);
+    RF_EventMask result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropRxAdv, RF_PriorityNormal, &rxcallback, IRQ_RX_ENTRY_DONE);
     return result;
 }
 

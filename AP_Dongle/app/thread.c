@@ -42,7 +42,7 @@ void *mainThread(void *arg0)
 {
 
     Debug_SetLevel(DEBUG_LEVEL_INFO);
-    printf("     \r\n%s.\r\n", APP_VERSION_STRING);
+//    printf("     \r\n%s.\r\n", APP_VERSION_STRING);
     pinfo("basic init complete.\r\n");
 
     Event_Reset();
@@ -64,6 +64,8 @@ void *mainThread(void *arg0)
     pinfo("enter main loop.\r\n");
 
     Core_Mainloop();
+
+    return 0;
 }
 
 

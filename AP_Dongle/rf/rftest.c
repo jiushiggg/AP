@@ -40,7 +40,7 @@ UINT8 tx_buf[TEST_DATA_LEN] = {0};
 static INT32 ber_rx(void)
 {
 	INT32 ret = 0;
-	UINT8 timer = 0;
+//	UINT8 timer = 0;
 //
 //	if((timer=TIM_Open(100, 100, 0)) == 0)
 //	{
@@ -303,9 +303,9 @@ done:
 
 static INT32 ber_tx_result(void)
 {
-	UINT8 result_buf[26] = {0};
-	UINT8 ack_buf[26] = {0};
-	INT32 retry = 5;
+//	UINT8 result_buf[26] = {0};
+//	UINT8 ack_buf[26] = {0};
+//	INT32 retry = 5;
 	INT32 ret = 0;
 	
 //	ber_make_result(result_buf, sizeof(result_buf));
@@ -340,9 +340,9 @@ static INT32 ber_tx_result(void)
 static INT32 ber_tx(void)
 {
 	INT32 ret = 0;
-	UINT8 crc_error = 0;
-	INT32 left_rounds = test_rounds;
-	INT32 timeout = 10;
+//	UINT8 crc_error = 0;
+//	INT32 left_rounds = test_rounds;
+//	INT32 timeout = 10;
 //
 //	/* reset para */
 //	rssi_f = 0;
@@ -571,11 +571,11 @@ INT32 rft_scan_bg(UINT8 *src, INT32 srclen, UINT8 *dst, INT32 dstsize)
 
 INT32 rf_txrx(UINT8 *cmd_buf, INT32 cmd_len, UINT8 *ack_buf, INT32 ack_buf_size)
 {
-	UINT16 bps = 0;
-	UINT8 data_len = *(cmd_buf+OFFSET_OF_DATALEN_IN_RFTXRX_CMD);
-	INT32 timeout = 0;
+//	UINT16 bps = 0;
+//	UINT8 data_len = *(cmd_buf+OFFSET_OF_DATALEN_IN_RFTXRX_CMD);
+//	INT32 timeout = 0;
 	INT32 ret = 0;
-	UINT8 rx_buf[64] = {0};
+//	UINT8 rx_buf[64] = {0};
 //
 //	//phex(cmd_buf, cmd_len);
 //	memcpy(&bps, cmd_buf+OFFSET_OF_BPS_IN_RFTXRX_CMD, sizeof(bps));

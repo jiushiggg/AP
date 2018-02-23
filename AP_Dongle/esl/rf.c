@@ -3,10 +3,11 @@
 #include "crc16.h"
 #include "debug.h"
 
+
+
 /*
 ** timeout unit is us
 */
-
 void enter_txrx()
 {
 //	RFC_RecoverFromRumanTest();
@@ -20,26 +21,6 @@ void exit_txrx()
 
 UINT8 send_data(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout) //timeout unit: 1us
 {
-        uint8_t  count = 3;
-        set_rf_parameters(DATA_RATE_100K, RF_TX_POWER_0DB , 2400+(2/2), 2%2);
-        while(count)
-        {
-            RF_EventMask result;
-            //RF_EventMask result = Rf_tx_package(rfHandle, AP_ID, 26, buf1);
-            RF_cmdPropTxAdv.pktLen = 26;
-            RF_cmdPropTxAdv.pPkt = buf1;
-            RF_cmdPropTxAdv.syncWord = AP_ID;
-            result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
-          //  RF_yield(rfHandle);
-            if(!(result & RF_EventLastCmdDone))
-            {
-                while(1);
-            }
-            count--;
-        }
-    }
-}
-//{
 //	RFC_SetChannel(ch);
 //	RFC_WriteID(id);
 //	RFC_SetFifoLen(len);
@@ -60,7 +41,7 @@ UINT8 send_data(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout) //t
 //
 //	RFC_Cmd(RFC_CMD_PLL);
 //	return len;
-//}
+}
 
 UINT8 recv_data(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout) //timeout unit: 1us
 {

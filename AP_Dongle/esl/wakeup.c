@@ -1,7 +1,7 @@
 #include "wakeup.h"
 #include "flash.h"
 #include "timer.h"
-#include "rf.h"
+#include "hw_rf.h"
 #include "debug.h"
 #include "data.h"
 #include "bsp.h"
@@ -25,6 +25,8 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 	UINT8 ctrl = 0;
 	UINT16 interval = 0;
 	UINT8 mode = 0;
+	uint32_t rf_time = 0;
+	RF_EventMask result;
 
 	pdebug("wkup addr=0x%08X, len=%d\r\n", addr, len);
 
@@ -69,9 +71,22 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 
 	ctrl = data[0];
 		
-	set_datarate(datarate);
-	set_power(power);
-	
+//	set_datarate(datarate);
+//	set_power(power);
+#define GGG_DEBUG
+#ifdef GGG_DEBUG
+    slot_duration = 10;
+    duration_ms = 4000;
+    interval = 70;
+    datarate = DATA_RATE_100K;
+    id[0] = 52; id[1] = 0x56; id[2] = 0x78; id[3] = 0x53;
+    channel = 2;
+    data_len = 26;
+#endif
+
+
+    send_data_init(id, data, data_len, channel, datarate, 5000);
+    rf_time = RF_getCurrentTime();
 	if(mode == 1)
 	{
 		duration_ms = duration * 10;
@@ -87,7 +102,7 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 		ret = -4;
 		goto done;
 	}
-		
+
 	while(!TIM_CheckTimeout(timer))
 	{
 		if(Core_GetQuitStatus() == 1)
@@ -112,14 +127,18 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 			data[1] = timer_count & 0xff;
 		}
 
-		if(send_data(id, data, data_len, channel, 5000) != data_len)
-		{
-			perr("g3_wkup() send data.\r\n");
-			ret = -5;
-			break;
-		}
+		rf_time += EasyLink_10us_To_RadioTime(interval);
+		result = send_async(rf_time);
+//		if(send_data(id, data, data_len, channel, 5000) != data_len)
+//		{
+//			perr("g3_wkup() send data.\r\n");
+//			ret = -5;
+//			break;
+//		}
 		
-		BSP_Delay10US(interval);
+		send_pend(result);
+
+//		BSP_Delay10US(interval);
 	}
 	
 	TIM_Close(timer);

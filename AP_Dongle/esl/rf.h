@@ -26,5 +26,7 @@ void set_rx_start(void);
 INT32 get_rx_data(UINT8 *dst, UINT8 dstsize);
 INT32 check_rx_status(UINT16 timeout); //unit ms
 
+
+
 #endif
 

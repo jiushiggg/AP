@@ -41,11 +41,6 @@ Char task2_Stack[TASK2_STACKSIZE];
 Task_Struct task0_Struct;
 Task_Struct task2_Struct;
 
-Mailbox_Struct  rf_rx_timeout_Struct;
-Mailbox_Params  rf_rx_timeout_params;
-Mailbox_Handle  rf_rx_timeout_mailbox;
-MailboxMsgObj   mailboxBuffer_2[5];
-
 
 void app_init(void)
 {
@@ -77,11 +72,11 @@ void mailbox_semaphore_init(void)
     //    Mailbox_construct(&Protocol_Struct, sizeof(MsgObj), NUMMSGS, &protocol_params, NULL);
     //    Protocol_Mailbox = Mailbox_handle(&Protocol_Struct);
 
-        Mailbox_Params_init(&rf_rx_timeout_params);
-        rf_rx_timeout_params.buf = (Ptr)mailboxBuffer_2;
-        rf_rx_timeout_params.bufSize = sizeof(mailboxBuffer_2);
-        Mailbox_construct(&rf_rx_timeout_Struct, sizeof(MsgObj), 5, &rf_rx_timeout_params, NULL);
-        rf_rx_timeout_mailbox = Mailbox_handle(&rf_rx_timeout_Struct);
+//        Mailbox_Params_init(&rf_rx_timeout_params);
+//        rf_rx_timeout_params.buf = (Ptr)mailboxBuffer_2;
+//        rf_rx_timeout_params.bufSize = sizeof(mailboxBuffer_2);
+//        Mailbox_construct(&rf_rx_timeout_Struct, sizeof(MsgObj), 5, &rf_rx_timeout_params, NULL);
+//        rf_rx_timeout_mailbox = Mailbox_handle(&rf_rx_timeout_Struct);
 
     //    Semaphore_Params_init(&led_semparam);
     //    led_semparam.mode = ti_sysbios_knl_Semaphore_Mode_BINARY;
