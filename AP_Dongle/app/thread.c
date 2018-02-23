@@ -41,6 +41,7 @@ const unsigned char APP_VERSION_STRING[] = "rfd-3.2.2-rc5"; //must < 32
 void *mainThread(void *arg0)
 {
 
+    Board_initSPI();
     Debug_SetLevel(DEBUG_LEVEL_INFO);
 //    printf("     \r\n%s.\r\n", APP_VERSION_STRING);
     pinfo("basic init complete.\r\n");

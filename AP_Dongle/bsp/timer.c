@@ -93,7 +93,7 @@ UINT8 TIM_Open(INT32 nms, UINT16 cnt, UINT8 direction)
     timer.width          = GPT_CONFIG_16BIT;
     timer.mode           = GPT_MODE_PERIODIC_UP;
     timer.debugStallMode = GPTimerCC26XX_DEBUG_STALL_OFF;
-    ts[t].TIMn = GPTimerCC26XX_open(CC2640R2_LAUNCHXL_GPTIMER0B, &timer);
+    ts[t].TIMn = GPTimerCC26XX_open(ts[t].sn, &timer);
     if(ts[t].TIMn == NULL) {
         while(1);
     }

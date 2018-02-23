@@ -40,7 +40,7 @@ UINT8 send_data(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout) //t
 //	}
 //
 //	RFC_Cmd(RFC_CMD_PLL);
-//	return len;
+	return len;
 }
 
 UINT8 recv_data(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout) //timeout unit: 1us
@@ -70,7 +70,7 @@ UINT8 recv_data(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout) //t
 //	}
 //
 //	RFC_ReadFifo(data, len);
-//	return len;
+	return len;
 }
 
 #if 0
@@ -180,7 +180,7 @@ UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeo
 //	}
 //	else
 //	{
-//		return len;
+		return len;
 //	}
 }
 #endif
@@ -239,6 +239,7 @@ void set_cmd_pll(void)
 UINT8 get_rssi(void)
 {
 //	return RFC_GetRssi();
+    return 0;
 }
 
 void wait(INT32 nus)
@@ -278,7 +279,7 @@ INT32 get_rx_data(UINT8 *dst, UINT8 dstsize)
 //	else
 //	{
 //		RFC_ReadFifo(dst, dstsize);
-//		return (INT32)dstsize;
+		return (INT32)dstsize;
 //	}
 }
 
@@ -295,7 +296,7 @@ INT32 check_rx_status(UINT16 timeout) //unit ms
 //		BSP_Delay1US(1);
 //	}
 //
-//	return 0; // rx end
+	return 0; // rx end
 }
 
 

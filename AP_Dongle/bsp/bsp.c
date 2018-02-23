@@ -356,7 +356,7 @@ void BSP_GPIO_CfgDebugCom(void)
 //	GPIO_Init(DEBUG_COM_RX_PORT, &GPIO_InitStruct);
 }
 
-static int debug_pin_status = 0;
+//static int debug_pin_status = 0;
 void BSP_GPIO_CfgDebugPin(void)
 {
 //	GPIO_InitTypeDef GPIO_InitStruct;

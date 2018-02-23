@@ -46,7 +46,7 @@
 
 /* Example/Board Header files */
 #include "Board.h"
-#include "rf.h"
+#include "hw_rf.h"
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE    1024
@@ -80,7 +80,7 @@ int main(void)
 
 void app_init(void)
 {
-    Task_Params taskParams_0,taskParams_2;
+    Task_Params taskParams_0;
     //
     //    Power_setConstraint(PowerCC26XX_SB_VIMS_CACHE_RETAIN);
     //    Power_setConstraint(PowerCC26XX_NEED_FLASH_IN_IDLE);

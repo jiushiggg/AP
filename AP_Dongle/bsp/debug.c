@@ -16,7 +16,7 @@ void Debug_SetLevel(UINT8 new_level)
 
 void pdebughex(UINT8 *src, UINT16 len)
 {
-	INT32 i;
+//	INT32 i;
 
 //	if(s_debug_level >= DEBUG_LEVEL_DEBUG)
 //	{
@@ -36,7 +36,7 @@ void pdebughex(UINT8 *src, UINT16 len)
 
 void perrhex(UINT8 *src, UINT16 len)
 {
-	INT32 i;
+//	INT32 i;
 
 //	if(s_debug_level >= DEBUG_LEVEL_ERROR)
 //	{
@@ -56,7 +56,7 @@ void perrhex(UINT8 *src, UINT16 len)
 
 void phex(UINT8 *src, UINT16 len)
 {
-	INT32 i;
+//	INT32 i;
 
 //		for(i = 0; i < len; i++)
 //		{

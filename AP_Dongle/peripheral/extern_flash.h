@@ -28,5 +28,6 @@ extern void extern_flash_close(void);
 extern ReturnMsg CMD_SE(WORD seg_addr);
 extern ReturnMsg CMD_PP(WORD addr, WORD data, WORD len);
 extern ReturnMsg CMD_FASTREAD(WORD addr, WORD buf, WORD len);
+extern UINT32 CMD_RDID(void);
 
 #endif
