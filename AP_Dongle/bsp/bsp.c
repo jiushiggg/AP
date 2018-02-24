@@ -7,6 +7,62 @@
 #include "bsp_config.h"
 #include <stdio.h>
 
+#include <inc/hw_prcm.h>
+#include <driverlib/prcm.h>
+//#include "bsp.h"
+
+/**
+ * @fn      powerUpGpio
+ *
+ * @brief   Powers up the Gpio peripheral and sets appropriate pins as output
+ *
+ * @param   none
+ *
+ * @return  none
+ */
+void BSP_GPIO_init(void)
+{
+    /* GPIO power up*/
+    PRCMPowerDomainOn(PRCM_DOMAIN_PERIPH);
+    while (PRCMPowerDomainStatus(PRCM_DOMAIN_PERIPH)
+           != PRCM_DOMAIN_POWER_ON);
+
+    PRCMPeripheralRunEnable(PRCM_PERIPH_GPIO);
+    PRCMLoadSet();
+    while (!PRCMLoadGet());
+
+    /* set direction */
+    GPIO_setOutputEnableDio(DEBUG_IO0, GPIO_OUTPUT_ENABLE);
+    GPIO_setDio(DEBUG_IO0);
+    GPIO_setOutputEnableDio(DEBUG_IO1, GPIO_OUTPUT_ENABLE);
+    GPIO_setDio(DEBUG_IO1);
+    GPIO_setOutputEnableDio(DEBUG_IO2, GPIO_OUTPUT_ENABLE);
+    GPIO_setDio(DEBUG_IO2);
+    GPIO_setOutputEnableDio(DEBUG_IO3, GPIO_OUTPUT_ENABLE);
+    GPIO_setDio(DEBUG_IO3);
+}
+/**
+ * @fn      powerDownGpio
+ *
+ * @brief   Powers down the Gpio peripheral. Note: the External Flash close
+ *          will do this also.
+ *
+ * @param   none
+ *
+ * @return  none
+ */
+void powerDownGpio(void)
+{
+    /* GPIO power down */
+//    PRCMPeripheralRunDisable(PRCM_PERIPH_GPIO);
+//    PRCMLoadSet();
+//    while (!PRCMLoadGet());
+//
+//    PRCMPowerDomainOff(PRCM_DOMAIN_PERIPH);
+//    while (PRCMPowerDomainStatus(PRCM_DOMAIN_PERIPH)
+//           != PRCM_DOMAIN_POWER_OFF);
+}
+
 void BSP_EnterCri(void)
 {
 //	__set_FAULTMASK(1);//disable all interrupt

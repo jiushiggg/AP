@@ -161,6 +161,7 @@ extern INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type);
 void Core_Mainloop(void)
 {
     uint32_t event;
+    BSP_GPIO_init();
     while(1){
         wakeup_start(1,1,0);
     }

@@ -3,6 +3,7 @@
 #include <ti/drivers/timer/GPTimerCC26XX.h>
 #include <ti/sysbios/BIOS.h>
 #include "CC2640R2_LAUNCHXL.h"
+#include "bsp.h"
 
 
 typedef struct
@@ -20,8 +21,8 @@ void hwi_timerCallback1(GPTimerCC26XX_Handle handle, GPTimerCC26XX_IntMask inter
 void hwi_timerCallback2(GPTimerCC26XX_Handle handle, GPTimerCC26XX_IntMask interruptMask);
 static void ISR_Handle(timer_t* n);
 
-
-static timer_t ts[] = {
+//static
+timer_t ts[] = {
 	{NULL, hwi_timerCallback0, 0, 0, 0, CC2640R2_LAUNCHXL_GPTIMER0A},
 	{NULL, hwi_timerCallback1, 0, 0, 0, CC2640R2_LAUNCHXL_GPTIMER0B},
 	{NULL, hwi_timerCallback2, 0, 0, 0, CC2640R2_LAUNCHXL_GPTIMER1A},
@@ -63,11 +64,10 @@ UINT8 TIM_Open(INT32 nms, UINT16 cnt, UINT8 direction)
 	UINT8 t = ALL_TIMER_ACTIVE;
 	xdc_runtime_Types_FreqHz  freq;
 	GPTimerCC26XX_Params timer;
-	uint32_t period = 0;
 	GPTimerCC26XX_Value loadVal;
 
-	period = nms*1000;
-	if(period > 0xFFFF)
+
+	if(nms > 1000)
 	{
 		goto done;
 	}
@@ -98,7 +98,7 @@ UINT8 TIM_Open(INT32 nms, UINT16 cnt, UINT8 direction)
         while(1);
     }
 	BIOS_getCpuFreq(&freq);
-	loadVal = freq.lo / period - 1; //47999
+	loadVal = (freq.lo / 1000)*nms - 1; //47999¶¨Ê±1ms
 	GPTimerCC26XX_setLoadValue(ts[t].TIMn, loadVal);
 	GPTimerCC26XX_registerInterrupt(ts[t].TIMn, ts[t].fnx, GPT_INT_TIMEOUT);
 	GPTimerCC26XX_start(ts[t].TIMn);

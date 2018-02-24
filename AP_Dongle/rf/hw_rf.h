@@ -36,7 +36,7 @@
 /// \brief macro to convert from ms to Radio Time Ticks
 #define EasyLink_ms_To_RadioTime(ms) (ms*(4000000/1000))
 
-#define EasyLink_10us_To_RadioTime(us) (us*(4000000/10))
+#define EasyLink_10us_To_RadioTime(us) (us*(4000000/100000))
 
 
 extern uint8_t packet[26];

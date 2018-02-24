@@ -172,7 +172,7 @@ void send_data_init(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT8 datarate,
 RF_EventMask send_async(uint32_t interal)
 {
     RF_EventMask result;
-    RF_cmdPropTxAdv.startTime += interal;
+ //   RF_cmdPropTxAdv.startTime += interal;
     result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
     return result;
 }
@@ -204,8 +204,8 @@ RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord
 static void RF_MapIO(void)
 {
     HWREG(RFC_DBELL_BASE + RFC_DBELL_O_SYSGPOCTL) = RFC_DBELL_SYSGPOCTL_GPOCTL0_CPEGPO0 |RFC_DBELL_SYSGPOCTL_GPOCTL1_RATGPO0 | RFC_DBELL_SYSGPOCTL_GPOCTL2_MCEGPO1 | RFC_DBELL_SYSGPOCTL_GPOCTL3_RATGPO1;
-    IOCIOPortIdSet(RF_RX_SYNC_TEST_IO, IOC_PORT_RFC_GPO3);
-    IOCIOPortIdSet(RF_RX_DATA_TEST_IO, IOC_PORT_RFC_GPO2);
+//    IOCIOPortIdSet(RF_RX_SYNC_TEST_IO, IOC_PORT_RFC_GPO3);
+//    IOCIOPortIdSet(RF_RX_DATA_TEST_IO, IOC_PORT_RFC_GPO2);
     IOCIOPortIdSet(RF_TX_TEST_IO,      IOC_PORT_RFC_GPO1);
     IOCIOPortIdSet( RF_RX_TEST_IO,      IOC_PORT_RFC_GPO0);
 }

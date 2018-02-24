@@ -76,9 +76,9 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 #define GGG_DEBUG
 #ifdef GGG_DEBUG
     slot_duration = 10;
-    duration_ms = 4000;
-    interval = 70;
-    datarate = DATA_RATE_100K;
+    duration = 4;
+    interval = 23;
+    datarate = DATA_RATE_500K;
     id[0] = 52; id[1] = 0x56; id[2] = 0x78; id[3] = 0x53;
     channel = 2;
     data_len = 26;
@@ -89,11 +89,11 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
     rf_time = RF_getCurrentTime();
 	if(mode == 1)
 	{
-		duration_ms = duration * 10;
+		duration_ms = (uint32_t)duration * 10;
 	}
 	else
 	{
-		duration_ms = duration * 1000 - 500;
+		duration_ms = (uint32_t)duration * 1000 - 500;
 	}
 	
 	if((timer=TIM_Open(slot_duration, duration_ms/slot_duration, TIMER_DOWN_CNT)) == ALL_TIMER_ACTIVE)
@@ -102,7 +102,8 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 		ret = -4;
 		goto done;
 	}
-
+	LED_TOGGLE(DEBUG_IO0);
+	interval = EasyLink_10us_To_RadioTime(interval);
 	while(!TIM_CheckTimeout(timer))
 	{
 		if(Core_GetQuitStatus() == 1)
@@ -126,21 +127,21 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 			
 			data[1] = timer_count & 0xff;
 		}
-
-		rf_time += EasyLink_10us_To_RadioTime(interval);
+		LED_ON(DEBUG_IO1);
+		rf_time += interval;
 		result = send_async(rf_time);
+
 //		if(send_data(id, data, data_len, channel, 5000) != data_len)
 //		{
 //			perr("g3_wkup() send data.\r\n");
 //			ret = -5;
 //			break;
 //		}
-		
 		send_pend(result);
-
+		LED_OFF(DEBUG_IO1);
 //		BSP_Delay10US(interval);
 	}
-	
+	LED_TOGGLE(DEBUG_IO0);
 	TIM_Close(timer);
 	
 	ret = 1;
