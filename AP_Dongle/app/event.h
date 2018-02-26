@@ -4,14 +4,14 @@
 #include "datatype.h"
 
 #define EVENT_NONE				0
-#define EVENT_PARSE_DATA		((uint32_t)1<<0) //1
-#define EVENT_ESL_UPDATA		((uint32_t)1<<1) //2
-#define EVENT_FW_UPDATA			((uint32_t)1<<2) //4
-#define EVENT_RX_TO_FLASH		((uint32_t)1<<3) //8
-#define EVENT_TX_FROM_FLASH		((uint32_t)1<<4) //A
-#define EVENT_TX_ESL_ACK		((uint32_t)1<<5) //32
-#define EVENT_G3_HEARTBEAT		((uint32_t)1<<6) //64
-#define EVENT_RC_REQ			((uint32_t)1<<7) //64
+#define EVENT_PARSE_DATA		((UINT32)1<<0) //1
+#define EVENT_ESL_UPDATA		((UINT32)1<<1) //2
+#define EVENT_FW_UPDATA			((UINT32)1<<2) //4
+#define EVENT_RX_TO_FLASH		((UINT32)1<<3) //8
+#define EVENT_TX_FROM_FLASH		((UINT32)1<<4) //A
+#define EVENT_TX_ESL_ACK		((UINT32)1<<5) //32
+#define EVENT_G3_HEARTBEAT		((UINT32)1<<6) //64
+#define EVENT_RC_REQ			((UINT32)1<<7) //64
 #define EVENT_ALL                              0xFFFFFFFF
 
 #define EVENT_SCAN_WKUP			(1<<11)

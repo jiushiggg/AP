@@ -5,7 +5,7 @@
 
 
 #define  EF_BLOCK_SIZE   ((UINT32)0x1000)   //4k
-
+#define  DMA_MAX_BUF    1024
 static NVS_Handle nvsHandle;
 
 void init_nvs_spi_flash(void)
@@ -39,13 +39,38 @@ ReturnMsg CMD_SE(WORD seg_addr)
 
 ReturnMsg CMD_PP(WORD addr, WORD data, WORD len)
 {
-    NVS_write(nvsHandle, addr, (void *)data, len,  NVS_WRITE_POST_VERIFY);
+    uint32_t tmp_len = 0;
+    while(len > 0){
+        if (len > DMA_MAX_BUF){
+            tmp_len = DMA_MAX_BUF;
+            len -= DMA_MAX_BUF;
+        }else {
+            tmp_len = len;
+            len = 0;
+        }
+        NVS_write(nvsHandle, addr, (void *)data, tmp_len, NVS_WRITE_POST_VERIFY);
+        data += tmp_len;
+        addr += tmp_len;
+    }
     return FlashOperationSuccess;
 }
 
 ReturnMsg CMD_FASTREAD(WORD addr, WORD buf, WORD len)
 {
-    NVS_read(nvsHandle, addr, (void *)buf,len);
+    uint32_t tmp_len = 0;
+    while(len > 0){
+        if (len > DMA_MAX_BUF){
+            tmp_len = DMA_MAX_BUF;
+            len -= DMA_MAX_BUF;
+        }else {
+            tmp_len = len;
+            len = 0;
+        }
+        NVS_read(nvsHandle, addr, (void *)buf,tmp_len);
+        buf += tmp_len;
+        addr += tmp_len;
+    }
+
     return FlashOperationSuccess;
 }
 

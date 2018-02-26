@@ -248,7 +248,40 @@ done:
 
 BOOL Flash_Read(UINT32 addr, UINT8* dst, UINT32 len)
 {
-	CMD_FASTREAD(addr, (UINT32)dst, len);
+    CMD_FASTREAD(addr, (UINT32)dst, len);
 	return TRUE;
 }
 
+#ifdef FLASH_APP_TEST
+while(1){
+    #define TEST_LEN    2048
+    uint16_t i=0;
+    Flash_Malloc(50*4096);
+    Flash_Read(50*4096, coremem, TEST_LEN);
+    for (i=0; i<TEST_LEN; i++){
+        coremem[i] = i+1;
+    }
+    //Flash_Write(50*4096, coremem , TEST_LEN);
+    Flash_Write(50*4096, coremem, TEST_LEN);
+
+    for (i=0; i<TEST_LEN; i++){
+        coremem[i] = 0;
+    }
+    Flash_Read(50*4096, coremem, TEST_LEN);
+
+
+    Flash_Malloc(0);
+    Flash_Read(0, coremem, TEST_LEN);
+    for (i=0; i<TEST_LEN; i++){
+        coremem[i] = i+1;
+    }
+    //Flash_Write(50*4096, coremem , TEST_LEN);
+    CMD_PP(0, (UINT32)coremem, TEST_LEN);
+
+    for (i=0; i<TEST_LEN; i++){
+        coremem[i] = 0;
+    }
+    Flash_Read(0, coremem, TEST_LEN);
+
+}
+#endif

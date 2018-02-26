@@ -499,7 +499,7 @@ const NVSCC26XX_HWAttrs nvsCC26xxHWAttrs[1] = {
 const NVSSPI25X_HWAttrs nvsSPI25XHWAttrs[1] = {
     {
         .regionBaseOffset = 0,
-        .regionSize = SECTORSIZE * 4,
+        .regionSize = SECTORSIZE * 1024,
         .sectorSize = SECTORSIZE,
         .verifyBuf = verifyBuf,
         .verifyBufSize = 64,

@@ -28,52 +28,52 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 	uint32_t rf_time = 0;
 	RF_EventMask result;
 
-//	pdebug("wkup addr=0x%08X, len=%d\r\n", addr, len);
-//
-//	if((addr==0) || (len==0))
-//	{
-//		ret = -1;
-//		goto done;
-//	}
-//
-//	if(g3_get_wkup_para(addr, &datarate, &power, &duration, &slot_duration, &mode) == 0)
-//	{
-//		perr("g3_wkup() get para from flash.\r\n");
-//		ret = -2;
-//		goto done;
-//	}
-//
-//	interval = g3_get_wkup_interval(addr);
-//	if(interval == 0)
-//	{
-//		interval = 30;
-//	}
-//
-//	pdebug("wkup para: datarate=%d, power=%d, duration=%d, slot_duration=%d, interval=%d\r\n", \
-//			datarate, power, duration, slot_duration, interval);
-//
-//	if(duration == 0)
-//	{
-//		pdebug("warning: wkup duration is 0\r\n");
-//		goto done;
-//	}
-//
-//	if(get_one_data(addr+OFFSET_WKUP_DATA, id, &channel, &data_len, data, sizeof(data)) == 0)
-//	{
-//		perr("g3_wkup() get data from flash.\r\n");
-//		ret = -3;
-//		goto done;
-//	}
-//
-//	pdebug("wkup data: id:0x%02X-0x%02X-0x%02X-0x%02X, channel=%d, len=%d, data=", \
-//			id[0], id[1], id[2], id[3], channel, data_len);
-//	pdebughex(data, data_len);
+	pdebug("wkup addr=0x%08X, len=%d\r\n", addr, len);
+
+	if((addr==0) || (len==0))
+	{
+		ret = -1;
+		goto done;
+	}
+
+	if(g3_get_wkup_para(addr, &datarate, &power, &duration, &slot_duration, &mode) == 0)
+	{
+		perr("g3_wkup() get para from flash.\r\n");
+		ret = -2;
+		goto done;
+	}
+
+	interval = g3_get_wkup_interval(addr);
+	if(interval == 0)
+	{
+		interval = 30;
+	}
+
+	pdebug("wkup para: datarate=%d, power=%d, duration=%d, slot_duration=%d, interval=%d\r\n", \
+			datarate, power, duration, slot_duration, interval);
+
+	if(duration == 0)
+	{
+		pdebug("warning: wkup duration is 0\r\n");
+		goto done;
+	}
+
+	if(get_one_data(addr+OFFSET_WKUP_DATA, id, &channel, &data_len, data, sizeof(data)) == 0)
+	{
+		perr("g3_wkup() get data from flash.\r\n");
+		ret = -3;
+		goto done;
+	}
+
+	pdebug("wkup data: id:0x%02X-0x%02X-0x%02X-0x%02X, channel=%d, len=%d, data=", \
+			id[0], id[1], id[2], id[3], channel, data_len);
+	pdebughex(data, data_len);
 
 	ctrl = data[0];
 		
 //	set_datarate(datarate);
 //	set_power(power);
-#define GGG_DEBUG
+//#define GGG_DEBUG
 #ifdef GGG_DEBUG
     slot_duration = 10;
     duration = 4;

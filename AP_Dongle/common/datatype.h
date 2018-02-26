@@ -38,5 +38,6 @@ typedef unsigned char       BOOL;
 //    Mailbox_MbxElem  elem;      /* Mailbox header        */
 //    MsgObj           obj;       /* Application's mailbox */
 //} MailboxMsgObj;
-
+#define COREMEM_SIZE    14000//(1024*14)
+extern UINT8 coremem[COREMEM_SIZE];
 #endif /* COMMON_DATATYPE_H_ */

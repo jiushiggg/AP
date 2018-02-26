@@ -22,14 +22,14 @@
  */
 void BSP_GPIO_init(void)
 {
-    /* GPIO power up*/
-    PRCMPowerDomainOn(PRCM_DOMAIN_PERIPH);
-    while (PRCMPowerDomainStatus(PRCM_DOMAIN_PERIPH)
-           != PRCM_DOMAIN_POWER_ON);
-
-    PRCMPeripheralRunEnable(PRCM_PERIPH_GPIO);
-    PRCMLoadSet();
-    while (!PRCMLoadGet());
+//    /* GPIO power up*/
+//    PRCMPowerDomainOn(PRCM_DOMAIN_PERIPH);
+//    while (PRCMPowerDomainStatus(PRCM_DOMAIN_PERIPH)
+//           != PRCM_DOMAIN_POWER_ON);
+//
+//    PRCMPeripheralRunEnable(PRCM_PERIPH_GPIO);
+//    PRCMLoadSet();
+//    while (!PRCMLoadGet());
 
     /* set direction */
     GPIO_setOutputEnableDio(DEBUG_IO0, GPIO_OUTPUT_ENABLE);
