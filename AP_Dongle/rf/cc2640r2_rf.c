@@ -232,7 +232,7 @@ uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t 
 {
     RF_EventMask result;
 
-    set_frequence(ch, ch%2);
+    set_frequence(ch/2, ch%2);
     send_data_init(id, data, len, timeout);
     result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
     RF_pendCmd(rfHandle, result, RF_EventTxEntryDone);
@@ -243,14 +243,14 @@ uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t 
 UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t timeout)
 {
     uint32_t sync_word=0;
-    uint32_t tmp_timeout = 0;
+ //   uint32_t tmp_timeout = 0;
     RF_EventMask rx_event;
     set_frequence(ch/2, ch%2);
 
     sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
-    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);
+//    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);
 
-    rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , tmp_timeout);
+    rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , timeout/10);
     if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout/Clock_tickPeriod))){
         currentDataEntry = RFQueue_getDataEntry();
         memcpy(data, (uint8_t*)(&currentDataEntry->data), len);

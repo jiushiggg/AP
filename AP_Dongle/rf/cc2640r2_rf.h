@@ -26,8 +26,8 @@
 
 #define  DATA_RATE_100K     ((uint8_t)1)
 #define  DATA_RATE_500K     ((uint8_t)5)
-#define  DATA_RATE_1M       ((uint8_t)1000)
-#define  DATA_RATE_2M       ((uint8_t)2000)
+#define  DATA_RATE_1M       ((uint8_t)10)
+#define  DATA_RATE_2M       ((uint8_t)20)
 #define  RF_TX_POWER_0DB    ((uint8_t)0)
 #define  RF_TX_POWER_1DB    ((uint8_t)1)
 #define  RF_TX_POWER_2DB    ((uint8_t)2)
