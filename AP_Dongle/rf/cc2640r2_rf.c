@@ -1,5 +1,6 @@
 #include "cc2640r2_rf.h"
 #include <ti/sysbios/BIOS.h>
+#include <ti/sysbios/knl/Clock.h>
 #include <xdc/runtime/Error.h>
 
 
@@ -43,6 +44,8 @@
 
 
 static void RF_MapIO(void);
+void clear_queue_buf(void);
+RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord, uint8_t pktLen,uint8_t enableTrigger,  uint32_t  timeout);
 
 rfc_dataEntryGeneral_t* currentDataEntry;
 RF_Object rfObject;
@@ -237,10 +240,39 @@ uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t 
     return len;
 
 }
-UINT8 recv_data(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout)
+UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t timeout)
 {
+    uint32_t sync_word=0;
+    uint32_t tmp_timeout = 0;
+    RF_EventMask rx_event;
+    set_frequence(ch/2, ch%2);
+
+    sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);
+
+    rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , tmp_timeout);
+    if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout/Clock_tickPeriod))){
+        currentDataEntry = RFQueue_getDataEntry();
+        memcpy(data, (uint8_t*)(&currentDataEntry->data), len);
+        RFQueue_nextEntry();
+    }else{
+        RF_cancelCmd(rfHandle, rx_event,0);
+        clear_queue_buf();
+        len = 0;
+    }
 
     return len;
+}
+void clear_queue_buf(void)
+{
+    uint8_t buf[128];
+    currentDataEntry = RFQueue_getDataEntry();
+
+    if(DATA_ENTRY_PENDING != currentDataEntry->status)
+    {
+        memcpy(buf, (uint8_t*)(&currentDataEntry->data), currentDataEntry->length);
+        RFQueue_nextEntry();
+    }
 }
 
 RF_EventMask send_without_wait(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeout)
@@ -267,19 +299,6 @@ RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord
     RF_EventMask result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropRxAdv, RF_PriorityNormal, &rxcallback, IRQ_RX_ENTRY_DONE);
     return result;
 }
-
-
-
-static void RF_MapIO(void)
-{
-    HWREG(RFC_DBELL_BASE + RFC_DBELL_O_SYSGPOCTL) = RFC_DBELL_SYSGPOCTL_GPOCTL0_CPEGPO0 |RFC_DBELL_SYSGPOCTL_GPOCTL1_RATGPO0 | RFC_DBELL_SYSGPOCTL_GPOCTL2_MCEGPO1 | RFC_DBELL_SYSGPOCTL_GPOCTL3_RATGPO1;
-//    IOCIOPortIdSet(RF_RX_SYNC_TEST_IO, IOC_PORT_RFC_GPO3);
-//    IOCIOPortIdSet(RF_RX_DATA_TEST_IO, IOC_PORT_RFC_GPO2);
-    IOCIOPortIdSet(RF_TX_TEST_IO,      IOC_PORT_RFC_GPO1);
-    IOCIOPortIdSet( RF_RX_TEST_IO,      IOC_PORT_RFC_GPO0);
-}
-
-
 
 void wait(uint32_t nus)
 {
@@ -316,4 +335,17 @@ void rf_exit_from_hb_recv(void)
 UINT8 get_hb_rssi(void)
 {
     return _hb_rssi;
+}
+
+
+
+
+
+static void RF_MapIO(void)
+{
+    HWREG(RFC_DBELL_BASE + RFC_DBELL_O_SYSGPOCTL) = RFC_DBELL_SYSGPOCTL_GPOCTL0_CPEGPO0 |RFC_DBELL_SYSGPOCTL_GPOCTL1_RATGPO0 | RFC_DBELL_SYSGPOCTL_GPOCTL2_MCEGPO1 | RFC_DBELL_SYSGPOCTL_GPOCTL3_RATGPO1;
+//    IOCIOPortIdSet(RF_RX_SYNC_TEST_IO, IOC_PORT_RFC_GPO3);
+//    IOCIOPortIdSet(RF_RX_DATA_TEST_IO, IOC_PORT_RFC_GPO2);
+    IOCIOPortIdSet(RF_TX_TEST_IO,      IOC_PORT_RFC_GPO1);
+    IOCIOPortIdSet( RF_RX_TEST_IO,      IOC_PORT_RFC_GPO0);
 }

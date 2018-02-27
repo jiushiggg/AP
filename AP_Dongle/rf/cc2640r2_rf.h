@@ -68,7 +68,7 @@ extern void send_data_init(uint8_t *id, uint8_t *data, uint8_t len, uint32_t tim
 extern RF_EventMask send_async(uint32_t interval);
 extern void send_pend(RF_EventMask result);
 extern uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t timeout);
-extern uint8_t recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t timeout);
+extern uint8_t recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t timeout);
 
 extern void set_frequence(uint16_t  Frequency, uint8_t fractFreq_flag);
 extern void set_power_rate(uint16_t Tx_power, uint8_t Data_rate);

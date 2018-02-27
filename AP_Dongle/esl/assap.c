@@ -179,6 +179,8 @@ INT32 assap_scan_wkup(UINT8 *dst, INT32 dsize)
 	return sizeof(assap_scanwkup_ret_t);
 }
 
+
+
 INT32 assap_ack_parse_cmd(UINT8 *pCmd, INT32 cmdLen, assap_ack_table_t *table)
 {
 	return common_recv_parse_cmd(pCmd, cmdLen, table);
