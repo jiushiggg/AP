@@ -1,4 +1,4 @@
-#include <hw_rf.h>
+#include "cc2640r2_rf.h"
 #include <unistd.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -162,41 +162,6 @@ extern INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type);
 void Core_Mainloop(void)
 {
     uint32_t event;
-    while(1){
-        #define TEST_LEN    2048
-        uint16_t i=0;
-        Flash_Malloc(50*4096);
-        Flash_Read(50*4096, coremem, TEST_LEN);
-        for (i=0; i<TEST_LEN; i++){
-            coremem[i] = i+1;
-        }
-        //Flash_Write(50*4096, coremem , TEST_LEN);
-        Flash_Write(50*4096, coremem, TEST_LEN);
-
-        for (i=0; i<TEST_LEN; i++){
-            coremem[i] = 0;
-        }
-        Flash_Read(50*4096, coremem, TEST_LEN);
-
-
-        Flash_Malloc(0);
-        Flash_Read(0, coremem, TEST_LEN);
-        for (i=0; i<TEST_LEN; i++){
-            coremem[i] = i+1;
-        }
-        //Flash_Write(50*4096, coremem , TEST_LEN);
-        CMD_PP(0, (UINT32)coremem, TEST_LEN);
-
-        for (i=0; i<TEST_LEN; i++){
-            coremem[i] = 0;
-        }
-        Flash_Read(0, coremem, TEST_LEN);
-
-    }
-//    BSP_GPIO_init();
-//    while(1){
-//        wakeup_start(1,1,0);
-//    }
     while (1) {
         event = Event_PentCore();
 

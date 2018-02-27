@@ -8,7 +8,7 @@
 #include "g1updata.h"
 #include <string.h>
 #include "sleep.h"
-#include "rf.h"
+#include "cc2640r2_rf.h"
 #include "core.h"
 
 static UINT16 set_cmd = 0;

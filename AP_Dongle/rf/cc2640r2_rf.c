@@ -1,8 +1,8 @@
-#include "hw_rf.h"
+#include "cc2640r2_rf.h"
 #include <ti/sysbios/BIOS.h>
 #include <xdc/runtime/Error.h>
 
-#include "datatype.h"
+
 #include <ti/drivers/pin/PINCC26XX.h>
 
 #define RF_TEST
@@ -40,12 +40,15 @@
     #error This compiler is not supported.
 #endif
 
+
+
 static void RF_MapIO(void);
 
 rfc_dataEntryGeneral_t* currentDataEntry;
 RF_Object rfObject;
 RF_Handle rfHandle;
 dataQueue_t dataQueue;
+static UINT8 _hb_rssi = 0;
 
 Semaphore_Handle txDoneSem;
 Semaphore_Handle rxDoneSem;
@@ -109,8 +112,8 @@ void rf_init(void)
 //    RF_yield(rfHandle);    //使射频进入低功耗状态
 }
 
-
-const uint16_t rf_tx_power[6]={0x3161, 0x4214,0x4e18,0x5a1c, 0x9324, 0x9330};
+#define POWER_LEVEL  6
+const uint16_t rf_tx_power[POWER_LEVEL]={0x3161, 0x4214,0x4e18,0x5a1c, 0x9324, 0x9330};
 void set_rf_parameters(uint8_t Data_rate, uint16_t Tx_power, uint16_t  Frequency, uint8_t fractFreq_flag)
 {
 
@@ -149,6 +152,48 @@ void set_rf_parameters(uint8_t Data_rate, uint16_t Tx_power, uint16_t  Frequency
     RF_control(rfHandle, RF_CTRL_UPDATE_SETUP_CMD, NULL); //Signal update Rf core
 //    RF_yield(rfHandle);  // Force a power down using RF_yield() API. This will power down RF after all pending radio commands are complete.
 }
+void set_frequence(uint16_t  Frequency, uint8_t fractFreq_flag)
+{
+    RF_cmdFs.frequency = 2400+Frequency;
+    RF_cmdFs.fractFreq = (fractFreq_flag ? 32768 : 0);
+    RF_postCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
+}
+
+void set_power_rate(uint16_t Tx_power, uint8_t Data_rate)
+{
+    switch(Data_rate)
+    {
+        case DATA_RATE_100K:
+            RF_cmdPropRadioSetup.symbolRate.preScale = 15;
+            RF_cmdPropRadioSetup.symbolRate.rateWord = 65536;
+            RF_cmdPropRadioSetup.modulation.modType = 0x0;
+            RF_cmdPropRadioSetup.modulation.deviation = 744;
+            RF_cmdPropRadioSetup.rxBw = 9;
+        break;
+        case  DATA_RATE_500K:
+            RF_cmdPropRadioSetup.symbolRate.preScale = 15;
+            RF_cmdPropRadioSetup.symbolRate.rateWord = 327680;
+            RF_cmdPropRadioSetup.modulation.modType = 0x0;
+            RF_cmdPropRadioSetup.modulation.deviation = 744;
+            RF_cmdPropRadioSetup.rxBw = 10;
+        break;
+        case  DATA_RATE_1M:
+        break;
+        case  DATA_RATE_2M:
+        break;
+        default:
+            RF_cmdPropRadioSetup.symbolRate.preScale = 15;
+            RF_cmdPropRadioSetup.symbolRate.rateWord = 327680;
+            RF_cmdPropRadioSetup.modulation.modType = 0x0;
+            RF_cmdPropRadioSetup.modulation.deviation = 744;
+            RF_cmdPropRadioSetup.rxBw = 10;
+        break;
+    }
+    if (Tx_power < POWER_LEVEL){
+        RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power];
+    }
+    RF_control(rfHandle, RF_CTRL_UPDATE_SETUP_CMD, NULL); //Signal update Rf core
+}
 
 //RF_EventMask Rf_tx_package(RF_Handle h, uint32_t syncWord, uint8_t pktLen, uint8_t* pPkt)
 //{
@@ -159,9 +204,8 @@ void set_rf_parameters(uint8_t Data_rate, uint16_t Tx_power, uint16_t  Frequency
 //  //  RF_yield(rfHandle);
 //    return result;
 //}
-void send_data_init(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT8 datarate, UINT32 timeout)
+void send_data_init(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
 {
-    set_rf_parameters(datarate, RF_TX_POWER_0DB , 2400+(ch/2), ch%2);
     RF_cmdPropTxAdv.startTrigger.triggerType = TRIG_ABSTIME;
     RF_cmdPropTxAdv.startTrigger.pastTrig = 1;
     RF_cmdPropTxAdv.startTime = 0;
@@ -181,7 +225,32 @@ void send_pend(RF_EventMask result)
 {
     RF_pendCmd(rfHandle, result, RF_EventTxEntryDone);
 }
+uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t timeout)
+{
+    RF_EventMask result;
 
+    set_frequence(ch, ch%2);
+    send_data_init(id, data, len, timeout);
+    result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
+    RF_pendCmd(rfHandle, result, RF_EventTxEntryDone);
+
+    return len;
+
+}
+UINT8 recv_data(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout)
+{
+
+    return len;
+}
+
+RF_EventMask send_without_wait(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeout)
+{
+    RF_EventMask result;
+    set_frequence(ch/2, ch%2);
+    send_data_init(id, data, len, timeout);
+    result = send_async(timeout);
+    return result;
+}
 
 RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord, uint8_t pktLen,uint8_t enableTrigger,  uint32_t  timeout)
 {
@@ -212,13 +281,39 @@ static void RF_MapIO(void)
 
 
 
+void wait(uint32_t nus)
+{
+
+}
 
 
+void enter_txrx(void)
+{
+
+}
+void exit_txrx(void)
+{}
+
+void rf_preset_for_hb_recv(void)
+{
+}
+UINT8 get_rssi(void)
+{
+    return 0;
+}
 
 
+UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout)
+{
+    return 0;
+}
 
+void rf_exit_from_hb_recv(void)
+{
 
+}
 
-
-
-
+UINT8 get_hb_rssi(void)
+{
+    return _hb_rssi;
+}

@@ -1,3 +1,4 @@
+#include "cc2640r2_rf.h"
 #include "updata0.h"
 #include "updata1.h"
 #include "frame1.h"
@@ -5,7 +6,6 @@
 #include "bsp.h"
 #include "flash.h"
 #include "debug.h"
-#include "rf.h"
 #include "data.h"
 #include "common.h"
 #include <string.h>
@@ -115,11 +115,12 @@ static INT32 fisrt_transmit_round(updata_table_t *table, UINT8 timer)
 	INT32 delay_us = 0;
 	mode0_esl_t *pESL = (mode0_esl_t *)table->data;
 	UINT8 f = 0;
+    RF_EventMask result;
+    uint8_t pend_flg = PEND_STOP;
 	
 	pdebug("transmit_round(), timer %d.\r\n", timer);
 	
-	set_datarate(table->tx_datarate);
-	set_power(table->tx_power);
+	set_power_rate(table->tx_power, table->tx_datarate);
 	
 	while(left_pkg_num > 0)
 	{
@@ -149,11 +150,16 @@ static INT32 fisrt_transmit_round(updata_table_t *table, UINT8 timer)
 					i+1, j+1, id[0], id[1], id[2], id[3], ch, len);
 			pdebughex(data, len);
 						
-			if(send_without_wait(id, data, len, ch, 6000) == 0)
-			{
-				perr("transmit_round() send data.\r\n");
-				wait(1000);
-			}
+	        if (PEND_START == pend_flg){
+	            send_pend(result);
+	        }
+	        result = send_without_wait(id, data, len, ch, 6000);
+	        pend_flg = PEND_START;
+//			if(send_without_wait(id, data, len, ch, 6000) == 0)
+//			{
+//				perr("transmit_round() send data.\r\n");
+//				wait(1000);
+//			}
 							
 			left_pkg_num--;
 			k++;
@@ -196,8 +202,7 @@ static INT32 query_miss_round(updata_table_t *table, UINT8 timer)
 	UINT8 channel = 0;
 	mode0_esl_t *pESL = (mode0_esl_t *)table->data;
 	
-	set_datarate(table->tx_datarate);
-	set_power(table->tx_power);
+	set_power_rate(table->tx_power, table->tx_datarate);
 
 	pdebug("mode0_query_miss_round, timer is %d.\r\n", timer);
 	
@@ -231,12 +236,12 @@ static INT32 query_miss_round(updata_table_t *table, UINT8 timer)
 				pESL[i].esl_id[0], pESL[i].esl_id[1], \
 				pESL[i].esl_id[2], pESL[i].esl_id[3], \
 				table->tx_datarate, table->rx_datarate, channel, deal_timeout);
-		set_datarate(table->tx_datarate);
+		set_power_rate(RF_DEFAULT_POWER, table->tx_datarate);
 		memset(data, 0, sizeof(data));
 		g3_make_link_query(pESL[i].esl_id, get_pkg_sn_f(pESL[i].first_pkg_addr+(pESL[i].total_pkg_num-1)*32, 7), \
 							query_miss_slot, first_pkg_data, data, sizeof(data));
 		send_data(pESL[i].esl_id, data, sizeof(data), channel, 2000);
-		set_datarate(table->rx_datarate);	
+		set_power_rate(RF_DEFAULT_POWER, table->rx_datarate);
 		memset(data, 0, sizeof(data));
 		if(recv_data(table->master_id, data, sizeof(data), channel, deal_timeout) == 0)
 		{
@@ -281,8 +286,7 @@ static INT32 send_sleep_round(updata_table_t *table, UINT8 timer)
 	
 	pdebug("mode0_send_sleep_round(), timer is %d.\r\n", timer);
 	
-	set_datarate(table->tx_datarate);
-	set_power(table->tx_power);
+	set_power_rate(table->tx_power, table->tx_datarate);
 	
 	for(i = 0; i < table->esl_num; i++)
 	{
@@ -324,8 +328,7 @@ static INT32 send_sleep_all(updata_table_t *table)
 	
 	pdebug("send_sleep_all\r\n");
 	
-	set_datarate(table->tx_datarate);
-	set_power(table->tx_power);
+	set_power_rate(table->tx_power,table->tx_datarate);
 	
 	for(i = 0; i < table->esl_num; i++)
 	{
@@ -360,10 +363,11 @@ static INT32 send_miss_round(updata_table_t *table, UINT8 timer)
 	INT32 delay_us = 0;
 	mode0_esl_t *pESL = (mode0_esl_t *)table->data;
 	UINT8 f = 0;
+    RF_EventMask result;
+    uint8_t pend_flg = PEND_STOP;
 	
 	pdebug("mode0_send_miss_round(), timer is %d.\r\n", timer);
-	set_datarate(table->tx_datarate);
-	set_power(table->tx_power);
+	set_power_rate(table->tx_power, table->tx_datarate);
 	
 	for(i = 0; i < table->esl_num; i++)
 	{
@@ -401,12 +405,17 @@ static INT32 send_miss_round(updata_table_t *table, UINT8 timer)
 			pdebug("send miss %d/%d 0x%02X-0x%02X-0x%02X-0x%02X, ch=%d,len=%d.\r\n", \
 					i+1, j+1, id[0], id[1], id[2], id[3], ch, len);
 			pdebughex(data, len);
-			
-			if(send_without_wait(id, data, len, ch, 6000) == 0)
-			{
-				perr("mode0_send_miss_round() send data!\r\n");
-				wait(1000);
-			}
+
+	        if (PEND_START == pend_flg){
+	            send_pend(result);
+	        }
+	        result = send_without_wait(id, data, len, ch, 6000);
+	        pend_flg = PEND_START;
+//			if(send_without_wait(id, data, len, ch, 6000) == 0)
+//			{
+//				perr("mode0_send_miss_round() send data!\r\n");
+//				wait(1000);
+//			}
 			
 			left_pkg_num--;
 			k++;

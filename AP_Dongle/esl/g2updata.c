@@ -1,3 +1,4 @@
+#include "cc2640r2_rf.h"
 #include "g2updata.h"
 #include "frame1.h"
 #include "updata.h"
@@ -7,7 +8,6 @@
 #include "bsp.h"
 #include "flash.h"
 #include "debug.h"
-#include "rf.h"
 #include "data.h"
 #include "common.h"
 #include <string.h>
@@ -36,11 +36,12 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
 	UINT16 tsn = 0;
 	UINT32 taddr = 0;
 	UINT8 f = 0;
+    RF_EventMask result;
+    uint8_t pend_flg = PEND_STOP;
 	
 	pdebug("g2_transmit\r\n");
 	
-	set_datarate(table->tx_datarate);
-	set_power(table->tx_power);
+	set_power_rate(table->tx_power, table->tx_datarate);
 	
 	for(i = 0; i < table->esl_num; i++)
 	{
@@ -113,12 +114,17 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
 			
 			pdebug("0x%02X-0x%02X-0x%02X-0x%02X, ch=%d, len=%d\r\n", id[0], id[1], id[2], id[3], ch, len);
 			pdebughex(data, len);
-			
-			if(send_without_wait(id, data, len, ch, 6000) == 0)
-			{
-				perr("g2_transmit send data!\r\n");
-				wait(1000); 
-			}
+
+	        if (PEND_START == pend_flg){
+	            send_pend(result);
+	        }
+	        result = send_without_wait(id, data, len, ch, 6000);
+	        pend_flg = PEND_START;
+//			if(send_without_wait(id, data, len, ch, 6000) == 0)
+//			{
+//				perr("g2_transmit send data!\r\n");
+//				wait(1000);
+//			}
 					
 		user_continue:
 			left_pkg_num--;
@@ -175,8 +181,7 @@ static INT32 g2_query_miss(updata_table_t *table, UINT8 timer)
 	UINT8 channel = 0;
 	mode1_esl_t *pESL = (mode1_esl_t *)table->data;
 		
-	set_datarate(table->tx_datarate);
-	set_power(table->tx_power);
+	set_power_rate(table->tx_power, table->tx_datarate);
 
 	pdebug("g2 query miss(), t=%d, txbps=%d, rxbps=%d, power=%d, timeout=%d.\r\n", timer, \
 			table->tx_datarate, table->rx_datarate, table->tx_power, deal_timeout);
@@ -205,7 +210,7 @@ static INT32 g2_query_miss(updata_table_t *table, UINT8 timer)
 			query_miss_slot = 1;
 		}
 		
-		set_datarate(table->tx_datarate);
+		set_power_rate(RF_DEFAULT_POWER, table->tx_datarate);
 		get_one_data(pESL[i].first_pkg_addr, NULL, &channel, NULL, first_pkg_data, sizeof(first_pkg_data));
 		pdebug("query 0x%02x-0x%02x-0x%02x-0x%02x, ch=%d.\r\n", \
 				pESL[i].esl_id[0], pESL[i].esl_id[1], pESL[i].esl_id[2], pESL[i].esl_id[3], channel);
@@ -213,7 +218,7 @@ static INT32 g2_query_miss(updata_table_t *table, UINT8 timer)
 		g2_make_link_query(pESL[i].esl_id, get_pkg_sn_f(pESL[i].first_pkg_addr+(pESL[i].total_pkg_num-1)*32, 8), \
 								query_miss_slot, first_pkg_data, data, sizeof(data));
 		send_data(pESL[i].esl_id, data, sizeof(data), channel, 2000);
-		set_datarate(table->rx_datarate);
+		set_power_rate(RF_DEFAULT_POWER ,table->rx_datarate);
 		memset(rxbuf, 0, sizeof(rxbuf));
 		if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), channel, deal_timeout) == 0)
 		{

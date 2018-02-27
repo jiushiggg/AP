@@ -1,10 +1,10 @@
+#include "cc2640r2_rf.h"
 #include "frame1.h"
 #include "flash.h"
 #include "timer.h"
 #include "debug.h"
 #include "updata.h"
 #include "data.h"
-#include "rf.h"
 #include "crc16.h"
 #include <string.h>
 #include "core.h"
@@ -34,6 +34,8 @@ static UINT8 frame1_mode0(UINT32 addr, UINT8 num, INT32 duration)
 	INT32 i = 0;
 	UINT8 timer = 0;
 	UINT32 cur = 0;
+	RF_EventMask result;
+	uint8_t pend_flg = PEND_STOP;
 	
 	if((timer=TIM_Open(1, duration, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
 	{
@@ -69,12 +71,17 @@ static UINT8 frame1_mode0(UINT32 addr, UINT8 num, INT32 duration)
 				i, id[0], id[1], id[2], id[3], channel, len);
 		pdebughex(data, len);
 		*/
-				
-		if(send_without_wait(id, data, len, channel, 6000) == 0)
-		{
-			perr("frame1 send\r\n");	
-			wait(1000);
-		}
+        if (PEND_START == pend_flg){
+            send_pend(result);
+        }
+		result = send_without_wait(id, data, len, channel, 6000);
+        pend_flg = PEND_START;
+
+//		if(send_without_wait(id, data, len, channel, 6000) == 0)
+//		{
+//			perr("frame1 send\r\n");
+//			wait(1000);
+//		}
 		
 		i += 1;		
 		if(i == num)
@@ -106,6 +113,8 @@ static UINT8 _frame2(UINT32 addr, UINT8 num, INT32 duration)
 	UINT8 timer = 0;
 	UINT32 cur = 0;
 	UINT16 timercount=0, crc = 0;
+    RF_EventMask result;
+    uint8_t pend_flg = PEND_STOP;
 	
 	if((timer=TIM_Open(10, duration/10, TIMER_DOWN_CNT)) == ALL_TIMER_ACTIVE)
 	{
@@ -148,12 +157,16 @@ static UINT8 _frame2(UINT32 addr, UINT8 num, INT32 duration)
 				i, id[0], id[1], id[2], id[3], channel, len);
 		pdebughex(data, len);
 		*/
-		
-		if(send_without_wait(id, data, len, channel, 6000) == 0)
-		{
-			perr("frame1 send\r\n");	
-			wait(1000);
-		}
+        if (PEND_START == pend_flg){
+            send_pend(result);
+        }
+        result = send_without_wait(id, data, len, channel, 6000);
+        pend_flg = PEND_START;
+//		if(send_without_wait(id, data, len, channel, 6000) == 0)
+//		{
+//			perr("frame1 send\r\n");
+//			wait(1000);
+//		}
 		
 		i += 1;		
 		if(i == num)
@@ -208,8 +221,7 @@ INT32 frame1_start(UINT16 cmd, UINT32 addr, UINT32 len)
 		goto done;
 	}
 	
-	set_datarate(frame1_para.datarate);
-	set_power(frame1_para.power);
+	set_power_rate(frame1_para.power, frame1_para.datarate);
 	
 	if(cmd == CMD_GROUP1_FRAME2)
 	{
@@ -243,6 +255,8 @@ INT32 frame1_dummy(UINT32 addr, UINT32 len, UINT32 *dummy_offset, INT32 dummy_nu
 	UINT8 channel = 0;
 	UINT8 data[30] = {0};
 	UINT8 data_len = 0;
+    RF_EventMask result;
+    uint8_t pend_flg = PEND_STOP;
 
 	if((addr==0) || (len==0))
 	{
@@ -256,8 +270,8 @@ INT32 frame1_dummy(UINT32 addr, UINT32 len, UINT32 *dummy_offset, INT32 dummy_nu
 			frame1_para.datarate, frame1_para.power, frame1_para.duration,
 			frame1_para.mode, frame1_para.num);
 	
-	set_datarate(frame1_para.datarate);
-	set_power(frame1_para.power);
+
+	set_power_rate(frame1_para.power, frame1_para.datarate);
 	
 	while(tx_num < dummy_num)
 	{	
@@ -275,12 +289,17 @@ INT32 frame1_dummy(UINT32 addr, UINT32 len, UINT32 *dummy_offset, INT32 dummy_nu
 		pdebug("frame1 dummy: id=0x%02X-0x%02X-0x%02X-0x%02X, channel=%d, len=%d, data=", \
 				id[0], id[1], id[2], id[3], channel, data_len);
 		pdebughex(data, data_len);
-				
-		if(send_without_wait(id, data, data_len, channel, 6000) == 0)
-		{
-			perr("frame1 dummy send data\r\n");
-			wait(1000);	
-		}
+
+        if (PEND_START == pend_flg){
+            send_pend(result);
+        }
+        result = send_without_wait(id, data, len, channel, 6000);
+        pend_flg = PEND_START;
+//		if(send_without_wait(id, data, data_len, channel, 6000) == 0)
+//		{
+//			perr("frame1 dummy send data\r\n");
+//			wait(1000);
+//		}
 
 		*dummy_offset += sizeof(id)+sizeof(channel)+sizeof(data_len)+data_len;
 		tx_num++;

@@ -8,19 +8,19 @@
 /*
 ** timeout unit is us
 */
-void enter_txrx()
-{
-//	RFC_RecoverFromRumanTest();
-//	set_cmd_pll();
-}
+//void enter_txrx()
+//{
+////	RFC_RecoverFromRumanTest();
+////	set_cmd_pll();
+//}
 
-void exit_txrx()
-{
+//void exit_txrx()
+//{
 //	set_cmd_stby();
-}
+//}
 
-UINT8 send_data(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout) //timeout unit: 1us
-{
+//UINT8 send_data(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout) //timeout unit: 1us
+//{
 //	RFC_SetChannel(ch);
 //	RFC_WriteID(id);
 //	RFC_SetFifoLen(len);
@@ -40,11 +40,11 @@ UINT8 send_data(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout) //t
 //	}
 //
 //	RFC_Cmd(RFC_CMD_PLL);
-	return len;
-}
+//	return len;
+//}
 
-UINT8 recv_data(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout) //timeout unit: 1us
-{
+//UINT8 recv_data(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout) //timeout unit: 1us
+//{
 //	RFC_SetChannel(ch);
 //	RFC_WriteID(id);
 //	RFC_SetFifoLen(len);
@@ -70,8 +70,8 @@ UINT8 recv_data(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout) //t
 //	}
 //
 //	RFC_ReadFifo(data, len);
-	return len;
-}
+//	return len;
+//}
 
 #if 0
 
@@ -185,8 +185,8 @@ UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeo
 }
 #endif
 
-UINT8 send_without_wait(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout)
-{
+//UINT8 send_without_wait(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout)
+//{
 //	while(RFC_CheckTXOrRX())
 //	{
 //		if((timeout--) <= 0)
@@ -205,8 +205,8 @@ UINT8 send_without_wait(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 time
 //
 //	RFC_Cmd(RFC_CMD_TX);
 	
-	return len;
-}
+//	return len;
+//}
 
 INT16 send_and_recv(UINT8 *id, UINT8 *src, UINT8 src_len, UINT8 ch, UINT16 txbps, UINT16 timeout, \
 					UINT8 *recvid, UINT8 *dst, UINT8 dst_len, UINT16 rxbps)
@@ -216,34 +216,34 @@ INT16 send_and_recv(UINT8 *id, UINT8 *src, UINT8 src_len, UINT8 ch, UINT16 txbps
 	return ret;
 }
 
-void set_datarate(UINT16 datarate)
-{
+//void set_datarate(UINT16 datarate)
+//{
 //	RFC_SetDataRate(datarate);
-}
+//}
 
-void set_power(UINT8 power)
-{
+//void set_power(UINT8 power)
+//{
 //	RFC_SetPower(power);
-}
+//}
 
-void set_cmd_stby(void)
-{
+//void set_cmd_stby(void)
+//{
 //	RFC_Cmd(RFC_CMD_STBY);
-}
+//}
 
-void set_cmd_pll(void)
-{
+//void set_cmd_pll(void)
+//{
 //	RFC_Cmd(RFC_CMD_PLL);
-}
+//}
 
-UINT8 get_rssi(void)
-{
-//	return RFC_GetRssi();
-    return 0;
-}
+//UINT8 get_rssi(void)
+//{
+////	return RFC_GetRssi();
+//    return 0;
+//}
 
-void wait(INT32 nus)
-{
+//void wait(INT32 nus)
+//{
 //	while(RFC_CheckTXOrRX())
 //	{
 //		nus--;
@@ -255,7 +255,7 @@ void wait(INT32 nus)
 //	}
 //
 //	RFC_Cmd(RFC_CMD_PLL);
-}
+//}
 
 void set_rx_para(UINT8 *id, UINT16 datarate, UINT8 ch, UINT8 fifosize)
 {

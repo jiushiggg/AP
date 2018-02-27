@@ -1,5 +1,5 @@
 #include "rcuplink.h"
-#include "rf.h"
+#include "cc2640r2_rf.h"
 #include "timer.h"
 #include "bsp.h"
 #include "debug.h"
@@ -252,8 +252,7 @@ static INT32 _ack_rc(rcreq_table_t *table)
 	
 	_make_rc_ack(table);
 	_get_rc_id(table, rcid, sizeof(rcid));
-	set_power(table->ack_power);
-	set_datarate(table->ack_bps);
+	set_power_rate(table->ack_power, table->ack_bps);
 	send_data(rcid, table->rc_ack_buf, table->rc_ack_len, table->channel, 2);
 	
 	return 0;

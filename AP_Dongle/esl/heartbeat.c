@@ -1,5 +1,5 @@
 #include "heartbeat.h"
-#include "rf.h"
+#include "cc2640r2_rf.h"
 #include "timer.h"
 #include "bsp.h"
 #include "debug.h"
@@ -219,7 +219,7 @@ static INT32 _ack_the_esl(UINT8 *uplink_data, INT32 len, UINT8 status)
 	crc = CRC16_CaculateStepByStep(crc, ack_buf, 7);
 	crc = CRC16_CaculateStepByStep(crc, eslid, 4);
 	memcpy(ack_buf+7, &crc, sizeof(crc));
-	set_datarate(500);
+	set_power_rate(RF_DEFAULT_POWER, 500);
 	send_data(eslid, ack_buf, sizeof(ack_buf), eslch, 2000);
 	//pinfo("_ack_the_esl %02X-%02X-%02X-%02X, %d: ", eslid[0], eslid[1], eslid[2], eslid[3], eslch);
 	//phex(ack_buf, sizeof(ack_buf));
@@ -246,7 +246,7 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 	ptr = table->data_buf+8;
 
 	hb_timer = set_timer(table->timeout);
-	set_datarate(table->recv_bps);
+	set_power_rate(RF_DEFAULT_POWER, table->recv_bps);
 	rf_preset_for_hb_recv();
 	enter_txrx();
 	

@@ -1,8 +1,8 @@
+#include "cc2640r2_rf.h"
 #include "updatabdc.h"
 #include "frame1.h"
 #include "timer.h"
 #include "debug.h"
-#include "rf.h"
 #include "data.h"
 #include "common.h"
 #include "core.h"
@@ -16,6 +16,8 @@ static void _bdc_transmit_mode0(updata_table_t *table, UINT8 timer)
 	UINT8 data[64] = {0};
 	INT32 i, j, k;
 	UINT32 txaddr = table->updata_addr+OFFSET_DATA_DATA;
+    RF_EventMask result;
+    uint8_t pend_flg = PEND_STOP;
 
 	i = j = 0;
 	k = table->tx_interval*1000/table->tx_duration+1;
@@ -38,7 +40,13 @@ static void _bdc_transmit_mode0(updata_table_t *table, UINT8 timer)
 		{
 			get_one_data(txaddr, id, &ch, &len, data, sizeof(data));
 		}
-		send_without_wait(id, data, len, ch, 2000);
+
+        if (PEND_START == pend_flg){
+            send_pend(result);
+        }
+        result = send_without_wait(id, data, len, ch, 6000);
+        pend_flg = PEND_START;
+//		send_without_wait(id, data, len, ch, 2000);
 		j++;
 		if(j >= k)
 		{
@@ -66,6 +74,8 @@ static void _bdc_transmit_mode1(updata_table_t *table, UINT8 timer)
 	UINT8 data[64] = {0};
 	INT32 i = 0;
 	UINT32 txaddr = table->updata_addr+OFFSET_DATA_DATA;
+    RF_EventMask result;
+    uint8_t pend_flg = PEND_STOP;
 
 	while(1)
 	{
@@ -88,7 +98,13 @@ static void _bdc_transmit_mode1(updata_table_t *table, UINT8 timer)
 		}
 		
 		get_one_data(txaddr, id, &ch, &len, data, sizeof(data));
-		send_without_wait(id, data, len, ch, 2000);
+
+        if (PEND_START == pend_flg){
+            send_pend(result);
+        }
+        result = send_without_wait(id, data, len, ch, 6000);
+        pend_flg = PEND_START;
+//		send_without_wait(id, data, len, ch, 2000);
 		txaddr += sizeof(id)+sizeof(ch)+sizeof(len)+len;
 		i++;
 	}
@@ -109,8 +125,7 @@ UINT8 bdc_updata_loop(updata_table_t *table)
 	}
 	pdebug("bdc_updata_loop, timer %d timeout is %d\r\n", timer, timeout);
 
-	set_datarate(table->tx_datarate);
-	set_power(table->tx_power);
+	set_power_rate(table->tx_power, table->tx_datarate);
 
 	if(table->mode == 1)
 	{

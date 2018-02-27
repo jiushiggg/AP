@@ -1,9 +1,9 @@
+#include "cc2640r2_rf.h"
 #include "sleep.h"
 #include "flash.h"
 #include "debug.h"
 #include "updata.h"
 #include "data.h"
-#include "rf.h"
 #include "g1updata.h"
 #include "common.h"
 #include "bsp.h"
@@ -138,8 +138,7 @@ INT32 sleep_start(const UINT32 addr, const UINT32 len)
 		goto done;
 	}
 	
-	set_datarate(sleep_datarate);
-	set_power(sleep_power);
+	set_power_rate(sleep_power, sleep_datarate);
 	
 	switch(sleep_mode)
 	{

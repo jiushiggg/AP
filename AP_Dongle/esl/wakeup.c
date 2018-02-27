@@ -1,7 +1,7 @@
+#include "cc2640r2_rf.h"
 #include "wakeup.h"
 #include "flash.h"
 #include "timer.h"
-#include "hw_rf.h"
 #include "debug.h"
 #include "data.h"
 #include "bsp.h"
@@ -27,6 +27,7 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 	UINT8 mode = 0;
 	uint32_t rf_time = 0;
 	RF_EventMask result;
+	uint8_t  pend_flg = PEND_STOP;
 
 	pdebug("wkup addr=0x%08X, len=%d\r\n", addr, len);
 
@@ -71,8 +72,7 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 
 	ctrl = data[0];
 		
-//	set_datarate(datarate);
-//	set_power(power);
+
 //#define GGG_DEBUG
 #ifdef GGG_DEBUG
     slot_duration = 10;
@@ -84,8 +84,9 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
     data_len = 26;
 #endif
 
-
-    send_data_init(id, data, data_len, channel, datarate, 5000);
+    set_power_rate(power, datarate);
+    set_frequence(channel, channel%2);
+    send_data_init(id, data, data_len, 5000);
     rf_time = RF_getCurrentTime();
 	if(mode == 1)
 	{
@@ -129,18 +130,22 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 		}
 		LED_ON(DEBUG_IO1);
 		rf_time += interval;
+		if (PEND_START == pend_flg){
+		    send_pend(result);
+		}
 		result = send_async(rf_time);
-
+		pend_flg = PEND_START;
 //		if(send_data(id, data, data_len, channel, 5000) != data_len)
 //		{
 //			perr("g3_wkup() send data.\r\n");
 //			ret = -5;
 //			break;
 //		}
-		send_pend(result);
+
 		LED_OFF(DEBUG_IO1);
 //		BSP_Delay10US(interval);
 	}
+	send_pend(result);
 	LED_TOGGLE(DEBUG_IO0);
 	TIM_Close(timer);
 	

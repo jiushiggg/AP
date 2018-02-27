@@ -1,6 +1,6 @@
+#include <cc2640r2_rf.h>
 #include "assap.h"
 #include <string.h>
-#include "rf.h"
 #include "debug.h"
 #include "common.h"
 #include "bsp.h"
@@ -123,7 +123,7 @@ INT32 assap_scan_wkup(UINT8 *dst, INT32 dsize)
 	
 //	phex((UINT8 *)p_assack_cmd, sizeof(assack_cmd_t));
 	
-	set_datarate(p_assack_cmd->assack_cmd_para[0].datarate);
+	set_power_rate(RF_DEFAULT_POWER, p_assack_cmd->assack_cmd_para[0].datarate);
 	t = set_timer(p_assack_cmd->assack_cmd_head.timeout);
 	enter_txrx();
 	
@@ -232,7 +232,7 @@ INT32 assap_ack(assap_ack_table_t *table)
 	ptr = table->data_buf+8;
 
 	t = set_timer(table->timeout);
-	set_datarate(table->recv_bps);
+	set_power_rate(RF_DEFAULT_POWER, table->recv_bps);
 	
 	enter_txrx();
 	

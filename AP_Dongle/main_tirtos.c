@@ -34,6 +34,7 @@
 /*
  *  ======== main_tirtos.c ========
  */
+#include "cc2640r2_rf.h"
 #include <stdint.h>
 
 /* POSIX Header files */
@@ -46,7 +47,6 @@
 
 /* Example/Board Header files */
 #include "Board.h"
-#include "hw_rf.h"
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE    1024

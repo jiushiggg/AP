@@ -3,7 +3,7 @@
 #include "bsp.h"
 #include "flash.h"
 #include "debug.h"
-#include "rf.h"
+#include "cc2640r2_rf.h"
 #include <string.h>
 #include "data.h"
 #include "updata0.h"

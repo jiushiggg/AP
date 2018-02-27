@@ -1,4 +1,4 @@
-#include <hw_rf.h>
+#include "cc2640r2_rf.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>

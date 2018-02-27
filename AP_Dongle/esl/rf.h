@@ -1,6 +1,6 @@
 #ifndef _G3_BASIC_H_
 #define _G3_BASIC_H_
-
+#if 0
 #include "datatype.h"
 
 void enter_txrx(void);
@@ -27,6 +27,6 @@ INT32 get_rx_data(UINT8 *dst, UINT8 dstsize);
 INT32 check_rx_status(UINT16 timeout); //unit ms
 
 
-
+#endif
 #endif
 
