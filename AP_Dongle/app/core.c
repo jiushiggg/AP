@@ -39,8 +39,8 @@
 #include "heartbeat.h"
 #include "assap.h"
 #include "updata.h"
+#include "thread.h"
 
-void *mainThread(void *arg0);
 
 
 
@@ -163,17 +163,6 @@ extern INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type);
 void Core_Mainloop(void)
 {
     uint32_t event;
-    while(1){
-        #define RX_LEN  26
-        uint8_t mylen =0, mybuf[RX_LEN] = {0};
-        uint8_t myid[4]={0x52,0x56,0x78,0x53};
-
-        set_power_rate(RF_DEFAULT_POWER, DATA_RATE_100K);
-        mylen = recv_data(myid, mybuf, RX_LEN, 2, 1000000);
-        if (mylen == 0){
-            pinfo("core recv data to flash start.\r\n");
-        }
-    }
     while (1) {
         event = Event_PentCore();
 

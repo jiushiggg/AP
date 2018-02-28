@@ -1,3 +1,4 @@
+#include <string.h>
 #include "corehandlecmd.h"
 #include "event.h"
 #include "timer.h"
@@ -5,7 +6,7 @@
 #include "corefunc.h"
 #include "bsp.h"
 #include "rftest.h"
-#include <string.h>
+#include "thread.h"
 
 
 

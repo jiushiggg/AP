@@ -184,10 +184,10 @@ static void ISR_Handle(timer_t* n)
 
 
 
-void (*tim_soft_callback)(void);
 
-void TIM_SetSoftInterrupt(UINT8 enable, void (*p)(void))
-{
+
+//void TIM_SetSoftInterrupt(UINT8 enable, void (*p)(void))
+//{
 //	if(enable == 0)
 //	{
 //		TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
@@ -212,10 +212,10 @@ void TIM_SetSoftInterrupt(UINT8 enable, void (*p)(void))
 //		TIM_ARRPreloadConfig(TIM4, DISABLE);
 //		TIM_Cmd(TIM4, ENABLE);
 //	}
-}
+//}
 
-void TIM_SoftInterrupt(void)
-{
+//void TIM_SoftInterrupt(void)
+//{
 //	if(TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET)
 //	{
 //		TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
@@ -224,5 +224,5 @@ void TIM_SoftInterrupt(void)
 //			tim_soft_callback();
 //		}
 //	}
-}
+//}
 

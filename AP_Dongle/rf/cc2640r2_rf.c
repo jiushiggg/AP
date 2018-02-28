@@ -112,7 +112,7 @@ void rf_init(void)
 #ifdef  RF_TEST
     RF_MapIO();
 #endif
-//    RF_yield(rfHandle);    //使射频进入低功耗状态
+    RF_yield(rfHandle);    //使射频进入低功耗状态 //为什么没有这句就收不到数据？
 }
 
 #define POWER_LEVEL  6
@@ -240,6 +240,7 @@ uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t 
     return len;
 
 }
+uint8_t rf_test_buff[26]={0};
 UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t timeout)
 {
     uint32_t sync_word=0;
@@ -251,12 +252,14 @@ UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t ti
 //    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);
 
     rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , timeout/10);
-    if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout/Clock_tickPeriod))){
+    if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout+100/Clock_tickPeriod))){
         currentDataEntry = RFQueue_getDataEntry();
         memcpy(data, (uint8_t*)(&currentDataEntry->data), len);
         RFQueue_nextEntry();
     }else{
         RF_cancelCmd(rfHandle, rx_event,0);
+        currentDataEntry = RFQueue_getDataEntry();
+        memcpy(rf_test_buff, (uint8_t*)(&currentDataEntry->data), len);
         clear_queue_buf();
         len = 0;
     }
@@ -349,3 +352,17 @@ static void RF_MapIO(void)
     IOCIOPortIdSet(RF_TX_TEST_IO,      IOC_PORT_RFC_GPO1);
     IOCIOPortIdSet( RF_RX_TEST_IO,      IOC_PORT_RFC_GPO0);
 }
+
+#if 0
+#define RX_LEN  26
+uint8_t mylen =0, mybuf[RX_LEN] = {0};
+while(1){
+    uint8_t myid[4]={0x52,0x56,0x78,0x53};
+
+    set_power_rate(RF_DEFAULT_POWER, DATA_RATE_100K);
+    mylen = recv_data(myid, mybuf, RX_LEN, 2, 1000000);
+    if (mylen == 0){
+        pinfo("core recv data to flash start.\r\n");
+    }
+}
+#endif
