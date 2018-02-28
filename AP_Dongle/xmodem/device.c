@@ -1,7 +1,7 @@
 
 #if 1
 #include "device.h"
-
+#include "uart.h"
 void Device_Init(void)
 {
 	return;
@@ -18,11 +18,13 @@ INT32 Device_Open(UINT8 type, UINT8 *ip, UINT16 port)
 INT32 Device_Send(INT32 d, UINT8 *src, INT32 len, INT32 timeout)
 {
 	//return USBD_Write(src, len);  todo
+    return UART_write(uart_handle, src, len);
 }
 
 INT32 Device_Recv(INT32 d, UINT8 *dst, INT32 len, INT32 timeout)
 {
 	//return USBD_Read(dst, len); todo
+    return UART_read(uart_handle, dst, len);
 }
 
 INT32 Device_Select(INT32 d, INT32 timeout)

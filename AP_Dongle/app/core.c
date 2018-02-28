@@ -1,4 +1,3 @@
-#include "cc2640r2_rf.h"
 #include <unistd.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -18,6 +17,7 @@
 #include <ti/sysbios/knl/Task.h>
 #include <ti/sysbios/knl/Mailbox.h>
 #include <ti/drivers/Power/PowerCC26XX.h>
+#include <xdc/runtime/Error.h>
 
 /* Board Header file */
 #include "Board.h"
@@ -40,7 +40,7 @@
 #include "assap.h"
 #include "updata.h"
 #include "thread.h"
-
+#include "cc2640r2_rf.h"
 
 
 
@@ -72,7 +72,7 @@ void Core_Init(void)
 
 void Core_TxHandler(void)
 {	
-	TIM_SetSoftInterrupt(0, NULL);
+    TIM_ClearSoftInterrupt();
 	
 	/* tx ack */	
 	if(Core_SendCmd(local_task.ack, local_task.ack_len, local_task.ack_ptr) == 0)
