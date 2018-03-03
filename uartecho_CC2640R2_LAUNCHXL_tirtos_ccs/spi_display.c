@@ -29,21 +29,13 @@ unsigned char rx_buf[LOG_SIZE];
 SPI_Handle spi_open()
 {
     SPI_Params params;
-    //PIN_Id misoPinId;
 
     SPI_Params_init(&params);
-    params.bitRate     = 1000000;
+    params.bitRate     = 4000000;
     params.frameFormat = SPI_POL1_PHA1;
     params.mode        = SPI_MASTER;
     params.transferMode = SPI_MODE_BLOCKING;
     handle = SPI_open(Board_SPI0, &params);
-    //SPI_control(handle, SPICC26XXDMA_RETURN_PARTIAL_ENABLE, NULL);
-    // Get pinHandle
-    //pinHandle = ((SPICC26XXDMA_Object *)handle->object)->pinHandle;
-    // Get miso pin id
-    //misoPinId = ((SPICC26XXDMA_HWAttrsV1 *)handle->hwAttrs)->misoPin;
-    // Apply low power sleep pull config for MISO
-    //PIN_setConfig(pinHandle, PIN_BM_PULLING, PIN_PULLUP | misoPinId);
     return handle;
 }
 
@@ -54,10 +46,11 @@ SPI_Handle spi_open()
 
     // Init SPI and specify non-default parameters
     SPI_Params_init(&params);
-    params.bitRate             = 1000000;
+    params.bitRate             = 4000000;
     params.frameFormat         = SPI_POL1_PHA1;
     params.mode                = SPI_SLAVE;
     params.transferMode        = SPI_MODE_BLOCKING;
+    params.transferTimeout = 4000/10;  //4000us
 
 //    if(pinHandle == NULL)
 //        pinHandle = PIN_open(&SPICSN_Pin_State, SPICSN_GpioInitTable);
@@ -114,15 +107,13 @@ void log_print(const char *fmt, ...)
     vsnprintf((char *)tx_buf, LOG_SIZE - 1, fmt, ap);
     va_end(ap);
 
-    len = strlen(tx_buf);
+    len = strlen((char *)tx_buf);
     for(i=0;i<len;i++)
     {
         spi_write(ptr++,1);
-        Task_sleep(1000);
-    }
-    spi_write("\r\n",2);
-    Task_sleep(1000);
+        Task_sleep(100);
 
+    }
 }
 
 void log_print_bin(uint8_t *data,int len)
@@ -136,9 +127,9 @@ void log_print_bin(uint8_t *data,int len)
        for(j=0;j<3;j++)
        {
            spi_write(buf+j,1);
-           Task_sleep(1000);
+           //Task_sleep(1000);
        }
    }
    spi_write("\r\n",2);
-   Task_sleep(1000);
+   //Task_sleep(1000);
 }

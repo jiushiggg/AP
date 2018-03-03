@@ -117,18 +117,28 @@ void app_init(void)
     //    taskParams_2.priority = 1;
     //    Task_construct(&task2_Struct, (Task_FuncPtr)protocol_Fxn, &taskParams_2, NULL);
 }
-
+extern void BSP_GPIO_test(void);
 void *mainThread(void *arg0)
 {
-
+    BSP_GPIO_test();
     Board_initSPI();
+    BSP_GPIO_test();
     Board_initUART();
+    BSP_GPIO_test();
     Debug_SetLevel(DEBUG_LEVEL_INFO);
+    BSP_GPIO_test();
 //    printf("     \r\n%s.\r\n", APP_VERSION_STRING);
-    pinfo("basic init complete.\r\n");
+    debug_peripheral_init();
+    BSP_GPIO_test();
+    pinfo("basic init complete.");
+    BSP_GPIO_test();
 
+//        while (1) {
+//            log_print("spi_write:%02x:%d:%d",1,2,3);
+//            //log_print("ab%x",1);
+//            //Task_sleep(100000);
+//        }
     Event_Reset();
-
 
     if(Flash_Init() == 1)
     {
@@ -142,9 +152,9 @@ void *mainThread(void *arg0)
 
     bsp_uart_init();
 
+
     Core_Init();
     pinfo("core init complete.\r\n");
-
     pinfo("enter main loop.\r\n");
 
     Core_Mainloop();
@@ -172,10 +182,19 @@ void TIM_ClearSoftInterrupt(void)
 
 }
 #else
+void TIM_ClearSoftInterrupt(void)
+{
+    Semaphore_pend(sendAckSem, BIOS_WAIT_FOREVER);
+}
+
 void *task2(void *arg0)
 {
     while(1){
-        tim_soft_callback();
+        if (NULL == tim_soft_callback){
+            TIM_ClearSoftInterrupt();
+        }else{
+            tim_soft_callback();
+        }
     }
 
 }
@@ -187,9 +206,6 @@ void TIM_SetSoftInterrupt(UINT8 enable, void (*p)(void))
         Semaphore_post(sendAckSem);
     }
 }
-void TIM_ClearSoftInterrupt(void)
-{
-    Semaphore_pend(sendAckSem, BIOS_WAIT_FOREVER);
-}
+
 
 #endif

@@ -6,6 +6,7 @@
 
 
 static Event_Handle protocol_eventHandle;
+Event_Struct protocol_eventStruct;
 
 UINT32 Event_Get(void)
 {
@@ -25,7 +26,6 @@ void Event_Clear(UINT32 event)
 void Event_Reset(void)
 {
     Event_Params protocol_eventParam;
-    Event_Struct protocol_eventStruct;
 
     Event_Params_init(&protocol_eventParam);
     Event_construct(&protocol_eventStruct, &protocol_eventParam);
@@ -39,5 +39,7 @@ UINT32 Event_GetStatus(void)
 
 UINT32 Event_PentCore(void)
 {
-    return Event_pend(protocol_eventHandle, 0, EVENT_ALL, BIOS_WAIT_FOREVER);
+    UINT32 event;
+    event = Event_pend(protocol_eventHandle, 0, EVENT_ALL, BIOS_WAIT_FOREVER);
+    return event;
 }

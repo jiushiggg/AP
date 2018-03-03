@@ -11,6 +11,7 @@
 #include <ti/drivers/SPI.h>
 
 //#define MASTER
+#define MYTEST
 #define LOG_SIZE    256
 
 void spi_init();

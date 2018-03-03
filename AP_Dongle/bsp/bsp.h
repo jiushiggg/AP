@@ -1,3 +1,6 @@
+#ifndef _BSP_H
+#define _BSP_H
+
 #include "datatype.h"
 #include <driverlib/ioc.h>
 #include <driverlib/gpio.h>
@@ -7,11 +10,13 @@
 #define DEBUG_IO1   IOID_17
 #define DEBUG_IO2   IOID_18
 #define DEBUG_IO3   IOID_19
+#define DEBUG_TEST  IOID_15
 
 #define LED_ON(n)       GPIO_setDio(n)
 #define LED_OFF(n)      GPIO_clearDio(n)
 #define LED_TOGGLE(n)   GPIO_toggleDio(n)
 extern void BSP_GPIO_init(void);
+extern void BSP_GPIO_test(void);
 
 void BSP_EnterCri(void);
 void BSP_ExitCri(void);
@@ -58,3 +63,5 @@ void WD_Init(void);
 
 /* bsp config */
 void BSP_Config(void);
+
+#endif

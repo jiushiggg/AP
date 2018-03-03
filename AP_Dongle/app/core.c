@@ -162,8 +162,9 @@ extern INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type);
 
 void Core_Mainloop(void)
 {
-    uint32_t event;
+    uint32_t event = 0;
     while (1) {
+
         event = Event_PentCore();
 
         if(event & EVENT_RX_TO_FLASH)
@@ -199,6 +200,7 @@ void Core_Mainloop(void)
             Event_Clear(EVENT_PARSE_DATA);
         }
 
+
         if(event & EVENT_ESL_UPDATA)
         {
             esl_updata_t *this_updata;
@@ -228,7 +230,7 @@ void Core_Mainloop(void)
             pinfo("core updata esl exit.\r\n");
             Event_Clear(EVENT_ESL_UPDATA);
         }
-
+#if 1
         if(event & EVENT_G3_HEARTBEAT)
         {
             g3_hb_table_t *hb_table;
@@ -317,7 +319,6 @@ void Core_Mainloop(void)
 //            }
 //            Event_Clear(EVENT_FW_UPDATA);
 //        }
-
         if(event & EVENT_TX_ESL_ACK)
         {
             pinfo("core tx esl ack.\r\n");
@@ -388,7 +389,7 @@ void Core_Mainloop(void)
                 }
                 else
                 {
-//                    ret = assap_ack(p_assap_ack_table);
+                    ret = assap_ack(p_assap_ack_table);
                     if(ret < 0)
                     {
                         pinfo("assap_ack break\r\n");
@@ -420,7 +421,7 @@ void Core_Mainloop(void)
                 }
                 else
                 {
-//                    len = assap_scan_wkup(dst, ds);
+                    len = assap_scan_wkup(dst, ds);
                     Core_SendData(dst, len);
                 }
             }
@@ -439,6 +440,7 @@ void Core_Mainloop(void)
             pinfo("Core_ResetQuitStatus\r\n");
             Core_ResetQuitStatus();
         }
+#endif
     }
 }
 

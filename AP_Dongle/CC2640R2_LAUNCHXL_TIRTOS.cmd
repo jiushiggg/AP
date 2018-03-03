@@ -50,10 +50,10 @@ HEAPSIZE = 0x1000;  /* Size of heap buffer used by HeapMem */
 
 /* The starting address of the application.  Normally the interrupt vectors  */
 /* must be located at the beginning of the application.                      */
-#define FLASH_BASE              0x0
-#define FLASH_SIZE              0x20000
+#define FLASH_BASE              0x00000000
+#define FLASH_SIZE              0x00020000
 #define RAM_BASE                0x20000000
-#define RAM_SIZE                0x5000
+#define RAM_SIZE                0x00005000
 #define GPRAM_BASE              0x11000000
 #define GPRAM_SIZE              0x00002000
 
@@ -89,7 +89,14 @@ SECTIONS
     .sysmem         :   >> SRAM | GPRAM
     .nonretenvar    :   >> SRAM | GPRAM
 
+/*
+    .data           :   >> SRAM
+    .bss            :   >> SRAM
+    .sysmem         :   >> SRAM
+    .nonretenvar    :   >> SRAM
+*/
     /* Heap buffer used by HeapMem */
+
     .priheap   : {
         __primary_heap_start__ = .;
         . += HEAPSIZE;

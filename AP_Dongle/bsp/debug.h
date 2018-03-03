@@ -1,5 +1,6 @@
 
-
+#ifndef _DEBUG_H
+#define _DEBUG_H
 #include "datatype.h"
 
 #define DEBUG_LEVEL_HST			0
@@ -18,3 +19,7 @@ void pinfo(const char *format, ...);
 void pprint(const char *format, ...);
 void phex(UINT8 *src, UINT16 len);
 void perrhex(UINT8 *src, UINT16 len);
+void debug_peripheral_init(void);
+void log_print(const char *fmt, ...);
+
+#endif

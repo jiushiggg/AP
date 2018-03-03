@@ -11,6 +11,7 @@
 #define MAX_FAILED_PKG_NUM  10
 
 #pragma pack(1)
+//36byte
 typedef struct {
     UINT8  esl_id[4];
     UINT8  ack;

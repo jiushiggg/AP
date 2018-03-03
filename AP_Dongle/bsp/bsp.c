@@ -9,17 +9,9 @@
 
 #include <inc/hw_prcm.h>
 #include <driverlib/prcm.h>
-//#include "bsp.h"
 
-/**
- * @fn      powerUpGpio
- *
- * @brief   Powers up the Gpio peripheral and sets appropriate pins as output
- *
- * @param   none
- *
- * @return  none
- */
+
+
 void BSP_GPIO_init(void)
 {
 //    /* GPIO power up*/
@@ -32,15 +24,23 @@ void BSP_GPIO_init(void)
 //    while (!PRCMLoadGet());
 
     /* set direction */
-    GPIO_setOutputEnableDio(DEBUG_IO0, GPIO_OUTPUT_ENABLE);
-    GPIO_setDio(DEBUG_IO0);
-    GPIO_setOutputEnableDio(DEBUG_IO1, GPIO_OUTPUT_ENABLE);
-    GPIO_setDio(DEBUG_IO1);
-    GPIO_setOutputEnableDio(DEBUG_IO2, GPIO_OUTPUT_ENABLE);
-    GPIO_setDio(DEBUG_IO2);
-    GPIO_setOutputEnableDio(DEBUG_IO3, GPIO_OUTPUT_ENABLE);
-    GPIO_setDio(DEBUG_IO3);
+//    GPIO_setOutputEnableDio(DEBUG_IO0, GPIO_OUTPUT_ENABLE);
+//    GPIO_setDio(DEBUG_IO0);
+//    GPIO_setOutputEnableDio(DEBUG_IO1, GPIO_OUTPUT_ENABLE);
+//    GPIO_setDio(DEBUG_IO1);
+//    GPIO_setOutputEnableDio(DEBUG_IO2, GPIO_OUTPUT_ENABLE);
+//    GPIO_setDio(DEBUG_IO2);
+//    GPIO_setOutputEnableDio(DEBUG_IO3, GPIO_OUTPUT_ENABLE);
+//    GPIO_setDio(DEBUG_IO3);
+    GPIO_setOutputEnableDio(DEBUG_TEST, GPIO_OUTPUT_ENABLE);
+    GPIO_setDio(DEBUG_TEST);
 }
+
+void BSP_GPIO_test(void)
+{
+    GPIO_toggleDio(DEBUG_TEST);
+}
+
 /**
  * @fn      powerDownGpio
  *
