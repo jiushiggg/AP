@@ -50,7 +50,8 @@ SPI_Handle spi_open()
     params.frameFormat         = SPI_POL1_PHA1;
     params.mode                = SPI_SLAVE;
     params.transferMode        = SPI_MODE_BLOCKING;
-    params.transferTimeout = 4000/10;  //4000us
+ //   params.transferMode        = SPI_MODE_CALLBACK
+ //   params.transferTimeout = 1000000/10;  //4000us
 
 //    if(pinHandle == NULL)
 //        pinHandle = PIN_open(&SPICSN_Pin_State, SPICSN_GpioInitTable);

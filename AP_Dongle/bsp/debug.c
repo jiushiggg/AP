@@ -3,14 +3,48 @@
 #include <stdarg.h>
 #include "debug.h"
 #include "Board.h"
+#include "bsp_spi.h"
 
 volatile UINT32 s_debug_level = DEBUG_LEVEL_DFAULT;
 
 
 #define LOG_SIZE    60
-static SPI_Handle debug_spi_handle = NULL;
+
 unsigned char debug_buf[LOG_SIZE];
 
+#define USE_BSP_SPI
+#ifdef USE_BSP_SPI
+void debug_peripheral_init(void)
+{
+//    SPI_Params params;
+//
+//    SPI_Params_init(&params);
+//    params.bitRate     = 4000000;
+//    params.frameFormat = SPI_POL1_PHA1;
+//    params.mode        = SPI_MASTER;
+//    params.transferMode = SPI_MODE_BLOCKING;
+//    debug_spi_handle = SPI_open(Board_SPI1, &params);
+//    if(!debug_spi_handle)
+//    {
+//        while(1);
+//    }
+    BSP_SPI_Open(SSI1_BASE, 4000000);
+}
+int debug_write(uint8_t *buf, int len)
+{
+//    SPI_Transaction masterTransaction;
+//
+//    masterTransaction.count  = len;
+//    masterTransaction.txBuf  = (void*)buf;//!< 将要传输的数据存放的地址赋给*txBuf
+//    masterTransaction.arg    = NULL;
+//    masterTransaction.rxBuf  = NULL;
+//
+//    return SPI_transfer(debug_spi_handle, &masterTransaction) ? 1 : 0;//!< 调用SPI_transfer()写入数据
+
+    return (BSP_SPI_Write(buf, len)==0) ? 1 : 0;
+}
+#else
+static SPI_Handle debug_spi_handle = NULL;
 void debug_peripheral_init(void)
 {
     SPI_Params params;
@@ -26,7 +60,7 @@ void debug_peripheral_init(void)
         while(1);
     }
 }
-int spi_write(uint8_t *buf, int len)
+int debug_write(uint8_t *buf, int len)
 {
     SPI_Transaction masterTransaction;
 
@@ -37,6 +71,9 @@ int spi_write(uint8_t *buf, int len)
 
     return SPI_transfer(debug_spi_handle, &masterTransaction) ? 1 : 0;//!< 调用SPI_transfer()写入数据
 }
+#endif
+
+
 
 void log_print(const char *fmt, ...)
 {
@@ -52,7 +89,7 @@ void log_print(const char *fmt, ...)
     len = strlen((char *)debug_buf);
     for(i=0;i<len;i++)
     {
-        spi_write(ptr++,1);
+        debug_write(ptr++,1);
 
     }
 }
@@ -81,7 +118,7 @@ void pprint(const char *format, ...)
     len = strlen((char *)debug_buf);
     for(i=0;i<len;i++)
     {
-        spi_write(ptr++,1);
+        debug_write(ptr++,1);
 
     }
 }
@@ -192,7 +229,7 @@ void pdebug(const char *format, ...)
 	    len = strlen((char *)debug_buf);
 	    for(i=0;i<len;i++)
 	    {
-	        spi_write(ptr++,1);
+	        debug_write(ptr++,1);
 
 	    }
 	}
@@ -215,7 +252,7 @@ void perr(const char *format, ...)
 	    len = strlen((char *)debug_buf);
 	    for(i=0;i<len;i++)
 	    {
-	        spi_write(ptr++,1);
+	        debug_write(ptr++,1);
 
 	    }
 	}
@@ -239,7 +276,7 @@ void pinfo(const char *format, ...)
 	    len = strlen((char *)debug_buf);
 	    for(i=0;i<len;i++)
 	    {
-	        spi_write(ptr++,1);
+	        debug_write(ptr++,1);
 
 	    }
 	}
@@ -258,7 +295,7 @@ void pinfo(const char *format, ...)
 //    len = strlen((char *)debug_buf);
 //    for(i=0;i<len;i++)
 //    {
-//        spi_write(ptr++,1);
+//        debug_write(ptr++,1);
 //
 //    }
 //}
@@ -267,7 +304,7 @@ void pinfo(const char *format, ...)
 
 
 //    while (1) {
-//        spi_write(tx_buf,LOG_SIZE);
+//        debug_write(tx_buf,LOG_SIZE);
 //        log_print("spi_write:%02x:%d:%d",1,2,3);
 //        //log_print("02%x",1);
 //        Task_sleep(100000);
