@@ -21,10 +21,9 @@
 
 /* Board Header file */
 #include "Board.h"
-#include "../common/datatype.h"
+#include "datatype.h"
 #include "../peripheral/extern_flash.h"
 #include "core.h"
-#include "../app/event.h"
 #include "timer.h"
 #include "debug.h"
 #include "flash.h"
