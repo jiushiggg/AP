@@ -15,6 +15,13 @@
 #define LED_ON(n)       GPIO_setDio(n)
 #define LED_OFF(n)      GPIO_clearDio(n)
 #define LED_TOGGLE(n)   GPIO_toggleDio(n)
+
+#if 0
+#define EP_DEBUG(x) printf x
+#else
+#define EP_DEBUG(x) ((void)0)
+#endif
+
 extern void BSP_GPIO_init(void);
 extern void BSP_GPIO_test(void);
 

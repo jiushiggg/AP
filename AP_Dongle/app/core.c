@@ -41,6 +41,8 @@
 #include "updata.h"
 #include "thread.h"
 #include "cc2640r2_rf.h"
+#include "communicate.h"
+#include "event.h"
 
 
 
@@ -71,9 +73,7 @@ void Core_Init(void)
 }
 
 void Core_TxHandler(void)
-{	
-    TIM_ClearSoftInterrupt();
-	
+{
 	/* tx ack */	
 	if(Core_SendCmd(local_task.ack, local_task.ack_len, local_task.ack_ptr) == 0)
 	{
@@ -165,33 +165,33 @@ void Core_Mainloop(void)
     uint32_t event = 0;
     while (1) {
 
-        event = Event_PentCore();
+        event = Event_PendCore();
 
-        if(event & EVENT_RX_TO_FLASH)
-        {
-            pinfo("core recv data to flash start.\r\n");
-            memcpy((UINT8 *)&local_task.flash_data_len, local_task.cmd_buf, sizeof(local_task.flash_data_len));
-            BSP_GPIO_ToggleDebugPin();
-            if(Core_MallocFlash(&local_task.flash_data_addr, local_task.flash_data_len) == 1)
-            {
-                BSP_GPIO_ToggleDebugPin();
-                if(Core_SendCmd(0x10F0, 0, NULL) == 1)
-                {
-                    BSP_GPIO_ToggleDebugPin();
-                    if(Core_RecvDataToFlash(local_task.flash_data_addr, local_task.flash_data_len) == 1)
-                    {
-                        Event_Set(EVENT_PARSE_DATA);
-                        BSP_GPIO_ToggleDebugPin();
-                    }
-                }
-            }
-            else
-            {
-                Core_SendCmd(CORE_CMD_FLASH_ERROR, 0, NULL);
-            }
-            pinfo("core recv data to flash exit.\r\n");
-            Event_Clear(EVENT_RX_TO_FLASH);
-        }
+//        if(event & EVENT_RX_TO_FLASH)
+//        {
+//            pinfo("core recv data to flash start.\r\n");
+//            memcpy((UINT8 *)&local_task.flash_data_len, local_task.cmd_buf, sizeof(local_task.flash_data_len));
+//            BSP_GPIO_ToggleDebugPin();
+//            if(Core_MallocFlash(&local_task.flash_data_addr, local_task.flash_data_len) == 1)
+//            {
+//                BSP_GPIO_ToggleDebugPin();
+//                if(Core_SendCmd(0x10F0, 0, NULL) == 1)
+//                {
+//                    BSP_GPIO_ToggleDebugPin();
+//                    if(Core_RecvDataToFlash(local_task.flash_data_addr, local_task.flash_data_len) == 1)
+//                    {
+//                        Event_Set(EVENT_PARSE_DATA);
+//                        BSP_GPIO_ToggleDebugPin();
+//                    }
+//                }
+//            }
+//            else
+//            {
+//                Core_SendCmd(CORE_CMD_FLASH_ERROR, 0, NULL);
+//            }
+//            pinfo("core recv data to flash exit.\r\n");
+//            Event_Clear(EVENT_RX_TO_FLASH);
+//        }
 
         if(event & EVENT_PARSE_DATA)
         {
@@ -319,11 +319,11 @@ void Core_Mainloop(void)
 //            }
 //            Event_Clear(EVENT_FW_UPDATA);
 //        }
-        if(event & EVENT_TX_ESL_ACK)
-        {
-            pinfo("core tx esl ack.\r\n");
-            Event_Clear(EVENT_TX_ESL_ACK);
-        }
+//        if(event & EVENT_TX_ESL_ACK)
+//        {
+//            pinfo("core tx esl ack.\r\n");
+//            Event_Clear(EVENT_TX_ESL_ACK);
+//        }
 
         if(event & EVENT_SYSTEM_REBOOT)
         {

@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <ti/sysbios/BIOS.h>
+
 #include "debug.h"
 #include "xmodem.h"
 #include "crc16.h"
@@ -23,11 +25,6 @@
 #define XMODEM_CMD_NAK			0X15
 #define XMODEM_CMD_CAN			0X18
 
-#define XMODEM_LEN_CMD			1
-#define XMODEM_LEN_SN			1
-#define XMODEM_LEN_DAT			60
-#define XMODEM_LEN_CRC			2
-#define XMODEM_LEN_ALL			(XMODEM_LEN_CMD+XMODEM_LEN_SN+XMODEM_LEN_DAT+XMODEM_LEN_CRC)
 
 #define XMODEM_OFFSET_BAS		0
 #define XMODEM_OFFSET_CMD		XMODEM_OFFSET_BAS
@@ -231,7 +228,7 @@ recv_tx_ack:
 	
 	return ret;
 }
-
+#if 0
 INT32 Xmodem_Recv(xmodem_t *x, INT32 dev, UINT8 *dst, INT32 dst_len, INT32 timeout)
 {
 	INT32 recv_len_total = 0;
@@ -276,7 +273,7 @@ INT32 Xmodem_Recv(xmodem_t *x, INT32 dev, UINT8 *dst, INT32 dst_len, INT32 timeo
 	
 	return recv_len_total;
 }
-
+#endif
 /*
  ** tx functions
  */
@@ -403,12 +400,11 @@ void Xmodem_Reset(xmodem_t *x)
 	memset(x, 0, sizeof(xmodem_t));
 }
 
-#define XCB_RECV_BUF_SIZE	512
 
-static xmodem_t xcb;
-static UINT8 xcb_recv_buf[XCB_RECV_BUF_SIZE] = {0};
-static INT32 xcb_recv_len = 0;
-//static UINT8 xcb_recv_buf_once[XMODEM_LEN_DAT];
+
+xmodem_t xcb;
+UINT8 xcb_recv_buf[XCB_RECV_BUF_SIZE] = {0};
+INT32 xcb_recv_len = 0;
 static INT32 xcb_recv_len_once = 0;
 
 void Xmodem_InitCallback(void)
@@ -576,3 +572,5 @@ INT32 Xmodem_SendFromFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 len, INT32
 
 	return send_len_total;
 }
+
+

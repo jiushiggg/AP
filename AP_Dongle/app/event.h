@@ -7,12 +7,16 @@
 #define EVENT_PARSE_DATA		((UINT32)1<<0) //1
 #define EVENT_ESL_UPDATA		((UINT32)1<<1) //2
 #define EVENT_FW_UPDATA			((UINT32)1<<2) //4
-#define EVENT_RX_TO_FLASH		((UINT32)1<<3) //8
-#define EVENT_TX_FROM_FLASH		((UINT32)1<<4) //A
-#define EVENT_TX_ESL_ACK		((UINT32)1<<5) //32
 #define EVENT_G3_HEARTBEAT		((UINT32)1<<6) //64
 #define EVENT_RC_REQ			((UINT32)1<<7) //64
-#define EVENT_ALL                              0xFFFFFFFF
+#define EVENT_ALL   0xFFFFFFFF
+
+#define EVENT_COMMUNICATE_ACK               ((UINT32)1<<1) //8
+#define EVENT_COMMUNICATE_RX_HANDLE         ((UINT32)1<<2) //8
+#define EVENT_COMMUNICATE_RX_TO_FLASH       ((UINT32)1<<3) //8
+#define EVENT_COMMUNICATE_TX_FROM_FLASH     ((UINT32)1<<4) //A
+#define EVENT_COMMUNICATE_TX_ESL_ACK        ((UINT32)1<<5) //32
+#define EVENT_COMMUNICATE_ALL                              0xFFFFFFFF
 
 #define EVENT_SCAN_WKUP			(1<<11)
 #define EVENT_ASS_ACK			(1<<12)
@@ -31,11 +35,18 @@ typedef enum _eventStatus{
     EVENT_IDLE,
 }eventStatus;
 
+extern void Event_init(void);
+
 extern UINT32 Event_Get(void);
 extern void Event_Set(UINT32 event);
-extern void Event_Reset(void);
 extern void Event_Clear(UINT32 event);
 extern UINT32 Event_GetStatus(void);
-extern UINT32 Event_PentCore(void);
+extern UINT32 Event_PendCore(void);
+
+extern UINT32 Event_communicateGet(void);
+extern void Event_communicateSet(UINT32 event);
+extern void Event_communicateClear(UINT32 event);
+extern UINT32 Event_communicateGetStatus(void);
+extern UINT32 Event_Pendcommunicate(void);
 
 #endif

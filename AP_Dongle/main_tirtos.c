@@ -57,15 +57,10 @@ extern void app_init(void);
 int main(void)
 {
     Board_initGeneral();
-    BSP_GPIO_init();
 //    Board_initWatchdog();
-    BSP_GPIO_test();
     rf_init();
-    BSP_GPIO_test();
     semaphore_init();
-    BSP_GPIO_test();
     app_init();
-    BSP_GPIO_test();
     BIOS_start();    /* Start BIOS */
     return (0);
 

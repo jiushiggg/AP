@@ -5,6 +5,7 @@
 #include "event.h"
 #include "flash.h"
 #include "debug.h"
+#include "corefunc.h"
 
 
 void Core_ParseFlashData(UINT32 addr)
@@ -23,43 +24,7 @@ void Core_ParseFlashData(UINT32 addr)
 	}
 }
 
-UINT8 Core_SendCmd(UINT16 cmd, UINT32 cmd_len, UINT8 *cmd_data)
-{
-	INT32 tx_ack_ret = 0;
-	UINT8 cmd_buf[256] = {0};
-	UINT8 ret = 0;
-	xmodem_t x;
-	
-	if((cmd_len+2+4) > sizeof(cmd_buf))
-	{
-		perr("Core_SendCmd() cmd len too big.\r\n");
-		goto done;
-	}
-		
-	memcpy(cmd_buf, (void *)&cmd, sizeof(cmd));
-	memcpy(cmd_buf+2, (void *)&cmd_len, sizeof(cmd_len));
-	if((cmd_len!=0) && (cmd_data!=NULL))
-	{
-		memcpy(cmd_buf+6, cmd_data, cmd_len);
-	}
-	memset(&x, 0, sizeof(xmodem_t));	
-//	USBD_SetRecvMode(0);
-	tx_ack_ret = Xmodem_Send(&x, 1, cmd_buf, cmd_len+2+4, 5000);
-//	USBD_SetRecvMode(1);
-	if(tx_ack_ret == (cmd_len+2+4))
-	{
-		pdebug("Core_SendCmd 0x%04X\r\n", cmd);
-		ret = 1;
-	}
-	else
-	{
-		perr("Core_SendCmd 0x%04X return %d\r\n", cmd, tx_ack_ret);
-		ret = 0;
-	}
 
-done:
-	return ret;
-}
 
 UINT8 Core_MallocFlash(UINT32 *addr, UINT32 size)
 {

@@ -7,6 +7,7 @@
 #include "bsp.h"
 #include "rftest.h"
 #include "thread.h"
+#include "communicate.h"
 
 
 
@@ -120,7 +121,7 @@ void Core_HandleEslUpdataReq(core_task_t *task)
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
 		
-		Event_Set(EVENT_RX_TO_FLASH);
+		Event_communicateSet(EVENT_COMMUNICATE_RX_TO_FLASH);
 	}
 }
 
@@ -137,7 +138,7 @@ void Core_HandleQueryEslUpdataAck(core_task_t *task)
 	}
 	else
 	{
-		Event_Set(EVENT_TX_ESL_ACK);
+		Event_Set(EVENT_COMMUNICATE_TX_ESL_ACK);
 	}
 }
 

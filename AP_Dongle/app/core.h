@@ -60,4 +60,6 @@ extern void Core_Mainloop(void);
 extern UINT32 Core_GetQuitStatus(void);
 extern void Core_ResetQuitStatus(void);
 
+extern core_task_t local_task;
+
 #endif

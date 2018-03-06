@@ -6,13 +6,21 @@
  */
 
 /* Driver Header files */
+
+
+#include <ti/drivers/uart/UARTCC26XX.h>
 #include "uart.h"
 #include "Board.h"
+#include "xmodem.h"
 
 
 UART_Handle uart_handle;
 
-void bsp_uart_init(void)
+extern void readCallback(UART_Handle handle, void *rxBuf, size_t size);
+
+
+
+void UART_appInit(void)
 {
     UART_Params uartParams;
 
@@ -20,20 +28,38 @@ void bsp_uart_init(void)
 
     /* Create a UART with data processing off. */
     UART_Params_init(&uartParams);
-    uartParams.readTimeout = 5000;
-    uartParams.writeTimeout = 5000;
     uartParams.writeDataMode = UART_DATA_BINARY;
     uartParams.readDataMode = UART_DATA_BINARY;
     uartParams.readReturnMode = UART_RETURN_FULL;
+    uartParams.readMode = UART_MODE_CALLBACK;
     uartParams.readEcho = UART_ECHO_OFF;
     uartParams.baudRate = 115200;
+    uartParams.readCallback  = readCallback;
 
     uart_handle = UART_open(Board_UART0, &uartParams);
+
     if (uart_handle == NULL) {
         /* UART_open() failed */
         while (1);
     }
+
+    UART_control(uart_handle, UARTCC26XX_CMD_RETURN_PARTIAL_ENABLE, NULL);
+    /* Loop forever echoing */
+
+    UART_read(uart_handle, xcb_recv_buf, READ_BUF_LEN);
 }
+
+//callback mode read
+int32_t UART_appRead(void *buffer, size_t size)
+{
+    return UART_read(uart_handle, buffer, size);
+}
+
+int32_t UART_appWrite(void *buffer, size_t size)
+{
+    return UART_write(uart_handle, buffer, size);
+}
+
 #ifdef UART_TEST
 void uart_test(void)
 {
