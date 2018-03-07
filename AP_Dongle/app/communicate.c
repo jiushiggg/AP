@@ -13,15 +13,18 @@
 #include "core.h"
 #include "debug.h"
 #include "bsp.h"
+#include "corefunc.h"
 
 void readHandleFnx(void);
 
 void (*tim_soft_callback)(void);
 
+UINT8 cmd_buf[256] = {0};
+
 uint8_t Core_SendCmd(uint16_t cmd, uint32_t cmd_len, uint8_t *cmd_data)
 {
     INT32 tx_ack_ret = 0;
-    UINT8 cmd_buf[256] = {0};
+
     UINT8 ret = 0;
     xmodem_t x;
 
@@ -61,36 +64,43 @@ void communicate_main(void)
     uint32_t event = 0;
     while(1){
         event = Event_Pendcommunicate();
-            if (event & EVENT_COMMUNICATE_RX_TO_FLASH){
-                pinfo("core recv data to flash start.\r\n");
-                memcpy((UINT8 *)&local_task.flash_data_len, local_task.cmd_buf, sizeof(local_task.flash_data_len));
+        if (event & EVENT_COMMUNICATE_RX_TO_FLASH){
+            pinfo("core recv data to flash start.\r\n");
+            memcpy((UINT8 *)&local_task.flash_data_len, local_task.cmd_buf, sizeof(local_task.flash_data_len));
+            BSP_GPIO_ToggleDebugPin();
+            if(Core_MallocFlash(&local_task.flash_data_addr, local_task.flash_data_len) == 1){
                 BSP_GPIO_ToggleDebugPin();
-                if(Core_MallocFlash(&local_task.flash_data_addr, local_task.flash_data_len) == 1){
+                if(Core_SendCmd(0x10F0, 0, NULL) == 1){
                     BSP_GPIO_ToggleDebugPin();
-                    if(Core_SendCmd(0x10F0, 0, NULL) == 1){
+                    if(Core_RecvDataToFlash(local_task.flash_data_addr, local_task.flash_data_len) == 1){
+                        Event_Set(EVENT_PARSE_DATA);
                         BSP_GPIO_ToggleDebugPin();
-                        if(Core_RecvDataToFlash(local_task.flash_data_addr, local_task.flash_data_len) == 1){
-                            Event_Set(EVENT_PARSE_DATA);
-                            BSP_GPIO_ToggleDebugPin();
-                        }
                     }
-                } else {
-                    Core_SendCmd(CORE_CMD_FLASH_ERROR, 0, NULL);
                 }
-                pinfo("core recv data to flash exit.\r\n");
-                Event_Clear(EVENT_COMMUNICATE_RX_TO_FLASH);
-            }else if (event & EVENT_COMMUNICATE_TX_ESL_ACK){
-                pinfo("core tx esl ack.\r\n");
-                Event_Clear(EVENT_COMMUNICATE_TX_ESL_ACK);
-            }else if (event & EVENT_COMMUNICATE_ACK){
-                if (NULL != tim_soft_callback){
-                    tim_soft_callback();
-                }
-            }else if(event & EVENT_COMMUNICATE_RX_HANDLE){
-                readHandleFnx();
-            }else {
-
+            } else {
+                Core_SendCmd(CORE_CMD_FLASH_ERROR, 0, NULL);
             }
+            pinfo("core recv data to flash exit.\r\n");
+            Event_Clear(EVENT_COMMUNICATE_RX_TO_FLASH);
+        }else if (event & EVENT_COMMUNICATE_TX_ESL_ACK){
+            pinfo("core tx esl ack.\r\n");
+            Event_Clear(EVENT_COMMUNICATE_TX_ESL_ACK);
+        }else if (event & EVENT_COMMUNICATE_ACK){
+            if (NULL != tim_soft_callback){
+                tim_soft_callback();
+            }
+        }else if(event & EVENT_COMMUNICATE_RX_HANDLE){
+            readHandleFnx();
+            Event_Clear(EVENT_COMMUNICATE_RX_HANDLE);
+        }else if(event & EVENT_COMMUNICATE_SCAN_DEVICE)
+        {
+            pinfo("core uart send ack.\r\n");
+            Core_SendCmd(0x10F0, 2, NULL);
+            Event_Clear(EVENT_COMMUNICATE_SCAN_DEVICE);
+        }
+        else {
+
+        }
     }
 }
 
@@ -111,11 +121,17 @@ void readHandleFnx(void)
     }else{
         EP_DEBUG(("\r\n>>>EP1_OUT_Callback.\r\n"));
     }
+
+    UART_appRead(recv_once_buf, XMODEM_LEN_ALL);
 }
 
 void readCallback(UART_Handle handle, void *rxBuf, size_t size)
 {
-    if (XMODEM_LEN_CMD==size || XMODEM_LEN_ALL==size){
+    if (recCmdAckFlg == true && XMODEM_LEN_CMD==size){
+        recCmdAckFlg = false;
+        Device_Recv_post();
+    }else if (XMODEM_LEN_CMD==size || XMODEM_LEN_ALL==size){
+        xcb_recv_len = size;
         Event_communicateSet(EVENT_COMMUNICATE_RX_HANDLE);
     }else{
         Xmodem_InitCallback();

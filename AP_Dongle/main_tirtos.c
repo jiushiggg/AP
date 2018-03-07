@@ -59,6 +59,7 @@ int main(void)
     Board_initGeneral();
 //    Board_initWatchdog();
     rf_init();
+    BSP_GPIO_init();
     semaphore_init();
     app_init();
     BIOS_start();    /* Start BIOS */

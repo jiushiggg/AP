@@ -19,5 +19,6 @@ void Core_HandleRcReqRequest(core_task_t *task);
 void Core_HandleScanWkup(core_task_t *task);
 void Core_HandleAssAck(core_task_t *task);
 void core_handle_rf_txrx(core_task_t *task);
+void Core_HandleScanAck(core_task_t *task);
 
 #endif

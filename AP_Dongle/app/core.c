@@ -149,6 +149,9 @@ void Core_RxHandler(void)
 			break;
 		case CORE_CMD_ESL_ACK_REQUEST:
 //			Core_HandleQueryEslUpdataAck(&local_task);
+		case CORE_CMD_SCAN_DEVICE:   //0x1006
+		    Core_HandleScanAck(&local_task);
+		    break;
 		default:
 			perr("Core_RxHandler() invalid cmd: 0x%04X\r\n", local_task.cmd);
 			break;

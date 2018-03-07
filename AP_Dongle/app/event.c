@@ -1,4 +1,5 @@
 #include <ti/sysbios/knl/Event.h>
+#include <ti/sysbios/knl/Semaphore.h>
 #include <ti/sysbios/BIOS.h>
 #include "event.h"
 
@@ -7,6 +8,29 @@ static Event_Struct protocol_eventStruct;
 
 static Event_Handle communicateEventHandle;
 static Event_Struct communicateEventStruct;
+
+
+static Semaphore_Struct  recSemStruct;
+static Semaphore_Handle  recSemHandle;
+
+
+void Semphore_init(void)
+{
+    Semaphore_Params  recSemParam;
+    Semaphore_Params_init(&recSemParam);
+    recSemParam.mode = ti_sysbios_knl_Semaphore_Mode_BINARY;
+    Semaphore_construct(&recSemStruct, 0, &recSemParam);
+    recSemHandle = Semaphore_handle(&recSemStruct);
+}
+void Device_Recv_pend(UINT32 timeout)
+{
+    Semaphore_pend(recSemHandle, timeout);
+}
+void Device_Recv_post(void)
+{
+    Semaphore_post(recSemHandle);
+}
+
 
 
 void Event_init(void)
@@ -64,13 +88,11 @@ UINT32 Event_communicateGetStatus(void)
 
 UINT32 Event_PendCore(void)
 {
-    UINT32 event;
     return Event_pend(protocol_eventHandle, 0, EVENT_ALL, BIOS_WAIT_FOREVER);
 
 }
 
 UINT32 Event_Pendcommunicate(void)
 {
-    UINT32 event;
     return Event_pend(communicateEventHandle, 0, EVENT_ALL, BIOS_WAIT_FOREVER);
 }

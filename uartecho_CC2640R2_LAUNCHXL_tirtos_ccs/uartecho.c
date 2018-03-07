@@ -170,9 +170,48 @@ void *mainThread(void *arg0)
             }
             rec_len -= uart_send_len;
         }
-
-
-
     }
 #endif
 }
+
+#if 0
+while (1) {
+    i = 0;
+    do{
+        if (rec_index >= BUF_LEN){
+            rec_index = 0;
+        }
+
+        spi_status = spi_read(buf+rec_index,SPI_REC_LEN);
+
+        if (false == spi_status){
+            DEBUG_UART(f, sizeof(f));
+            DEBUG_UART((uint8_t*)&rec_len, 1);
+            break;
+        }
+//            UART_send(&a[i++], 1);
+        rec_index += SPI_REC_LEN;
+        rec_len += SPI_REC_LEN;
+        if (rec_len > 1023){
+            break;
+        }
+
+    }while(1);
+
+    while (rec_len > 0){
+        DEBUG_UART(r, sizeof(r));
+        if (send_index + rec_len >= BUF_LEN){
+            UART_send(buf+send_index, BUF_LEN-send_index);
+            uart_send_len = BUF_LEN-send_index;
+            //uart_send_len = UART_write(uart, buf+send_index, BUF_LEN-send_index);
+            send_index = 0;
+        } else {
+            //uart_send_len = UART_write(uart, buf+send_index, rec_len);
+            UART_send(buf+send_index, rec_len);
+            uart_send_len = rec_len;
+            send_index += uart_send_len;
+        }
+        rec_len -= uart_send_len;
+    }
+}
+#endif

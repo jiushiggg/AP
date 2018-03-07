@@ -35,6 +35,7 @@
 #include "core.h"
 #include "uart.h"
 #include "communicate.h"
+#include "bsp.h"
 
 #ifdef GOLD_BOARD
 const unsigned char APP_VERSION_STRING[] = "rfg-3.2.2-rc5"; //must < 32
@@ -92,7 +93,7 @@ void app_init(void)
     swi0Handle = Swi_handle(&swi0Struct);
 #else
     Task_Params_init(&taskParams_0);
-//    taskParams_0.arg0 = 1000000 / Clock_tickPeriod;
+    taskParams_0.arg0 = 1000000 / Clock_tickPeriod;
     taskParams_0.stackSize = TASK1_STACKSIZE;
     taskParams_0.stack = &task1_Stack;
     taskParams_0.priority = 2;
@@ -105,12 +106,14 @@ void app_init(void)
 extern void BSP_GPIO_test(void);
 void *mainThread(void *arg0)
 {
+    BSP_DEBUG_IO;
     Board_initSPI();
     Board_initUART();
     Debug_SetLevel(DEBUG_LEVEL_INFO);
 //    printf("     \r\n%s.\r\n", APP_VERSION_STRING);
     debug_peripheral_init();
-    pinfo("basic init complete.");
+    pinfo("basic init complete.\r\n");
+    BSP_DEBUG_IO;
 //        while (1) {
 //            log_print("spi_write:%02x:%d:%d",1,2,3);
 //            //log_print("ab%x",1);
@@ -129,7 +132,7 @@ void *mainThread(void *arg0)
     }
 
     UART_appInit();
-
+    BSP_DEBUG_IO;
 
     Core_Init();
     pinfo("core init complete.\r\n");

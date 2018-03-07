@@ -11,13 +11,6 @@
 #define EVENT_RC_REQ			((UINT32)1<<7) //64
 #define EVENT_ALL   0xFFFFFFFF
 
-#define EVENT_COMMUNICATE_ACK               ((UINT32)1<<1) //8
-#define EVENT_COMMUNICATE_RX_HANDLE         ((UINT32)1<<2) //8
-#define EVENT_COMMUNICATE_RX_TO_FLASH       ((UINT32)1<<3) //8
-#define EVENT_COMMUNICATE_TX_FROM_FLASH     ((UINT32)1<<4) //A
-#define EVENT_COMMUNICATE_TX_ESL_ACK        ((UINT32)1<<5) //32
-#define EVENT_COMMUNICATE_ALL                              0xFFFFFFFF
-
 #define EVENT_SCAN_WKUP			(1<<11)
 #define EVENT_ASS_ACK			(1<<12)
 
@@ -29,6 +22,20 @@
 
 #define EVENT_FLASH_ERR			(1<<29)
 #define EVENT_RF_ERR			(1<<30)
+
+
+#define EVENT_COMMUNICATE_ACK               ((UINT32)1<<1) //8
+#define EVENT_COMMUNICATE_RX_HANDLE         ((UINT32)1<<2) //8
+#define EVENT_COMMUNICATE_RX_TO_FLASH       ((UINT32)1<<3) //8
+#define EVENT_COMMUNICATE_TX_FROM_FLASH     ((UINT32)1<<4) //A
+#define EVENT_COMMUNICATE_TX_ESL_ACK        ((UINT32)1<<5) //
+#define EVENT_COMMUNICATE_SCAN_DEVICE        ((UINT32)1<<6) // new cmd
+#define EVENT_COMMUNICATE_ALL                              0xFFFFFFFF
+
+
+#define EVENT_WAIT_FOREVER   ti_sysbios_BIOS_WAIT_FOREVER
+#define EVENT_WAIT_US(n)     (n/10)
+
 
 typedef enum _eventStatus{
     EVENT_BUSY,
@@ -49,4 +56,7 @@ extern void Event_communicateClear(UINT32 event);
 extern UINT32 Event_communicateGetStatus(void);
 extern UINT32 Event_Pendcommunicate(void);
 
+extern void Semphore_init(void);
+extern void Device_Recv_pend(UINT32 timeout);
+extern void Device_Recv_post(void);
 #endif

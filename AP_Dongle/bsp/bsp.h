@@ -4,7 +4,7 @@
 #include "datatype.h"
 #include <driverlib/ioc.h>
 #include <driverlib/gpio.h>
-
+#include "debug.h"
 
 #define DEBUG_IO0   IOID_16
 #define DEBUG_IO1   IOID_17
@@ -16,8 +16,10 @@
 #define LED_OFF(n)      GPIO_clearDio(n)
 #define LED_TOGGLE(n)   GPIO_toggleDio(n)
 
-#if 0
-#define EP_DEBUG(x) printf x
+#define BSP_DEBUG_IO    BSP_GPIO_test()
+
+#if 1
+#define EP_DEBUG(x) pprint x
 #else
 #define EP_DEBUG(x) ((void)0)
 #endif

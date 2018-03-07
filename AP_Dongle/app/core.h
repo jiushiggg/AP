@@ -3,6 +3,7 @@
 
 #include "datatype.h"
 
+#define CORE_CMD_SCAN_DEVICE            0x1006
 #define CORE_CMD_ESL_UPDATA_REQUEST		0x1041
 #define CORE_CMD_ESL_ACK_REQUEST		0x1042
 #define CORE_CMD_FW_UPDATA_REQUEST		0x1044

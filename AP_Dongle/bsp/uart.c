@@ -17,7 +17,7 @@
 UART_Handle uart_handle;
 
 extern void readCallback(UART_Handle handle, void *rxBuf, size_t size);
-
+extern uint8_t recv_once_buf[XMODEM_LEN_ALL];
 
 
 void UART_appInit(void)
@@ -46,7 +46,7 @@ void UART_appInit(void)
     UART_control(uart_handle, UARTCC26XX_CMD_RETURN_PARTIAL_ENABLE, NULL);
     /* Loop forever echoing */
 
-    UART_read(uart_handle, xcb_recv_buf, READ_BUF_LEN);
+    UART_read(uart_handle, recv_once_buf, XMODEM_LEN_ALL);
 }
 
 //callback mode read

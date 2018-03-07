@@ -9,6 +9,7 @@
 #include "crc16.h"
 #include "flash.h"
 #include "device.h"
+#include "event.h"
 
 #include "bsp.h"
 
@@ -36,7 +37,7 @@
 #define RETRYTIME_TX				10
 #define RETRYTIME_NAK				10
 
-
+uint8_t recCmdAckFlg    =   0;
 /*
 ** xmodem function
 */
@@ -106,8 +107,11 @@ INT32 Xmodem_SendCmd(INT32 dev, UINT8 cmd, UINT8 recv_ack_flag, INT32 timeout)
 			retry_time--;
 			continue;
 		}
+		Device_Recv_pend(0);
+		recCmdAckFlg = true;
+		read_len = Device_Recv(dev, &recv_ack, sizeof(recv_ack), timeout);
+		Device_Recv_pend(EVENT_WAIT_FOREVER);
 
-		read_len = Device_Recv(dev, &recv_ack, sizeof(recv_ack), timeout);	
 		X_DEBUG(("recv len = %d, ack = 0x%02X.", read_len, recv_ack));	
 		if(read_len != sizeof(recv_ack))
 		{
@@ -135,26 +139,26 @@ INT32 Xmodem_SendCmd(INT32 dev, UINT8 cmd, UINT8 recv_ack_flag, INT32 timeout)
 	return send_len;
 }
 
-static UINT8 recv_once_buf[XMODEM_LEN_ALL] = {0};
+UINT8 recv_once_buf[XMODEM_LEN_ALL] = {0};
 
 INT32 Xmodem_RecvOnce(xmodem_t *x, INT32 dev, UINT8 **dst, INT32 timeout)
 {
 	INT32 ret = 0;
 	UINT8 tx_cmd = XMODEM_CMD_NAK;
-	INT32 recv_len = 0;
+//	INT32 recv_len = 0;
 //	INT32 copy_len = 0;
 
 	X_DEBUG((">>>Xmodem_RecvOnce:\r\n"));
 	
 	BSP_GPIO_ToggleDebugPin();
 //	memset(recv_once_buf, 0, XMODEM_LEN_ALL);
-	recv_len = Device_Recv(dev, recv_once_buf, sizeof(recv_once_buf), timeout);
+//	recv_len = Device_Recv(dev, recv_once_buf, sizeof(recv_once_buf), timeout);
 	BSP_GPIO_ToggleDebugPin();
 
-	X_DEBUG(("recv data len=%d, cmd=0x%02X,sn=%d,lastsn=%d, ", recv_len, recv_once_buf[0], recv_once_buf[1], x->last_recv_sn));
+	X_DEBUG(("recv data len=%d, cmd=0x%02X,sn=%d,lastsn=%d, ", xcb_recv_len, recv_once_buf[0], recv_once_buf[1], x->last_recv_sn));
 //	pdebughex(recv_once_buf, sizeof(recv_once_buf));
 	
-	if(recv_len==XMODEM_LEN_ALL)
+	if(xcb_recv_len==XMODEM_LEN_ALL)
 	{
 		/* check crc */
 		BSP_GPIO_ToggleDebugPin();
@@ -196,7 +200,7 @@ INT32 Xmodem_RecvOnce(xmodem_t *x, INT32 dev, UINT8 **dst, INT32 timeout)
 			goto recv_tx_ack;
 		}
 	}
-	else if(recv_len==XMODEM_LEN_CMD)
+	else if(xcb_recv_len==XMODEM_LEN_CMD)
 	{
 		X_DEBUG(("recv cmd: 0x%02X, ", recv_once_buf[0]));
 		if(recv_once_buf[0] == XMODEM_CMD_EOT)
