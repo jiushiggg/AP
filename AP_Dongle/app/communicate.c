@@ -89,13 +89,14 @@ void communicate_main(void)
             if (NULL != tim_soft_callback){
                 tim_soft_callback();
             }
+            Event_Clear(EVENT_COMMUNICATE_ACK);
         }else if(event & EVENT_COMMUNICATE_RX_HANDLE){
             readHandleFnx();
             Event_Clear(EVENT_COMMUNICATE_RX_HANDLE);
         }else if(event & EVENT_COMMUNICATE_SCAN_DEVICE)
         {
             pinfo("core uart send ack.\r\n");
-            Core_SendCmd(0x10F0, 2, NULL);
+            Core_SendCmd(CORE_CMD_ACK, 0, NULL);
             Event_Clear(EVENT_COMMUNICATE_SCAN_DEVICE);
         }
         else {
@@ -131,11 +132,11 @@ void readCallback(UART_Handle handle, void *rxBuf, size_t size)
         recCmdAckFlg = false;
         Device_Recv_post();
     }else if (XMODEM_LEN_CMD==size || XMODEM_LEN_ALL==size){
-        xcb_recv_len = size;
         Event_communicateSet(EVENT_COMMUNICATE_RX_HANDLE);
     }else{
         Xmodem_InitCallback();
     }
+    xcb_recv_len_once = size;
 }
 
 #ifdef MY_SWI

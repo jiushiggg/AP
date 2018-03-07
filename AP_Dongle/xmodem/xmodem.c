@@ -158,7 +158,7 @@ INT32 Xmodem_RecvOnce(xmodem_t *x, INT32 dev, UINT8 **dst, INT32 timeout)
 	X_DEBUG(("recv data len=%d, cmd=0x%02X,sn=%d,lastsn=%d, ", xcb_recv_len, recv_once_buf[0], recv_once_buf[1], x->last_recv_sn));
 //	pdebughex(recv_once_buf, sizeof(recv_once_buf));
 	
-	if(xcb_recv_len==XMODEM_LEN_ALL)
+	if(xcb_recv_len_once==XMODEM_LEN_ALL)
 	{
 		/* check crc */
 		BSP_GPIO_ToggleDebugPin();
@@ -200,7 +200,7 @@ INT32 Xmodem_RecvOnce(xmodem_t *x, INT32 dev, UINT8 **dst, INT32 timeout)
 			goto recv_tx_ack;
 		}
 	}
-	else if(xcb_recv_len==XMODEM_LEN_CMD)
+	else if(xcb_recv_len_once==XMODEM_LEN_CMD)
 	{
 		X_DEBUG(("recv cmd: 0x%02X, ", recv_once_buf[0]));
 		if(recv_once_buf[0] == XMODEM_CMD_EOT)
@@ -409,7 +409,7 @@ void Xmodem_Reset(xmodem_t *x)
 xmodem_t xcb;
 UINT8 xcb_recv_buf[XCB_RECV_BUF_SIZE] = {0};
 INT32 xcb_recv_len = 0;
-static INT32 xcb_recv_len_once = 0;
+INT32 xcb_recv_len_once = 0;
 
 void Xmodem_InitCallback(void)
 {

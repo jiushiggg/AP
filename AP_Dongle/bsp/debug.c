@@ -7,7 +7,7 @@
 volatile UINT32 s_debug_level = DEBUG_LEVEL_DFAULT;
 
 
-#define LOG_SIZE    60
+#define LOG_SIZE    64
 static SPI_Handle debug_spi_handle = NULL;
 unsigned char debug_buf[LOG_SIZE];
 

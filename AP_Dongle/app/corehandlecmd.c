@@ -100,7 +100,7 @@ void Core_HandleScanAck(core_task_t *task)
     }
     else
     {
-        Event_Set(EVENT_COMMUNICATE_SCAN_DEVICE);
+        Event_communicateSet(EVENT_COMMUNICATE_SCAN_DEVICE);
     }
 }
 
@@ -128,7 +128,7 @@ void Core_HandleEslUpdataReq(core_task_t *task)
 		task->ack = 0x10F1; // busy
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
-		
+
 		TIM_SetSoftInterrupt(1, Core_TxHandler);
 	}
 	else
@@ -136,13 +136,10 @@ void Core_HandleEslUpdataReq(core_task_t *task)
 		task->ack = 0x10F0; // ack
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
-		
+
 		Event_communicateSet(EVENT_COMMUNICATE_RX_TO_FLASH);
 	}
 }
-
-
-
 
 void Core_HandleQueryEslUpdataAck(core_task_t *task)
 {
@@ -152,12 +149,12 @@ void Core_HandleQueryEslUpdataAck(core_task_t *task)
 		task->ack = 0x10F1; // busy
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
-		
+
 		TIM_SetSoftInterrupt(1, Core_TxHandler);
 	}
 	else
 	{
-		Event_Set(EVENT_COMMUNICATE_TX_ESL_ACK);
+	    Event_communicateSet(EVENT_COMMUNICATE_TX_ESL_ACK);
 	}
 }
 

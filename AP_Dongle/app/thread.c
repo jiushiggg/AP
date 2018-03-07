@@ -45,13 +45,15 @@ const unsigned char APP_VERSION_STRING[] = "rfd-3.2.2-rc5"; //must < 32
 
 /* Stack size in bytes */
 #define TASK0_STACKSIZE   (1024)
-#define TASK1_STACKSIZE   300
+#define TASK1_STACKSIZE   (1024)
 
 
 void *mainThread(void *arg0);
 void *communicate2master(void *arg0);
 
 Char task0_Stack[TASK0_STACKSIZE];
+
+#pragma location = (0x11001C00);
 Char task1_Stack[TASK1_STACKSIZE];
 
 Task_Struct task0_Struct;
