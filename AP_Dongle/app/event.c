@@ -3,15 +3,15 @@
 #include <ti/sysbios/BIOS.h>
 #include "event.h"
 
-static Event_Handle protocol_eventHandle;
-static Event_Struct protocol_eventStruct;
+Event_Handle protocol_eventHandle;
+Event_Struct protocol_eventStruct;
 
-static Event_Handle communicateEventHandle;
-static Event_Struct communicateEventStruct;
+Event_Handle communicateEventHandle;
+Event_Struct communicateEventStruct;
 
 
-static Semaphore_Struct  recSemStruct;
-static Semaphore_Handle  recSemHandle;
+Semaphore_Struct  recSemStruct;
+Semaphore_Handle  recSemHandle;
 
 
 void Semphore_init(void)

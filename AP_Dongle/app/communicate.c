@@ -122,8 +122,6 @@ void readHandleFnx(void)
     }else{
         EP_DEBUG(("\r\n>>>EP1_OUT_Callback.\r\n"));
     }
-
-    UART_appRead(recv_once_buf, XMODEM_LEN_ALL);
 }
 
 void readCallback(UART_Handle handle, void *rxBuf, size_t size)
@@ -137,6 +135,7 @@ void readCallback(UART_Handle handle, void *rxBuf, size_t size)
         Xmodem_InitCallback();
     }
     xcb_recv_len_once = size;
+    UART_appRead(recv_once_buf, XMODEM_LEN_ALL);
 }
 
 #ifdef MY_SWI

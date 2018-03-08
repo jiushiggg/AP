@@ -3,15 +3,15 @@
 
 #include "datatype.h"
 
-#define CORE_CMD_SCAN_DEVICE            0x1006
+#define CORE_CMD_SCAN_DEVICE            0x1006          //use uart 1step
 #define CORE_CMD_ESL_UPDATA_REQUEST		0x1041
 #define CORE_CMD_ESL_ACK_REQUEST		0x1042
 #define CORE_CMD_FW_UPDATA_REQUEST		0x1044
-#define CORE_CMD_ESL_HB_REQUEST			0x1048
+#define CORE_CMD_ESL_HB_REQUEST			0x1048          //3step
 #define CORE_CMD_RCREQ_REQUEST			0x1049
 
 #define CORE_CMD_SOFT_REBOOT			0x1000
-#define CORE_CMD_QUERY_SOFT_VER			0x1001
+#define CORE_CMD_QUERY_SOFT_VER			0x1001          //2step
 #define CORE_CMD_QUERY_STATUS			0x1002
 #define CORE_CMD_BACK_TO_IDLE			0x1003
 #define CORE_CMD_SET_DEBUG_LEVEL		0x1004

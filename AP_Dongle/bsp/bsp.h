@@ -18,7 +18,7 @@
 
 #define BSP_DEBUG_IO    BSP_GPIO_test()
 
-#if 1
+#if 0
 #define EP_DEBUG(x) pprint x
 #else
 #define EP_DEBUG(x) ((void)0)

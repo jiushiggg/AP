@@ -19,6 +19,8 @@
 #define X_DEBUG(x) ((void)0)
 #endif
 
+#define GGGDEBUG(x)  printf x
+
 #define XMODEM_CMD_DFT			0X00
 #define XMODEM_CMD_SOH			0X01
 #define XMODEM_CMD_EOT			0X04
@@ -107,11 +109,11 @@ INT32 Xmodem_SendCmd(INT32 dev, UINT8 cmd, UINT8 recv_ack_flag, INT32 timeout)
 			retry_time--;
 			continue;
 		}
-		Device_Recv_pend(0);
-		recCmdAckFlg = true;
-		read_len = Device_Recv(dev, &recv_ack, sizeof(recv_ack), timeout);
-		Device_Recv_pend(EVENT_WAIT_FOREVER);
 
+		recCmdAckFlg = true;
+		Device_Recv_pend(EVENT_WAIT_FOREVER);
+		read_len = xcb_recv_len_once;
+		recv_ack = recv_once_buf[0];
 		X_DEBUG(("recv len = %d, ack = 0x%02X.", read_len, recv_ack));	
 		if(read_len != sizeof(recv_ack))
 		{
@@ -326,8 +328,12 @@ INT32 Xmodem_SendOnce(xmodem_t *x, INT32 dev, UINT8 *src, INT32 len, INT32 timeo
 			continue;
 		}
 
-		recv_ack = Xmodem_RecvCmd(dev, timeout);	
+		//recv_ack = Xmodem_RecvCmd(dev, timeout);
+        recCmdAckFlg = true;
+        Device_Recv_pend(EVENT_WAIT_FOREVER);
+        recv_ack = recv_once_buf[0];
 		X_DEBUG(("recv ack: 0x%02X.", recv_ack));
+
 		if(recv_ack == XMODEM_CMD_ACK)
 		{
 			x->send_sn += 1;
