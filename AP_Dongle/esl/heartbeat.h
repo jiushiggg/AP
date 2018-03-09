@@ -3,7 +3,7 @@
 
 #include "datatype.h"
 
-#define SIZE_OF_COMMON_RECV_BUF		10240
+#define SIZE_OF_COMMON_RECV_BUF		8000
 #define G3_HB_BUF_SIZE				SIZE_OF_COMMON_RECV_BUF
 #define NUM_OF_MAX_ESL_UPLINK_INFO	10
 

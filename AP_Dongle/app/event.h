@@ -56,7 +56,7 @@ extern void Event_communicateClear(UINT32 event);
 extern UINT32 Event_communicateGetStatus(void);
 extern UINT32 Event_Pendcommunicate(void);
 
-extern void Semphore_init(void);
+extern void Semphore_xmodemInit(void);
 extern void Device_Recv_pend(UINT32 timeout);
 extern void Device_Recv_post(void);
 #endif

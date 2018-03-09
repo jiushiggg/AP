@@ -14,7 +14,7 @@ Semaphore_Struct  recSemStruct;
 Semaphore_Handle  recSemHandle;
 
 
-void Semphore_init(void)
+void Semphore_xmodemInit(void)
 {
     Semaphore_Params  recSemParam;
     Semaphore_Params_init(&recSemParam);

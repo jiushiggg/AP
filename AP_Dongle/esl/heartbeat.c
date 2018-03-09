@@ -10,20 +10,20 @@
 
 static UINT8 hb_timer = 0;
 static INT32 _esl_uplink_num = 0;
-
+//timeout: µ¥Î»s
 UINT8 set_timer(INT32 timeout)
 {
 	UINT8 timer = 0;
 	
 	if(timeout != 0)
 	{	
-		if(timeout > 36000)
+		if(timeout > 4294) //0xffFFffFF/1000000
 		{
-			timeout = 36000;
-			pinfo("warning: set_timer timeout change to 36000.\r\n");
+			timeout = 4294;
+			pinfo("warning: set_timer timeout change to 4294.\r\n");
 		}
 		
-		if((timer=TIM_Open(1000, timeout, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
+		if((timer=TIM_Open(timeout*1000, 1, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
 		{
 			perr("set_timer open.\r\n");
 		}
@@ -38,7 +38,7 @@ UINT8 set_timer(INT32 timeout)
 
 UINT8 check_timer_timeout(UINT8 timer)
 {
-	if(timer == 0)
+	if(timer > getTimerCount())
 	{
 		return 0;
 	}
@@ -50,7 +50,7 @@ UINT8 check_timer_timeout(UINT8 timer)
 
 void close_timer(UINT8 timer)
 {
-	if(timer != 0)
+	if(timer < getTimerCount())
 	{
 		TIM_Close(timer);
 		timer = 0;

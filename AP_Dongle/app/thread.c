@@ -103,7 +103,7 @@ void app_init(void)
 #endif
 
     Event_init();
-    Semphore_init();
+    Semphore_xmodemInit();
 
 }
 extern void BSP_GPIO_test(void);

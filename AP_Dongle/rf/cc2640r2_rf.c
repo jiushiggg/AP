@@ -79,7 +79,7 @@ void rxcallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
           //指令已经执行完成
     }
 }
-void semaphore_init(void)
+void semaphore_RFInit(void)
 {
     Semaphore_Params params;
     Error_Block eb;
@@ -117,7 +117,7 @@ void rf_init(void)
 
 #define POWER_LEVEL  6
 const uint16_t rf_tx_power[POWER_LEVEL]={0x3161, 0x4214,0x4e18,0x5a1c, 0x9324, 0x9330};
-void set_rf_parameters(uint8_t Data_rate, uint16_t Tx_power, uint16_t  Frequency, uint8_t fractFreq_flag)
+void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequency, uint8_t fractFreq_flag)
 {
 
     RF_cmdFs.frequency = Frequency;
@@ -155,14 +155,14 @@ void set_rf_parameters(uint8_t Data_rate, uint16_t Tx_power, uint16_t  Frequency
     RF_control(rfHandle, RF_CTRL_UPDATE_SETUP_CMD, NULL); //Signal update Rf core
 //    RF_yield(rfHandle);  // Force a power down using RF_yield() API. This will power down RF after all pending radio commands are complete.
 }
-void set_frequence(uint16_t  Frequency, uint8_t fractFreq_flag)
+void set_frequence(uint8_t  Frequency, uint8_t fractFreq_flag)
 {
     RF_cmdFs.frequency = 2400+Frequency;
     RF_cmdFs.fractFreq = (fractFreq_flag ? 32768 : 0);
     RF_postCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
 }
 
-void set_power_rate(uint16_t Tx_power, uint8_t Data_rate)
+void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
 {
     switch(Data_rate)
     {
@@ -297,6 +297,8 @@ RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord
     RF_cmdPropRxAdv.endTrigger.bEnaCmd = (enableTrigger? 1 : 0 );
     RF_cmdPropRxAdv.endTime = RF_getCurrentTime();
     RF_cmdPropRxAdv.endTime += RF_convertMsToRatTicks(timeout);  //10us
+//    RF_cmdPropRxAdv.pktConf.bRepeatOk = 1;
+//    RF_cmdPropRxAdv.pktConf.bUseCrc = 0x1;
 //    RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropRx, RF_PriorityNormal, &callback, IRQ_RX_ENTRY_DONE);
 //    RF_yield(rfHandle);
     RF_EventMask result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropRxAdv, RF_PriorityNormal, &rxcallback, IRQ_RX_ENTRY_DONE);
@@ -327,12 +329,33 @@ UINT8 get_rssi(void)
 
 UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout)
 {
-    return 0;
+    uint32_t sync_word=0;
+ //   uint32_t tmp_timeout = 0;
+    RF_EventMask rx_event;
+    set_frequence(ch/2, ch%2);
+
+    sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+//    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);
+
+    rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , timeout/10);
+    if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout+100/Clock_tickPeriod))){
+        currentDataEntry = RFQueue_getDataEntry();
+        memcpy(data, (uint8_t*)(&currentDataEntry->data), len);
+        RFQueue_nextEntry();
+    }else{
+        RF_cancelCmd(rfHandle, rx_event,0);
+        currentDataEntry = RFQueue_getDataEntry();
+        memcpy(rf_test_buff, (uint8_t*)(&currentDataEntry->data), len);
+        clear_queue_buf();
+        len = 0;
+    }
+    _hb_rssi = 0;   //todo
+    return len;
 }
 
 void rf_exit_from_hb_recv(void)
 {
-
+    RF_yield(rfHandle);
 }
 
 UINT8 get_hb_rssi(void)

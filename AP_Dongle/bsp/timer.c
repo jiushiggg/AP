@@ -24,9 +24,14 @@ static void ISR_Handle(timer_t* n);
 //static
 timer_t ts[] = {
 	{NULL, hwi_timerCallback0, 0, 0, 0, CC2640R2_LAUNCHXL_GPTIMER0A},
-	{NULL, hwi_timerCallback1, 0, 0, 0, CC2640R2_LAUNCHXL_GPTIMER0B},
-	{NULL, hwi_timerCallback2, 0, 0, 0, CC2640R2_LAUNCHXL_GPTIMER1A},
+	{NULL, hwi_timerCallback1, 0, 0, 0, CC2640R2_LAUNCHXL_GPTIMER1A},
+	{NULL, hwi_timerCallback2, 0, 0, 0, CC2640R2_LAUNCHXL_GPTIMER2A},
 };
+
+UINT8   getTimerCount(void)
+{
+    return sizeof(ts)/sizeof(timer_t);
+}
 
 static UINT8 get_a_free_timer(void)
 {
@@ -38,7 +43,7 @@ static UINT8 get_a_free_timer(void)
 	{
 		if(ts[i].TIMn == NULL)
 		{
-			t = ts[i].sn;
+			t = ts[i].sn/2;
 			break;
 		}
 	}
@@ -59,6 +64,7 @@ static GPTimerCC26XX_Handle get_real_timer(UINT8 t)
 	}
 }
 
+//ÉèÖÃ¶¨Ê±nms*cnt
 UINT8 TIM_Open(INT32 nms, UINT16 cnt, UINT8 direction)
 {
 	UINT8 t = ALL_TIMER_ACTIVE;
@@ -67,10 +73,10 @@ UINT8 TIM_Open(INT32 nms, UINT16 cnt, UINT8 direction)
 	GPTimerCC26XX_Value loadVal;
 
 
-	if(nms > 1000)
-	{
-		goto done;
-	}
+//	if(nms > 1000)
+//	{
+//		goto done;
+//	}
 
 	if((t=get_a_free_timer()) == ALL_TIMER_ACTIVE)
 	{
@@ -90,7 +96,7 @@ UINT8 TIM_Open(INT32 nms, UINT16 cnt, UINT8 direction)
 	ts[t].timeout = 0;
 
     GPTimerCC26XX_Params_init(&timer);
-    timer.width          = GPT_CONFIG_16BIT;
+    timer.width          = GPT_CONFIG_32BIT;
     timer.mode           = GPT_MODE_PERIODIC_UP;
     timer.debugStallMode = GPTimerCC26XX_DEBUG_STALL_OFF;
     ts[t].TIMn = GPTimerCC26XX_open(ts[t].sn, &timer);

@@ -14,6 +14,6 @@ void TIM_Close(UINT8 t);
 UINT8 TIM_CheckTimeout(UINT8 t);
 INT32 TIM_GetCount(UINT8 t);
 void TIM_SetSoftTimeout(UINT8 t);
-
+UINT8   getTimerCount(void);
 #endif
 

@@ -24,8 +24,8 @@
 #define PEND_STOP   0
 #define RF_DEFAULT_POWER    0XFF
 
-#define  DATA_RATE_100K     ((uint8_t)1)
-#define  DATA_RATE_500K     ((uint8_t)5)
+#define  DATA_RATE_100K     (100)
+#define  DATA_RATE_500K     (500)
 #define  DATA_RATE_1M       ((uint8_t)10)
 #define  DATA_RATE_2M       ((uint8_t)20)
 #define  RF_TX_POWER_0DB    ((uint8_t)0)
@@ -59,9 +59,9 @@ extern RF_Handle rfHandle;
 extern void rf_init(void);
 extern Semaphore_Handle txDoneSem;
 extern Semaphore_Handle rxDoneSem;
-extern void semaphore_init(void);
+extern void semaphore_RFInit(void);
 
-extern void set_rf_parameters(uint8_t Data_rate, uint16_t Tx_power, uint16_t  Frequency, uint8_t fractFreq_flag);
+extern void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequency, uint8_t fractFreq_flag);
 //extern RF_EventMask Rf_tx_package(RF_Handle h, uint32_t syncWord, uint8_t pktLen, uint8_t* pPkt);
 //extern RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord, uint8_t pktLen,uint8_t enableTrigger,  uint32_t  timeout);
 extern void send_data_init(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout);
@@ -70,8 +70,8 @@ extern void send_pend(RF_EventMask result);
 extern uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t timeout);
 extern uint8_t recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t timeout);
 
-extern void set_frequence(uint16_t  Frequency, uint8_t fractFreq_flag);
-extern void set_power_rate(uint16_t Tx_power, uint8_t Data_rate);
+extern void set_frequence(uint8_t  Frequency, uint8_t fractFreq_flag);
+extern void set_power_rate(uint8_t Tx_power, uint16_t Data_rate);
 extern RF_EventMask send_without_wait(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t timeout);
 
 extern void enter_txrx(void);

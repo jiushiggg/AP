@@ -60,7 +60,7 @@ int main(void)
 //    Board_initWatchdog();
     rf_init();
     BSP_GPIO_init();
-    semaphore_init();
+    semaphore_RFInit();
     app_init();
     BIOS_start();    /* Start BIOS */
     return (0);
