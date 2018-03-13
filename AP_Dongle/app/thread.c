@@ -36,6 +36,7 @@
 #include "uart.h"
 #include "communicate.h"
 #include "bsp.h"
+#include "bsp_spi.h"
 
 #ifdef GOLD_BOARD
 const unsigned char APP_VERSION_STRING[] = "rfg-3.2.2-rc5"; //must < 32
@@ -107,6 +108,10 @@ void app_init(void)
 
 }
 extern void BSP_GPIO_test(void);
+
+#define RX_LEN  26
+uint8_t mylen =0, mybuf[RX_LEN] = {0};
+
 void *mainThread(void *arg0)
 {
     BSP_DEBUG_IO;
@@ -118,9 +123,9 @@ void *mainThread(void *arg0)
     pinfo("basic init complete.\r\n");
     BSP_DEBUG_IO;
 //        while (1) {
-//            log_print("spi_write:%02x:%d:%d",1,2,3);
+//            log_print("spi_write:%02x:%02d:%02d",1,2,3);
 //            //log_print("ab%x",1);
-//            //Task_sleep(100000);
+//            Task_sleep(10);
 //        }
 
 

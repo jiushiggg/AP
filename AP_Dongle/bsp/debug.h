@@ -2,7 +2,8 @@
 #ifndef _DEBUG_H
 #define _DEBUG_H
 #include "datatype.h"
-
+//#define GGGDEBUG(x)  printf x
+#define GGGDEBUG(x)    ((void)0)
 #define DEBUG_LEVEL_HST			0
 #define	DEBUG_LEVEL_ERROR		1	
 #define	DEBUG_LEVEL_INFO		2	

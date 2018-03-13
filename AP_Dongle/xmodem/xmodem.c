@@ -19,7 +19,7 @@
 #define X_DEBUG(x) ((void)0)
 #endif
 
-#define GGGDEBUG(x)  printf x
+
 
 #define XMODEM_CMD_DFT			0X00
 #define XMODEM_CMD_SOH			0X01
@@ -86,12 +86,13 @@ INT32 Xmodem_SendCmd(INT32 dev, UINT8 cmd, UINT8 recv_ack_flag, INT32 timeout)
 	UINT8 recv_ack = 0;
 	INT32 read_len = 0;
 	INT32 send_ret = 0;
-	
+	GGGDEBUG((">>>Xmodem_SendCmd:\r\ncmd = 0x%02X, flag = %d, timeout = %d, ", cmd, recv_ack_flag, timeout));
 	X_DEBUG((">>>Xmodem_SendCmd:\r\ncmd = 0x%02X, flag = %d, timeout = %d, ", cmd, recv_ack_flag, timeout));
 	while(retry_time > 0)
 	{	
 		send_ret = Device_Send(dev, &cmd, sizeof(cmd), timeout);
 		X_DEBUG(("send return %d, ", send_ret));
+		GGGDEBUG(("send return %d, ", send_ret));
 		if(send_ret != sizeof(cmd))
 		{
 			retry_time--;
@@ -114,7 +115,7 @@ INT32 Xmodem_SendCmd(INT32 dev, UINT8 cmd, UINT8 recv_ack_flag, INT32 timeout)
 		Device_Recv_pend(EVENT_WAIT_FOREVER);
 		read_len = xcb_recv_len_once;
 		recv_ack = recv_once_buf[0];
-		X_DEBUG(("recv len = %d, ack = 0x%02X.", read_len, recv_ack));	
+		GGGDEBUG(("recv len = %d, ack = 0x%02X.", read_len, recv_ack));
 		if(read_len != sizeof(recv_ack))
 		{
 			retry_time--;
@@ -138,6 +139,7 @@ INT32 Xmodem_SendCmd(INT32 dev, UINT8 cmd, UINT8 recv_ack_flag, INT32 timeout)
 	}
 
 	X_DEBUG(("\r\n"));
+	GGGDEBUG(("\r\n"));
 	return send_len;
 }
 
@@ -159,6 +161,9 @@ INT32 Xmodem_RecvOnce(xmodem_t *x, INT32 dev, UINT8 **dst, INT32 timeout)
 
 	X_DEBUG(("recv data len=%d, cmd=0x%02X,sn=%d,lastsn=%d, ", xcb_recv_len, recv_once_buf[0], recv_once_buf[1], x->last_recv_sn));
 //	pdebughex(recv_once_buf, sizeof(recv_once_buf));
+	if (recv_once_buf[2] == 0x35 && recv_once_buf[2] == 0x30){
+	    GGGDEBUG(("up"));
+	}
 	
 	if(xcb_recv_len_once==XMODEM_LEN_ALL)
 	{
@@ -192,6 +197,7 @@ INT32 Xmodem_RecvOnce(xmodem_t *x, INT32 dev, UINT8 **dst, INT32 timeout)
 		}
 		else if(recv_once_buf[1] == x->last_recv_sn)
 		{
+		    GGGDEBUG(("ASAMEPKG%d,CMD:%d", xcb_recv_len_once, recv_once_buf[0]));
 			X_DEBUG(("a same pkg!"));
 			tx_cmd = XMODEM_CMD_ACK;
 			goto recv_tx_ack;
@@ -222,6 +228,7 @@ recv_tx_ack:
 			tx_cmd = XMODEM_CMD_CAN;
 			x->nak_times = 0;
 			ret = -1;
+			GGGDEBUG(("RET-1"));
 		}
 	}
 	else //ack
@@ -315,11 +322,12 @@ INT32 Xmodem_SendOnce(xmodem_t *x, INT32 dev, UINT8 *src, INT32 len, INT32 timeo
 	INT32 retry_time = RETRYTIME_TX;
 	UINT8 recv_ack = 0;
 
+	GGGDEBUG((">>>Xmodem_SendOnce:\r\n"));
 	X_DEBUG((">>>Xmodem_SendOnce:\r\n"));
 	send_len = len > XMODEM_LEN_DAT ? XMODEM_LEN_DAT : len;
 	Xmodem_MakePkg(XMODEM_CMD_SOH, x->send_sn, src, send_len, send_buf, sizeof(send_buf));
 	X_DEBUG(("pkg sn=%d,send_len=%d,tx_cmd=0x%02X, ", x->send_sn, send_len, XMODEM_CMD_SOH));
-	
+	GGGDEBUG(("pkg sn=%d,send_len=%d,tx_cmd=0x%02X, ", x->send_sn, send_len, XMODEM_CMD_SOH));
 	/* tx soh,sig,stx */
 	while((retry_time--) > 0)
 	{	
@@ -333,7 +341,7 @@ INT32 Xmodem_SendOnce(xmodem_t *x, INT32 dev, UINT8 *src, INT32 len, INT32 timeo
         Device_Recv_pend(EVENT_WAIT_FOREVER);
         recv_ack = recv_once_buf[0];
 		X_DEBUG(("recv ack: 0x%02X.", recv_ack));
-
+		GGGDEBUG(("recv ack: 0x%02X.", recv_ack));
 		if(recv_ack == XMODEM_CMD_ACK)
 		{
 			x->send_sn += 1;
@@ -368,6 +376,7 @@ INT32 Xmodem_Send(xmodem_t *x, INT32 dev, UINT8 *src, INT32 len, INT32 timeout)
 	INT32 send_len_once = 0;
 	INT32 send_len_total = 0;
 
+	GGGDEBUG((">>>Xmodem_Send:\r\n"));
 	X_DEBUG((">>>Xmodem_Send:\r\n"));
 	/* init send */
 	x->send_sn = 1;
@@ -492,6 +501,7 @@ INT32 Xmodem_RecvToFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 dst_len, INT
 		recv_len_once = Xmodem_RecvOnce(x, dev, &pRecv, timeout);
 		if(recv_len_once < 0)
 		{
+		    GGGDEBUG(("Xmodem_RecvToFlash recv data len = %d, < 0!", recv_len_once));
 			X_DEBUG(("Xmodem_RecvToFlash recv data len = %d, < 0!", recv_len_once));
 			break;
 		}
@@ -501,6 +511,7 @@ INT32 Xmodem_RecvToFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 dst_len, INT
 		{
 			if(x->last_recv_cmd == XMODEM_CMD_EOT)
 			{
+			    GGGDEBUG(("Xmodem_RecvToFlash recv EOT!!! total recv len = %d.", recv_len_total));
 				X_DEBUG(("Xmodem_RecvToFlash recv EOT!!! total recv len = %d.", recv_len_total));
 				break;
 			}
@@ -512,7 +523,7 @@ INT32 Xmodem_RecvToFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 dst_len, INT
 
 		BSP_GPIO_ToggleDebugPin();
 		if(Flash_Write(addr, pRecv, copy_len) == FALSE)
-		{
+		{   GGGDEBUG(("Xmodem_RecvToFlash flash write error!"));
 			X_DEBUG(("Xmodem_RecvToFlash flash write error!"));
 			break;
 		}
@@ -525,6 +536,7 @@ INT32 Xmodem_RecvToFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 dst_len, INT
 		copy_len = 0;
 	}
 
+	GGGDEBUG(("\r\n"));
 	X_DEBUG(("\r\n"));	
 	return recv_len_total;
 }

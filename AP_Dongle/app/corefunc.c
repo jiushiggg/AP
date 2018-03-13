@@ -49,12 +49,13 @@ UINT8 Core_RecvDataToFlash(UINT32 addr, UINT32 len)
 //	USBD_SetRecvMode(0);
 	if(Xmodem_RecvToFlash(&x, 1, addr, len, 5000) >= len)
 	{
+	    GGGDEBUG(("Core_RecvDataToFlashOK\r\n"));
 		pdebug("Core_RecvDataToFlash() ok.\r\n");
 //		USBD_SetRecvMode(1);
 		return 1;		
 	}
 	else
-	{
+	{   GGGDEBUG(("Core_RecvDataToFlashERR\r\n"));
 		perr("Core_RecvDataToFlash() fail!\r\n");
 //		USBD_SetRecvMode(1);
 		return 0;

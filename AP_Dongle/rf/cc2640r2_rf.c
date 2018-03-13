@@ -196,6 +196,7 @@ void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
         RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power];
     }
     RF_control(rfHandle, RF_CTRL_UPDATE_SETUP_CMD, NULL); //Signal update Rf core
+    RF_yield(rfHandle);
 }
 
 //RF_EventMask Rf_tx_package(RF_Handle h, uint32_t syncWord, uint8_t pktLen, uint8_t* pPkt)
@@ -337,8 +338,8 @@ UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeo
     sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
 //    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);
 
-    rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , timeout/10);
-    if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout+100/Clock_tickPeriod))){
+    rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , timeout/Clock_tickPeriod);
+    if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout/Clock_tickPeriod))){
         currentDataEntry = RFQueue_getDataEntry();
         memcpy(data, (uint8_t*)(&currentDataEntry->data), len);
         RFQueue_nextEntry();

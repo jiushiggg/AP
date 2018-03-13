@@ -73,15 +73,18 @@ void communicate_main(void)
                 if(Core_SendCmd(0x10F0, 0, NULL) == 1){
                     BSP_GPIO_ToggleDebugPin();
                     if(Core_RecvDataToFlash(local_task.flash_data_addr, local_task.flash_data_len) == 1){
+                        GGGDEBUG(("EVENT_PARSE_DATA\r\n"));
                         Event_Set(EVENT_PARSE_DATA);
                         BSP_GPIO_ToggleDebugPin();
                     }
                 }
             } else {
+                GGGDEBUG(("FLASHERROR\r\n"));
                 Core_SendCmd(CORE_CMD_FLASH_ERROR, 0, NULL);
             }
             pinfo("core recv data to flash exit.\r\n");
             Event_Clear(EVENT_COMMUNICATE_RX_TO_FLASH);
+            GGGDEBUG(("exit\r\n"));
         }else if (event & EVENT_COMMUNICATE_TX_ESL_ACK){
             pinfo("core tx esl ack.\r\n");
             Event_Clear(EVENT_COMMUNICATE_TX_ESL_ACK);
