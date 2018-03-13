@@ -15,10 +15,13 @@
 #include "Board.h"
 #include "spi_display.h"
 
-static SPI_Handle handle = NULL;
+SPI_Handle handle;
+SPI_Transaction transaction;
+
 unsigned char tx_buf[LOG_SIZE];
 unsigned char rx_buf[LOG_SIZE];
 
+extern void transferCallback(SPI_Handle handle, SPI_Transaction *transaction);
 //“˝Ω≈≈‰÷√
 //#define CC2640R2_LAUNCHXL_SPI0_MISO             IOID_19          /* RF1.20 */
 //#define CC2640R2_LAUNCHXL_SPI0_MOSI             IOID_18          /* RF1.18 */
@@ -44,21 +47,21 @@ SPI_Handle spi_open()
 {
     SPI_Params params;
 
+
     // Init SPI and specify non-default parameters
     SPI_Params_init(&params);
-    params.bitRate             = 4000000;
+    params.bitRate             = 1000000;
     params.frameFormat         = SPI_POL1_PHA1;
     params.mode                = SPI_SLAVE;
-    params.transferMode        = SPI_MODE_BLOCKING;
-    params.transferTimeout = 4000/10;  //4000us
-
-//    if(pinHandle == NULL)
-//        pinHandle = PIN_open(&SPICSN_Pin_State, SPICSN_GpioInitTable);
-
+    params.transferMode        = SPI_MODE_CALLBACK;
+    params.transferCallbackFxn = transferCallback;
+    // Configure the transaction
+    transaction.count = 2;
+    transaction.txBuf = tx_buf;
+    transaction.rxBuf = rx_buf;
     // Open the SPI and initiate the first transfer
     handle = SPI_open(Board_SPI0, &params);
-    //SPI_control(handle, SPICC26XXDMA_RETURN_PARTIAL_ENABLE, NULL);
-    return handle;
+    SPI_transfer(handle, &transaction);
 }
 #endif
 

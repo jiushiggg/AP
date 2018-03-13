@@ -86,13 +86,12 @@ INT32 Xmodem_SendCmd(INT32 dev, UINT8 cmd, UINT8 recv_ack_flag, INT32 timeout)
 	UINT8 recv_ack = 0;
 	INT32 read_len = 0;
 	INT32 send_ret = 0;
-	GGGDEBUG((">>>Xmodem_SendCmd:\r\ncmd = 0x%02X, flag = %d, timeout = %d, ", cmd, recv_ack_flag, timeout));
+
 	X_DEBUG((">>>Xmodem_SendCmd:\r\ncmd = 0x%02X, flag = %d, timeout = %d, ", cmd, recv_ack_flag, timeout));
 	while(retry_time > 0)
 	{	
 		send_ret = Device_Send(dev, &cmd, sizeof(cmd), timeout);
 		X_DEBUG(("send return %d, ", send_ret));
-		GGGDEBUG(("send return %d, ", send_ret));
 		if(send_ret != sizeof(cmd))
 		{
 			retry_time--;
@@ -115,7 +114,6 @@ INT32 Xmodem_SendCmd(INT32 dev, UINT8 cmd, UINT8 recv_ack_flag, INT32 timeout)
 		Device_Recv_pend(EVENT_WAIT_FOREVER);
 		read_len = xcb_recv_len_once;
 		recv_ack = recv_once_buf[0];
-		GGGDEBUG(("recv len = %d, ack = 0x%02X.", read_len, recv_ack));
 		if(read_len != sizeof(recv_ack))
 		{
 			retry_time--;

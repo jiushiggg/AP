@@ -75,42 +75,38 @@ UART_Handle uart_open()
  */
 #define BUF_LEN 4096*2
 uint8_t buf[BUF_LEN] = {0};
-uint16_t  send_index = 0;
-uint16_t  rec_index = 0;
-uint16_t  rec_len = 0;
+volatile uint16_t  send_index = 0;
+volatile uint16_t  rec_index = 0;
+volatile uint16_t  rec_len = 0;
 uint16_t  uart_send_len = 0;
-bool spi_status = false;
 
-uint8_t a[] = {'a','b','c','d','c','e','f','h','g','i', 'j', 'k', 'l', 'm', 'n', 'o'};
-uint8_t i=0;
-uint8_t f[] = "false";
-uint8_t r[] = "rec";
-//#define DEBUG_UART(n1, n2) UART_send(n1, n2);
-#define DEBUG_UART(n1, n2)
 
+// Callback function
+void transferCallback(SPI_Handle handle, SPI_Transaction *transaction)
+{
+    rec_len = transaction->count;
+    memcpy(buf+rec_index, transaction->rxBuf, rec_len);
+    rec_index += transaction->count;
+    SPI_transfer(handle, transaction);
+
+}
 
 void *mainThread(void *arg0)
 {
     const char  echoPrompt[] = "Echoing characters:\r\n";
     /* Call driver init functions */
     GPIO_init();
-//    UART_init();
     SPI_init();
-
     /* Turn on user LED */
     GPIO_write(Board_GPIO_LED0, Board_GPIO_LED_ON);
 
-    /* Create a UART with data processing off. */
+    my_UART_open();
+    UART_send(echoPrompt, sizeof(echoPrompt));
 
     if(spi_open() == NULL)
     {
         while(1);
     }
-
-//    if (uart_open() == NULL) {
-//        /* UART_open() failed */
-//        while (1);
-//    }
 
     /* Loop forever echoing */
 
@@ -125,93 +121,17 @@ void *mainThread(void *arg0)
         Task_sleep(100000);
     }
 #else
-       my_UART_open();
-       UART_send(echoPrompt, sizeof(echoPrompt));
-//       while(1)
-//           UART_send(a, sizeof(a));
-//       my_UART_close();
-//    UART_write(uart, echoPrompt, sizeof(echoPrompt));
-#define SPI_REC_LEN 1
+
     while (1) {
-        i = 0;
-        do{
-            if (rec_index >= BUF_LEN){
-                rec_index = 0;
-            }
-
-            spi_status = spi_read(buf+rec_index,SPI_REC_LEN);
-
-            if (false == spi_status){
-                DEBUG_UART(f, sizeof(f));
-                DEBUG_UART((uint8_t*)&rec_len, 1);
-                break;
-            }
-//            UART_send(&a[i++], 1);
-            rec_index += SPI_REC_LEN;
-            rec_len += SPI_REC_LEN;
-            if (rec_len > 1023){
-                break;
-            }
-
-        }while(1);
-
-        while (rec_len > 0){
-            DEBUG_UART(r, sizeof(r));
-            if (send_index + rec_len >= BUF_LEN){
-                UART_send(buf+send_index, BUF_LEN-send_index);
-                uart_send_len = BUF_LEN-send_index;
-                //uart_send_len = UART_write(uart, buf+send_index, BUF_LEN-send_index);
-                send_index = 0;
-            } else {
-                //uart_send_len = UART_write(uart, buf+send_index, rec_len);
-                UART_send(buf+send_index, rec_len);
-                uart_send_len = rec_len;
-                send_index += uart_send_len;
-            }
-            rec_len -= uart_send_len;
+        while(send_index < rec_index){
+            UART_send(buf+send_index, 1);
+            send_index++;
         }
-    }
-#endif
-}
-
-#if 0
-while (1) {
-    i = 0;
-    do{
-        if (rec_index >= BUF_LEN){
-            rec_index = 0;
-        }
-
-        spi_status = spi_read(buf+rec_index,SPI_REC_LEN);
-
-        if (false == spi_status){
-            DEBUG_UART(f, sizeof(f));
-            DEBUG_UART((uint8_t*)&rec_len, 1);
-            break;
-        }
-//            UART_send(&a[i++], 1);
-        rec_index += SPI_REC_LEN;
-        rec_len += SPI_REC_LEN;
-        if (rec_len > 1023){
-            break;
-        }
-
-    }while(1);
-
-    while (rec_len > 0){
-        DEBUG_UART(r, sizeof(r));
-        if (send_index + rec_len >= BUF_LEN){
-            UART_send(buf+send_index, BUF_LEN-send_index);
-            uart_send_len = BUF_LEN-send_index;
-            //uart_send_len = UART_write(uart, buf+send_index, BUF_LEN-send_index);
+        if (send_index == rec_index){
+            rec_index=0;
             send_index = 0;
-        } else {
-            //uart_send_len = UART_write(uart, buf+send_index, rec_len);
-            UART_send(buf+send_index, rec_len);
-            uart_send_len = rec_len;
-            send_index += uart_send_len;
         }
-        rec_len -= uart_send_len;
     }
-}
 #endif
+}
+
