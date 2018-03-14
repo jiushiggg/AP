@@ -7,9 +7,10 @@
 
 volatile UINT32 s_debug_level = DEBUG_LEVEL_DFAULT;
 
+#define GGGDELAY    0
 
 #define LOG_SIZE    64
-static SPI_Handle debug_spi_handle = NULL;
+
 unsigned char debug_buf[LOG_SIZE];
 
 void debug_peripheral_init(void)
@@ -26,11 +27,11 @@ void debug_peripheral_init(void)
 //    {
 //        while(1);
 //    }
-    bspSpiOpen(1000000);
+    bspSpiOpen(4000000);
 
 }
 
-
+extern void BSP_Delay10US(uint32_t delayUs);
 void log_print(const char *fmt, ...)
 {
     int len = 0;
@@ -43,12 +44,13 @@ void log_print(const char *fmt, ...)
     va_end(ap);
 
     len = strlen((char *)debug_buf);
-    bspSpiWrite(ptr,len);
-//    for(i=0;i<len;i++)
-//    {
-//        bspSpiWrite(ptr++,1);
-//
-//    }
+//    bspSpiWrite(ptr,len);
+    for(i=0;i<len;i++)
+    {
+        bspSpiWrite(ptr++,1);
+        BSP_Delay10US(GGGDELAY);
+
+    }
 }
 
 UINT8 Debug_GetLevel(void)
@@ -76,7 +78,7 @@ void pprint(const char *format, ...)
     for(i=0;i<len;i++)
     {
         bspSpiWrite(ptr++,1);
-
+        BSP_Delay10US(GGGDELAY);
     }
 }
 
@@ -187,7 +189,7 @@ void pdebug(const char *format, ...)
 	    for(i=0;i<len;i++)
 	    {
 	        bspSpiWrite(ptr++,1);
-
+	        BSP_Delay10US(GGGDELAY);
 	    }
 	}
 }
@@ -210,7 +212,7 @@ void perr(const char *format, ...)
 	    for(i=0;i<len;i++)
 	    {
 	        bspSpiWrite(ptr++,1);
-
+	        BSP_Delay10US(GGGDELAY);
 	    }
 	}
 }
@@ -234,7 +236,7 @@ void pinfo(const char *format, ...)
 	    for(i=0;i<len;i++)
 	    {
 	        bspSpiWrite(ptr++,1);
-
+	        BSP_Delay10US(GGGDELAY);
 	    }
 	}
 }

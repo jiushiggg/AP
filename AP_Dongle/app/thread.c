@@ -107,21 +107,20 @@ void app_init(void)
     Semphore_xmodemInit();
 
 }
-extern void BSP_GPIO_test(void);
+
 
 #define RX_LEN  26
 uint8_t mylen =0, mybuf[RX_LEN] = {0};
 
 void *mainThread(void *arg0)
 {
-    BSP_DEBUG_IO;
     Board_initSPI();
     Board_initUART();
     Debug_SetLevel(DEBUG_LEVEL_INFO);
 //    printf("     \r\n%s.\r\n", APP_VERSION_STRING);
     debug_peripheral_init();
     pinfo("basic init complete.\r\n");
-    BSP_DEBUG_IO;
+
 //        while (1) {
 //            log_print("spi_write:%02x:%02d:%02d",1,2,3);
 //            //log_print("ab%x",1);
@@ -140,7 +139,6 @@ void *mainThread(void *arg0)
     }
 
     UART_appInit();
-    BSP_DEBUG_IO;
 
     Core_Init();
     pinfo("core init complete.\r\n");

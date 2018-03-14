@@ -249,7 +249,7 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 	set_power_rate(RF_DEFAULT_POWER, table->recv_bps);
 	rf_preset_for_hb_recv();
 	enter_txrx();
-	
+	cc2592Cfg(CC2592_RX_HG_MODE);
 	while(1)
 	{
 		if(core_idel_flag == 1)

@@ -13,6 +13,7 @@
 #include <ti/sysbios/knl/Semaphore.h>
 #include "RFQueue.h"
 #include "datatype.h"
+#include "CC2592.h"
 
 #define TRUE  1
 #define FALSE 0
@@ -81,6 +82,6 @@ extern void rf_preset_for_hb_recv(void);
 void rf_preset_for_hb_recv(void);
 uint8_t get_rssi(void);
 extern void rf_exit_from_hb_recv(void);
-extern UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout);
+extern UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeout);
 extern UINT8 get_hb_rssi(void);
 #endif

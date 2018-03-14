@@ -148,7 +148,7 @@ static void bspSpiInit(uint32_t bitRate)
                        SSI_MODE_MASTER, /* mode */
                        bitRate, /* bit rate */
                        8); /* data size */
-    IOCPinTypeSsiMaster(BLS_SPI_BASE, BSP_SPI_MISO, BSP_SPI_MOSI,
+    IOCPinTypeSsiMaster(BLS_SPI_BASE, IOID_UNUSED, BSP_SPI_MOSI,
                         BSP_SPI_CSN /* csn */, BSP_SPI_CLK);
     SSIEnable(BLS_SPI_BASE);
 

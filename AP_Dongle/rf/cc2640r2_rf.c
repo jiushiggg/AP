@@ -160,6 +160,7 @@ void set_frequence(uint8_t  Frequency, uint8_t fractFreq_flag)
     RF_cmdFs.frequency = 2400+Frequency;
     RF_cmdFs.fractFreq = (fractFreq_flag ? 32768 : 0);
     RF_postCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
+    RF_yield(rfHandle);
 }
 
 void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
@@ -328,7 +329,7 @@ UINT8 get_rssi(void)
 }
 
 
-UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT16 timeout)
+UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeout)
 {
     uint32_t sync_word=0;
  //   uint32_t tmp_timeout = 0;

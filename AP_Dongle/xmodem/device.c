@@ -2,6 +2,7 @@
 #if 1
 #include "device.h"
 #include "uart.h"
+#include "bsp.h"
 void Device_Init(void)
 {
 	return;
@@ -18,6 +19,7 @@ INT32 Device_Open(UINT8 type, UINT8 *ip, UINT16 port)
 INT32 Device_Send(INT32 d, UINT8 *src, INT32 len, INT32 timeout)
 {
 	//return USBD_Write(src, len);  todo
+    BSP_GPIO_test(DEBUG_TEST);
     return UART_appWrite(src, len);
 }
 

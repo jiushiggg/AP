@@ -16,7 +16,7 @@
 #define LED_OFF(n)      GPIO_clearDio(n)
 #define LED_TOGGLE(n)   GPIO_toggleDio(n)
 
-#define BSP_DEBUG_IO    BSP_GPIO_test()
+#define BSP_DEBUG_IO(n)    BSP_GPIO_test(n)
 
 
 
@@ -27,7 +27,9 @@
 #endif
 
 extern void BSP_GPIO_init(void);
-extern void BSP_GPIO_test(void);
+extern void BSP_GPIO_test(uint32_t n);
+extern void BSP_highGPIO(uint32_t n);
+extern void BSP_lowGPIO(uint32_t n);
 
 void BSP_EnterCri(void);
 void BSP_ExitCri(void);
@@ -64,7 +66,7 @@ void BSP_GPIO_CfgUSBCable(void);
 void BSP_GPIO_SetUSBCable(int enable);
 
 void BSP_GPIO_CfgDebugPin(void);
-void BSP_GPIO_ToggleDebugPin(void);
+extern void BSP_GPIO_ToggleDebugPin(void);
 
 void BSP_SPI_CfgSPI2(void);
 
