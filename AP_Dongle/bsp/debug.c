@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "Board.h"
 #include "bsp_spi.h"
+#include "bsp.h"
 
 volatile UINT32 s_debug_level = DEBUG_LEVEL_DFAULT;
 
@@ -15,23 +16,20 @@ unsigned char debug_buf[LOG_SIZE];
 
 void debug_peripheral_init(void)
 {
-//    SPI_Params params;
-//
-//    SPI_Params_init(&params);
-//    params.bitRate     = 4000000;
-//    params.frameFormat = SPI_POL1_PHA1;
-//    params.mode        = SPI_MASTER;
-//    params.transferMode = SPI_MODE_BLOCKING;
-//    debug_spi_handle = SPI_open(Board_SPI1, &params);
-//    if(!debug_spi_handle)
-//    {
-//        while(1);
-//    }
     bspSpiOpen(4000000);
-
+}
+UINT8 Debug_GetLevel(void)
+{
+    return s_debug_level;
 }
 
-extern void BSP_Delay10US(uint32_t delayUs);
+void Debug_SetLevel(UINT8 new_level)
+{
+    s_debug_level = new_level;
+}
+
+
+#ifdef  XMODELOG
 void log_print(const char *fmt, ...)
 {
     int len = 0;
@@ -53,15 +51,6 @@ void log_print(const char *fmt, ...)
     }
 }
 
-UINT8 Debug_GetLevel(void)
-{
-	return s_debug_level;
-}
-
-void Debug_SetLevel(UINT8 new_level)
-{
-	s_debug_level = new_level;
-}
 
 void pprint(const char *format, ...)
 {
@@ -251,3 +240,59 @@ void pinfo(const char *format, ...)
 //        //log_print("02%x",1);
 //        Task_sleep(100000);
 //    }
+#else
+void pdebughex(UINT8 *src, UINT16 len){}
+void pdebug(const char *format, ...){}
+void perr(const char *format, ...){}
+void pinfo(const char *format, ...)
+{
+    int len = 0;
+    int i = 0;
+    uint8_t *ptr = debug_buf;
+
+    if(s_debug_level >= DEBUG_LEVEL_INFO)
+    {
+        memset(debug_buf,0,sizeof(debug_buf));
+        va_list ap;
+        va_start(ap, format);
+        vsnprintf((char *)debug_buf, LOG_SIZE - 1, format, ap);
+        va_end(ap);
+
+        len = strlen((char *)debug_buf);
+        for(i=0;i<len;i++)
+        {
+            bspSpiWrite(ptr++,1);
+            BSP_Delay10US(GGGDELAY);
+        }
+    }
+
+}
+void pprint(const char *format, ...){}
+void phex(UINT8 *src, UINT16 len){}
+void perrhex(UINT8 *src, UINT16 len){}
+
+void log_print(const char *fmt, ...)
+{
+    int len = 0;
+    int i = 0;
+    BSP_lowGPIO(DEBUG_TEST);
+
+    uint8_t *ptr = debug_buf;
+    memset(debug_buf,0,sizeof(debug_buf));
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf((char *)debug_buf, LOG_SIZE - 1, fmt, ap);
+    va_end(ap);
+
+    len = strlen((char *)debug_buf);
+//    bspSpiWrite(ptr,len);
+    for(i=0;i<len;i++)
+    {
+        bspSpiWrite(ptr++,1);
+        BSP_Delay10US(GGGDELAY);
+
+    }
+    BSP_highGPIO(DEBUG_TEST);
+}
+
+#endif

@@ -64,47 +64,49 @@ void communicate_main(void)
     uint32_t event = 0;
     while(1){
         event = Event_Pendcommunicate();
+
+        if(event & EVENT_COMMUNICATE_RX_HANDLE){
+            readHandleFnx();
+            Event_Clear(EVENT_COMMUNICATE_RX_HANDLE);
+        }
         if (event & EVENT_COMMUNICATE_RX_TO_FLASH){
-            pinfo("core recv data to flash start.\r\n");
+            pinfo("cp2flash\r\n");
             memcpy((UINT8 *)&local_task.flash_data_len, local_task.cmd_buf, sizeof(local_task.flash_data_len));
-            BSP_GPIO_ToggleDebugPin();
+            //BSP_lowGPIO(DEBUG_TEST);
             if(Core_MallocFlash(&local_task.flash_data_addr, local_task.flash_data_len) == 1){
-                BSP_GPIO_ToggleDebugPin();
+                //BSP_highGPIO(DEBUG_TEST);
                 if(Core_SendCmd(0x10F0, 0, NULL) == 1){
-                    BSP_GPIO_ToggleDebugPin();
+                    //BSP_lowGPIO(DEBUG_TEST);
                     if(Core_RecvDataToFlash(local_task.flash_data_addr, local_task.flash_data_len) == 1){
                         GGGDEBUG(("EVENT_PARSE_DATA\r\n"));
                         Event_Set(EVENT_PARSE_DATA);
-                        BSP_GPIO_ToggleDebugPin();
+                        //BSP_GPIO_test(DEBUG_TEST);
                     }
                 }
             } else {
-                GGGDEBUG(("FLASHERROR\r\n"));
+
                 Core_SendCmd(CORE_CMD_FLASH_ERROR, 0, NULL);
             }
-            pinfo("core recv data to flash exit.\r\n");
+            pinfo("cp2flash exit\r\n");
             Event_Clear(EVENT_COMMUNICATE_RX_TO_FLASH);
-            GGGDEBUG(("exit\r\n"));
-        }else if (event & EVENT_COMMUNICATE_TX_ESL_ACK){
+        }
+        if (event & EVENT_COMMUNICATE_TX_ESL_ACK){
             pinfo("core tx esl ack.\r\n");
             Event_Clear(EVENT_COMMUNICATE_TX_ESL_ACK);
-        }else if (event & EVENT_COMMUNICATE_ACK){
+        }
+        if (event & EVENT_COMMUNICATE_ACK){
             if (NULL != tim_soft_callback){
                 tim_soft_callback();
             }
             Event_Clear(EVENT_COMMUNICATE_ACK);
-        }else if(event & EVENT_COMMUNICATE_RX_HANDLE){
-            readHandleFnx();
-            Event_Clear(EVENT_COMMUNICATE_RX_HANDLE);
-        }else if(event & EVENT_COMMUNICATE_SCAN_DEVICE)
-        {
+        }
+
+        if(event & EVENT_COMMUNICATE_SCAN_DEVICE){
             pinfo("core uart send ack.\r\n");
             Core_SendCmd(CORE_CMD_ACK, 0, NULL);
             Event_Clear(EVENT_COMMUNICATE_SCAN_DEVICE);
         }
-        else {
 
-        }
     }
 }
 
@@ -124,12 +126,14 @@ void readHandleFnx(void)
         Xmodem_InitCallback();
     }else{
         EP_DEBUG(("\r\n>>>EP1_OUT_Callback.\r\n"));
-        Xmodem_InitCallback();
     }
 }
 
 void readCallback(UART_Handle handle, void *rxBuf, size_t size)
 {
+    if (recv_once_buf[2] == 0x35 && recv_once_buf[2] == 0x31){
+        printf(("up\r\n"));
+    }
     BSP_GPIO_test(DEBUG_IO3);
     if (recCmdAckFlg == true && XMODEM_LEN_CMD==size){
         recCmdAckFlg = false;
