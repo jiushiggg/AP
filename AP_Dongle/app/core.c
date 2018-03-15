@@ -206,7 +206,7 @@ void Core_Mainloop(void)
         if(event & EVENT_ESL_UPDATA)
         {
             esl_updata_t *this_updata;
-            pinfo("core updata esl start.\r\n");
+            pinfo("updata esl start\r\n");
             local_task.flash_ack_addr = MALLOC_FAIL;
             local_task.flash_ack_len = 0;// reset ack info
             this_updata=Core_Malloc(sizeof(esl_updata_t));

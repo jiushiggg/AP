@@ -8,7 +8,7 @@
 
 volatile UINT32 s_debug_level = DEBUG_LEVEL_DFAULT;
 
-#define GGGDELAY    0
+#define GGGDELAY    8
 
 #define LOG_SIZE    64
 

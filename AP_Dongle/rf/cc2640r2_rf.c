@@ -2,7 +2,7 @@
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Clock.h>
 #include <xdc/runtime/Error.h>
-
+#include "CC2592.h"
 
 #include <ti/drivers/pin/PINCC26XX.h>
 
@@ -112,7 +112,8 @@ void rf_init(void)
 #ifdef  RF_TEST
     RF_MapIO();
 #endif
-    RF_yield(rfHandle);    //使射频进入低功耗状态 //为什么没有这句就收不到数据？
+    cc2592Init();
+    RF_yield(rfHandle);    //使射频进入低功耗状态 //without this function, can't receive data, why?
 }
 
 #define POWER_LEVEL  6
