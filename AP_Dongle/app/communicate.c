@@ -124,6 +124,7 @@ void readHandleFnx(void)
         Xmodem_InitCallback();
     }else{
         EP_DEBUG(("\r\n>>>EP1_OUT_Callback.\r\n"));
+        Xmodem_InitCallback();
     }
 }
 

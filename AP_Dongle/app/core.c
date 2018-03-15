@@ -91,7 +91,7 @@ void Core_RxHandler(void)
 	local_task.data_ptr = Xmodem_GetCallbackData(&local_task.data_len);
 	memcpy((void *)&local_task.cmd, local_task.data_ptr, 2);
 	memcpy((void *)&local_task.cmd_len, local_task.data_ptr+2, 4);
-	pinfo("Core_RxHandler() rx cmd = 0x%04X, cmd len = %d\r\n", local_task.cmd, local_task.cmd_len);
+	pinfo("Core_RxHandler cmd=0x%04X, cmd len=%d\r\n", local_task.cmd, local_task.cmd_len);
 //	pdebughex(local_task.data_ptr, local_task.data_len);
 	if(local_task.cmd_len > sizeof(local_task.cmd_buf))
 	{
