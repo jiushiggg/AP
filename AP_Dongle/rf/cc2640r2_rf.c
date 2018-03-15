@@ -234,7 +234,7 @@ void send_pend(RF_EventMask result)
 uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t timeout)
 {
     RF_EventMask result;
-
+    cc2592Cfg(CC2592_TX);
     set_frequence(ch/2, ch%2);
     send_data_init(id, data, len, timeout);
     result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
@@ -253,7 +253,7 @@ UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t ti
 
     sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
 //    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);
-
+    cc2592Cfg(CC2592_RX_HG_MODE);
     rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , timeout/10);
     if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout+100/Clock_tickPeriod))){
         currentDataEntry = RFQueue_getDataEntry();
@@ -319,7 +319,9 @@ void enter_txrx(void)
 
 }
 void exit_txrx(void)
-{}
+{
+    cc2592Cfg(CC2592_POWERDOWN);
+}
 
 void rf_preset_for_hb_recv(void)
 {
@@ -336,7 +338,7 @@ UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeo
  //   uint32_t tmp_timeout = 0;
     RF_EventMask rx_event;
     set_frequence(ch/2, ch%2);
-
+    cc2592Cfg(CC2592_RX_HG_MODE);
     sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
 //    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);
 
