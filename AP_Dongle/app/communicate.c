@@ -78,7 +78,7 @@ void communicate_main(void)
                 if(Core_SendCmd(0x10F0, 0, NULL) == 1){
                     //BSP_lowGPIO(DEBUG_TEST);
                     if(Core_RecvDataToFlash(local_task.flash_data_addr, local_task.flash_data_len) == 1){
-                        GGGDEBUG(("EVENT_PARSE_DATA\r\n"));
+                        pinfo(("EVENT_PARSE_DATA\r\n"));
                         Event_Set(EVENT_PARSE_DATA);
                         //BSP_GPIO_test(DEBUG_TEST);
                     }
@@ -131,9 +131,6 @@ void readHandleFnx(void)
 
 void readCallback(UART_Handle handle, void *rxBuf, size_t size)
 {
-    if (recv_once_buf[2] == 0x35 && recv_once_buf[2] == 0x31){
-        printf(("up\r\n"));
-    }
     BSP_GPIO_test(DEBUG_IO3);
     if (recCmdAckFlg == true && XMODEM_LEN_CMD==size){
         recCmdAckFlg = false;

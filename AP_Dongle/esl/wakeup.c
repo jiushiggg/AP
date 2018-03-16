@@ -104,7 +104,7 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 		goto done;
 	}
 	LED_TOGGLE(DEBUG_IO0);
-	interval = EasyLink_10us_To_RadioTime(interval);
+	interval = EasyLink_us_To_RadioTime(interval);
 	while(!TIM_CheckTimeout(timer))
 	{
 		if(Core_GetQuitStatus() == 1)

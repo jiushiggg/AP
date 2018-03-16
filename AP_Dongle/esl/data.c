@@ -354,7 +354,7 @@ if(g3_print_ctrl != 0)
 	UINT16 buf_len = 0;
 	UINT32 offset = addr;
 	
-	printf("*************** DATA ****************\r\n");
+	log_print("DATA\r\n");
 	while(left_len > 0)
 	{
 		buf_len = left_len > sizeof(buf) ? sizeof(buf) : left_len;
@@ -370,16 +370,16 @@ if(g3_print_ctrl != 0)
 		{
 			if((left_len<=0) && (i==(buf_len-1)))
 			{
-				printf("0x%02X.\r\n", buf[i]);
+			    log_print("0x%02X.\r\n", buf[i]);
 			}
 			else
 			{
-				printf("0x%02X,", buf[i]);
+			    log_print("0x%02X,", buf[i]);
 			}
 		}
 	}
 	
-	printf("*************************************\r\n");	
+	log_print("\r\n");
 }
 }
 
@@ -394,7 +394,7 @@ if(g3_print_ctrl != 0)
 	UINT16 buf_len = 0;
 	UINT32 offset = addr;
 
-	printf("*************** ACK ****************\r\n");	
+	log_print("ACK\r\n");
 	while(left_len > 0)
 	{
 		buf_len = left_len > sizeof(buf) ? sizeof(buf) : left_len;
@@ -410,15 +410,15 @@ if(g3_print_ctrl != 0)
 		{
 			if((left_len<=0) && (i==(buf_len-1)))
 			{
-				printf("0x%02X.\r\n", buf[i]);
+				log_print("0x%02X.\r\n", buf[i]);
 			}
 			else
 			{
-				printf("0x%02X,", buf[i]);
+				log_print("0x%02X,", buf[i]);
 			}
 		}
 	}
-	printf("*************************************\r\n");	
+	log_print("\r\n");
 }
 }
 

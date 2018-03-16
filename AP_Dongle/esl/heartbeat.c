@@ -194,7 +194,7 @@ static esl_uplink_info_t *_handle_esl_uplink_data(esl_uplink_info_t *start, INT3
 		pinfo = _append_esl_uplink_info(start, num, eslid, sid);
 	}
 	
-	printf("uplink info @ 0x%08X, num = %d\r\n", (int)start, (int)*num);
+	log_print("uplink info @ 0x%08X, num = %d\r\n", (int)start, (int)*num);
 	phex((UINT8 *)start, sizeof(esl_uplink_info_t)*NUM_OF_MAX_ESL_UPLINK_INFO);
 	
 	return pinfo;
@@ -276,8 +276,8 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 			break;
 		}
 			
-		if((table->num>=50) && (table->numout!=0))   //todo  mydebug
-//		if((table->num>=table->numout) && (table->numout!=0))
+//		if((table->num>=50) && (table->numout!=0))   //todo  mydebug
+		if((table->num>=table->numout) && (table->numout!=0))
 		{
 			pinfo("numout\r\n");
 			break;

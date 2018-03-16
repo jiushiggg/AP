@@ -4,7 +4,7 @@
 #include "datatype.h"
 
 
-#define ESL_NUM 250
+#define ESL_NUM 150
 #define UPDATA_BUF_SIZE (ESL_NUM*sizeof(mode1_esl_t)+100)
 #define TABLE_BUF_SIZE  UPDATA_BUF_SIZE
 

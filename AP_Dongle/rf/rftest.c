@@ -155,7 +155,7 @@ void ber_get_rssi(void)
 //	rssi = RFC_GetRssi();
 
 #ifdef BER_DEBUG
-	printf("rssi=%d\r\n", rssi);
+    log_print("rssi=%d\r\n", rssi);
 #endif
 	
 	if(rssi_f == 0)
@@ -179,7 +179,7 @@ void ber_get_fc(void)
 {
 //	fc = RFC_GetFC();
 #ifdef BER_DEBUG
-	printf("fc=%d\r\n", fc);
+    log_print("fc=%d\r\n", fc);
 #endif	
 	if(fc_f == 0)
 	{
@@ -475,25 +475,25 @@ INT32 rft_check_ber_data(UINT8 *src, INT32 len)
 
 void print_ber_para(void)
 {
-	printf("****** BER PARA *******\r\n");
-	printf("actor = %d, ber_e = %d, power_e = %d, fc_e = %d, rounds = %d.\r\n", \
+    log_print("****** BER PARA *******\r\n");
+    log_print("actor = %d, ber_e = %d, power_e = %d, fc_e = %d, rounds = %d.\r\n", \
 			actor, ber_enable, power_enable, fc_enable, test_rounds);
-	printf("txid = %02X-%02X-%02X-%02X, txdatarate = %d, tx_channel = %d, tx_power = %d\r\n", \
+    log_print("txid = %02X-%02X-%02X-%02X, txdatarate = %d, tx_channel = %d, tx_power = %d\r\n", \
 			tx_id[0], tx_id[1], tx_id[2], tx_id[3], tx_datarate, tx_channel, tx_power);
-	printf("rxid = %02X-%02X-%02X-%02X, rxdatarate = %d, rx_channel = %d, rx_power = %d\r\n", \
+    log_print("rxid = %02X-%02X-%02X-%02X, rxdatarate = %d, rx_channel = %d, rx_power = %d\r\n", \
 			rx_id[0], rx_id[1], rx_id[2], rx_id[3], rx_datarate, rx_channel, rx_power);
-	printf("**** BER PARA END *****\r\n");
+    log_print("**** BER PARA END *****\r\n");
 }
 
 void print_ber_result(void)
 {
-	printf("****** BER RESULT *******\r\n");
+    log_print("****** BER RESULT *******\r\n");
 
-	printf("ber = %f\r\n", ber);
-	printf("rssi_min = %d, rssi_avg = %d, rssi_max = %d\r\n", rssi_min, rssi_avg, rssi_max);
-	printf("fc_min = %d, fc_avg = %d, fc_max = %d\r\n", fc_min, fc_avg, fc_max);
+    log_print("ber = %f\r\n", ber);
+    log_print("rssi_min = %d, rssi_avg = %d, rssi_max = %d\r\n", rssi_min, rssi_avg, rssi_max);
+    log_print("fc_min = %d, fc_avg = %d, fc_max = %d\r\n", fc_min, fc_avg, fc_max);
 	
-	printf("**** BER RESULT END *****\r\n");
+    log_print("**** BER RESULT END *****\r\n");
 }
 
 INT32 rft_ber(UINT8 *ack_buf, INT32 size)

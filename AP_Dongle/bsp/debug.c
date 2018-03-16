@@ -242,7 +242,28 @@ void pinfo(const char *format, ...)
 //    }
 #else
 void pdebughex(UINT8 *src, UINT16 len){}
-void pdebug(const char *format, ...){}
+void pdebug(const char *format, ...)
+{
+    int len = 0;
+    int i = 0;
+    uint8_t *ptr = debug_buf;
+
+    if(s_debug_level >= DEBUG_LEVEL_DEBUG)
+    {
+        memset(debug_buf,0,sizeof(debug_buf));
+        va_list ap;
+        va_start(ap, format);
+        vsnprintf((char *)debug_buf, LOG_SIZE - 1, format, ap);
+        va_end(ap);
+
+        len = strlen((char *)debug_buf);
+        for(i=0;i<len;i++)
+        {
+            bspSpiWrite(ptr++,1);
+            BSP_Delay10US(GGGDELAY);
+        }
+    }
+}
 void perr(const char *format, ...){}
 void pinfo(const char *format, ...)
 {

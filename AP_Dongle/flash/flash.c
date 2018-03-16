@@ -98,7 +98,7 @@ UINT8 Flash_Init(void)
 	if ((id!=FlashID) && (id!=FlashID_GD))
 	{
 #ifdef	FLASH_DBG
-		printf("FI RDID FAIL.\r\n");
+	    log_print("FI RDID FAIL.\r\n");
 #endif
 		return FLASH_INIT_ERR_IO;
 	}
@@ -107,20 +107,20 @@ UINT8 Flash_Init(void)
 	if (ret == FLASH_CHECK_ERR)
 	{
 #ifdef	FLASH_DBG
-		printf("FI FC FAIL.\r\n");
+	    log_print("FI FC FAIL.\r\n");
 #endif
 		return FLASH_INIT_ERR_CK;
 	}
 	else if (ret == FLASH_CHECK_NEW)
 	{
 #ifdef	FLASH_DBG
-		printf("FI FC NEW.\r\n");
+	    log_print("FI FC NEW.\r\n");
 #endif
 	}
 	//系统重启后，设置当前sector位置
 	_sector = DATA_SECTER_START;
 #ifdef	FLASH_DBG
-	printf("FI OK.\r\n");
+	log_print("FI OK.\r\n");
 #endif
 	
 	return FLASH_INIT_OK;
