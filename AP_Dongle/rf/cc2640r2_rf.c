@@ -156,9 +156,10 @@ void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequenc
     RF_control(rfHandle, RF_CTRL_UPDATE_SETUP_CMD, NULL); //Signal update Rf core
 //    RF_yield(rfHandle);  // Force a power down using RF_yield() API. This will power down RF after all pending radio commands are complete.
 }
-void set_frequence(uint8_t  Frequency, uint8_t fractFreq_flag)
+void set_frequence(uint8_t  Frequency)
 {
-    RF_cmdFs.frequency = 2400+Frequency;
+    uint8_t  fractFreq_flag = Frequency%2;
+    RF_cmdFs.frequency = 2400+Frequency/2;
     RF_cmdFs.fractFreq = (fractFreq_flag ? 32768 : 0);
     RF_postCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
     RF_yield(rfHandle);
@@ -218,6 +219,7 @@ void send_data_init(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
     RF_cmdPropTxAdv.pktLen = len;
     RF_cmdPropTxAdv.pPkt = data;
     RF_cmdPropTxAdv.syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+    cc2592Cfg(CC2592_TX);
 }
 RF_EventMask send_async(uint32_t interal)
 {
@@ -235,7 +237,7 @@ uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t 
 {
     RF_EventMask result;
     cc2592Cfg(CC2592_TX);
-    set_frequence(ch/2, ch%2);
+    set_frequence(ch);
     send_data_init(id, data, len, timeout);
     result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
     RF_pendCmd(rfHandle, result, RF_EventTxEntryDone);
@@ -249,7 +251,7 @@ UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t ti
     uint32_t sync_word=0;
  //   uint32_t tmp_timeout = 0;
     RF_EventMask rx_event;
-    set_frequence(ch/2, ch%2);
+    set_frequence(ch);
 
     sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
 //    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);
@@ -284,7 +286,7 @@ void clear_queue_buf(void)
 RF_EventMask send_without_wait(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeout)
 {
     RF_EventMask result;
-    set_frequence(ch/2, ch%2);
+    set_frequence(ch);
     send_data_init(id, data, len, timeout);
     result = send_async(timeout);
     return result;
@@ -337,7 +339,7 @@ UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeo
     uint32_t sync_word=0;
  //   uint32_t tmp_timeout = 0;
     RF_EventMask rx_event;
-    set_frequence(ch/2, ch%2);
+    set_frequence(ch);
     cc2592Cfg(CC2592_RX_HG_MODE);
     sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
 //    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);

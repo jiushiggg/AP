@@ -85,7 +85,7 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 #endif
 
     set_power_rate(power, datarate);
-    set_frequence(channel, channel%2);
+    set_frequence(channel);
     send_data_init(id, data, data_len, 5000);
     rf_time = RF_getCurrentTime();
 	if(mode == 1)

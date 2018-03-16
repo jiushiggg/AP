@@ -212,6 +212,7 @@ void Core_Mainloop(void)
             this_updata=Core_Malloc(sizeof(esl_updata_t));
             if(this_updata == NULL)
             {
+                pinfo("this_updata err.\r\n");//ggg debug
                 perr("core malloc g3 updata table!\r\n");
                 Core_SendCmd(CORE_CMD_RAM_ERROR, 0, NULL);
             }
@@ -223,13 +224,12 @@ void Core_Mainloop(void)
                 this_updata->ack_addr = 0;
                 this_updata->ack_len = 0;
                 esl_updata(this_updata);
-
+                pinfo("core updata esl exit.\r\n");
                 if((this_updata->ack_addr!=MALLOC_FAIL) && (this_updata->ack_len!=0))
                 {
                     Core_SendDataFromFlash(this_updata->ack_addr, this_updata->ack_len);//tx ack
                 }
             }
-            pinfo("core updata esl exit.\r\n");
             Event_Clear(EVENT_ESL_UPDATA);
         }
 #if 1
