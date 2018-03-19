@@ -540,6 +540,7 @@ INT32 Xmodem_RecvToFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 dst_len, INT
 			break;
 		}
 
+        Device_Recv_pend(EVENT_WAIT_FOREVER);
 		recv_len_once = Xmodem_RecvOnce(x, dev, &pRecv, timeout);
 		if(recv_len_once < 0)
 		{

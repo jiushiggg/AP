@@ -58,7 +58,7 @@ uint8_t Core_SendCmd(uint16_t cmd, uint32_t cmd_len, uint8_t *cmd_data)
 done:
     return ret;
 }
-
+static uint8_t writeFlashFlg = false;
 void communicate_main(void)
 {
     uint32_t event = 0;
@@ -77,11 +77,13 @@ void communicate_main(void)
                 //BSP_highGPIO(DEBUG_TEST);
                 if(Core_SendCmd(0x10F0, 0, NULL) == 1){
                     //BSP_lowGPIO(DEBUG_TEST);
+                    writeFlashFlg = true;
                     if(Core_RecvDataToFlash(local_task.flash_data_addr, local_task.flash_data_len) == 1){
                         pinfo(("EVENT_PARSE_DATA\r\n"));
                         Event_Set(EVENT_PARSE_DATA);
                         //BSP_GPIO_test(DEBUG_TEST);
                     }
+                    writeFlashFlg = false;
                 }
             } else {
 
@@ -134,6 +136,8 @@ void readCallback(UART_Handle handle, void *rxBuf, size_t size)
     BSP_GPIO_test(DEBUG_IO3);
     if (recCmdAckFlg == true && XMODEM_LEN_CMD==size){
         recCmdAckFlg = false;
+        Device_Recv_post();
+    }else if((XMODEM_LEN_CMD==size || XMODEM_LEN_ALL==size) && writeFlashFlg == true){
         Device_Recv_post();
     }else if (XMODEM_LEN_CMD==size || XMODEM_LEN_ALL==size){
         Event_communicateSet(EVENT_COMMUNICATE_RX_HANDLE);
