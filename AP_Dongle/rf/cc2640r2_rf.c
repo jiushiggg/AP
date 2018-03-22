@@ -118,10 +118,11 @@ void rf_init(void)
 
 #define POWER_LEVEL  6
 const uint16_t rf_tx_power[POWER_LEVEL]={0x3161, 0x4214,0x4e18,0x5a1c, 0x9324, 0x9330};
-void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequency, uint8_t fractFreq_flag)
+void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequency)
 {
-
-    RF_cmdFs.frequency = Frequency;
+    uint8_t fractFreq_flag;
+    fractFreq_flag = Frequency%2;
+    RF_cmdFs.frequency = 2400+Frequency/2;
     RF_cmdFs.fractFreq = (fractFreq_flag ? 32768 : 0);
     RF_postCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
     switch(Data_rate)
@@ -161,8 +162,8 @@ void set_frequence(uint8_t  Frequency)
     uint8_t  fractFreq_flag = Frequency%2;
     RF_cmdFs.frequency = 2400+Frequency/2;
     RF_cmdFs.fractFreq = (fractFreq_flag ? 32768 : 0);
-    RF_postCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
-    RF_yield(rfHandle);
+    RF_runCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
+    //RF_yield(rfHandle);
 }
 
 void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
@@ -199,7 +200,7 @@ void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
         RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power];
     }
     RF_control(rfHandle, RF_CTRL_UPDATE_SETUP_CMD, NULL); //Signal update Rf core
-    RF_yield(rfHandle);
+    //RF_yield(rfHandle);
 }
 
 //RF_EventMask Rf_tx_package(RF_Handle h, uint32_t syncWord, uint8_t pktLen, uint8_t* pPkt)
@@ -221,17 +222,39 @@ void send_data_init(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
     RF_cmdPropTxAdv.syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
     cc2592Cfg(CC2592_TX);
 }
+#define MY_TEST_RF
+#ifdef MY_TEST_RF
 RF_EventMask send_async(uint32_t interal)
 {
     RF_EventMask result;
- //   RF_cmdPropTxAdv.startTime += interal;
+   // RF_cmdPropTxAdv.startTime += interal + EasyLink_us_To_RadioTime(700);
+    //result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
+    result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
+    RF_yield(rfHandle);
+    return result;
+}
+
+void send_pend(RF_EventMask result)
+{
+    //RF_pendCmd(rfHandle, result, RF_EventTxEntryDone|RF_EventLastCmdDone);
+}
+#else
+RF_EventMask send_async(uint32_t interal)
+{
+    RF_EventMask result;
+   // RF_cmdPropTxAdv.startTime += interal + EasyLink_us_To_RadioTime(700);
     result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
     return result;
 }
 
 void send_pend(RF_EventMask result)
 {
-    RF_pendCmd(rfHandle, result, RF_EventTxEntryDone);
+    RF_pendCmd(rfHandle, result, RF_EventTxEntryDone|RF_EventLastCmdDone);
+}
+#endif
+void rfCancle(RF_EventMask result)
+{
+    RF_cancelCmd(rfHandle, result,0);
 }
 uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t timeout)
 {
@@ -241,9 +264,8 @@ uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t 
     send_data_init(id, data, len, timeout);
     result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
     RF_pendCmd(rfHandle, result, RF_EventTxEntryDone);
-
+    RF_yield(rfHandle);
     return len;
-
 }
 uint8_t rf_test_buff[26]={0};
 UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t timeout)
@@ -256,8 +278,8 @@ UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t ti
     sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
 //    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);
     cc2592Cfg(CC2592_RX_HG_MODE);
-    rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , timeout/10);
-    if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout+100/Clock_tickPeriod))){
+    rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , timeout/Clock_tickPeriod);
+    if (TRUE ==  Semaphore_pend (rxDoneSem, ((timeout+100)/Clock_tickPeriod))){
         currentDataEntry = RFQueue_getDataEntry();
         memcpy(data, (uint8_t*)(&currentDataEntry->data), len);
         RFQueue_nextEntry();
@@ -322,7 +344,12 @@ void enter_txrx(void)
 }
 void exit_txrx(void)
 {
+    RF_yield(rfHandle);
     cc2592Cfg(CC2592_POWERDOWN);
+}
+void rf_idle(void)
+{
+    RF_yield(rfHandle);
 }
 
 void rf_preset_for_hb_recv(void)
@@ -347,8 +374,10 @@ UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeo
     rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , timeout/Clock_tickPeriod);
     if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout/Clock_tickPeriod))){
         currentDataEntry = RFQueue_getDataEntry();
-        memcpy(data, (uint8_t*)(&currentDataEntry->data), len);
+        memcpy(data, (uint8_t*)(&currentDataEntry->data), len+1);
         RFQueue_nextEntry();
+        RF_cancelCmd(rfHandle, rx_event,0);
+        _hb_rssi = data[len];   
     }else{
         RF_cancelCmd(rfHandle, rx_event,0);
         currentDataEntry = RFQueue_getDataEntry();
@@ -356,14 +385,10 @@ UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeo
         clear_queue_buf();
         len = 0;
     }
-    _hb_rssi = 0;   //todo
+
     return len;
 }
 
-void rf_exit_from_hb_recv(void)
-{
-    RF_yield(rfHandle);
-}
 
 UINT8 get_hb_rssi(void)
 {

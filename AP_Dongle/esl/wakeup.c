@@ -145,7 +145,6 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 		LED_OFF(DEBUG_IO1);
 //		BSP_Delay10US(interval);
 	}
-	send_pend(result);
 	LED_TOGGLE(DEBUG_IO0);
 	TIM_Close(timer);
 	

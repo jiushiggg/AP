@@ -331,8 +331,10 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 		}
 #endif
 		send_data(pESL[i].esl_id, data, sizeof(data), channel, 2000);
+		exit_txrx();
 		set_power_rate(RF_DEFAULT_POWER,table->rx_datarate);
 		memset(rxbuf, 0, sizeof(rxbuf));
+		//if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), 2, 20000000) == 0)
 		if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), channel, deal_timeout) == 0)
 		{
 			pdebug("recv timeout.\r\n");
@@ -386,7 +388,7 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 	}
 
 	dummy(table, table->tx_duration*2);
-
+	exit_txrx();
 	wait(2000);
 		
 	return ret;

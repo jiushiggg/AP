@@ -62,7 +62,7 @@ extern Semaphore_Handle txDoneSem;
 extern Semaphore_Handle rxDoneSem;
 extern void semaphore_RFInit(void);
 
-extern void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequency, uint8_t fractFreq_flag);
+extern void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequency);
 //extern RF_EventMask Rf_tx_package(RF_Handle h, uint32_t syncWord, uint8_t pktLen, uint8_t* pPkt);
 //extern RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord, uint8_t pktLen,uint8_t enableTrigger,  uint32_t  timeout);
 extern void send_data_init(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout);
@@ -84,4 +84,5 @@ uint8_t get_rssi(void);
 extern void rf_exit_from_hb_recv(void);
 extern UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeout);
 extern UINT8 get_hb_rssi(void);
+extern void rfCancle(RF_EventMask result);
 #endif

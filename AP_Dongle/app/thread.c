@@ -45,13 +45,14 @@ const unsigned char APP_VERSION_STRING[] = "rfd-3.2.2-rc5"; //must < 32
 #endif
 
 /* Stack size in bytes */
-#define TASK0_STACKSIZE   (1024)
+#define TASK0_STACKSIZE   (2048)
 #define TASK1_STACKSIZE   (2048)
 
 
 void *mainThread(void *arg0);
 void *communicate2master(void *arg0);
 
+//#pragma location = (0x11001400);
 Char task0_Stack[TASK0_STACKSIZE];
 
 #pragma location = (0x11001800);
@@ -144,6 +145,19 @@ void *mainThread(void *arg0)
     pinfo("core init complete.\r\n");
     pinfo("enter main loop.\r\n");
 
+//while(1){
+//    uint8_t id[4] = {0x52,0x56,0x78,0x53};
+//    set_power_rate(RF_DEFAULT_POWER, 500);
+//    send_data(id, mybuf, 26, 99, 2000);
+//    exit_txrx();
+//    set_power_rate(RF_DEFAULT_POWER,100);
+//    memset(mybuf, 0, sizeof(mybuf));
+//    if(recv_data(id, mybuf, sizeof(mybuf), 2, 20000000) == 0)
+//    {
+//        pdebug("recv timeout.\r\n");
+//        continue;
+//    }
+//}
     Core_Mainloop();
 
     return 0;

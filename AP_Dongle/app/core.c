@@ -164,7 +164,7 @@ extern INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type);
 
 void Core_Mainloop(void)
 {
-    uint32_t event = 0;
+    volatile uint32_t event = 0;
     while (1) {
 
         event = Event_PendCore();

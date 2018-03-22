@@ -190,6 +190,7 @@ INT32 esl_updata(esl_updata_t *updata)
 			if((set_cmd==CMD_SET_WKUP_TRN)||(set_cmd==CMD_SET_WKUP_BDC))
 			{	
 				pdebug("set wkup trn & bdc, loop:%d\r\n", set_loop_times);
+				pinfo("set_wkup\r\n");
 				wakeup_start(set_addr, set_len, 0);
 			}
 			else if((set_cmd==CMD_SET_WKUP_GLB) || (set_cmd==CMD_SET_WKUP_CH))
@@ -262,6 +263,7 @@ INT32 esl_updata(esl_updata_t *updata)
 		if((frame1_addr!=0) && (frame1_cmd!=CMD_GROUP1_FRAME2))
 		{
 			pdebug("frame1\r\n");
+			pinfo("frame1\r\n");
 			frame1_start(frame1_cmd, frame1_addr, frame1_len);
 		}
 		if(Core_GetQuitStatus() == 1)
@@ -275,6 +277,7 @@ INT32 esl_updata(esl_updata_t *updata)
 		if(sleep_addr != 0)
 		{
 			pdebug("sleep\r\n");
+			pinfo("sleep\r\n");
 			sleep_start(sleep_addr, sleep_len);
 		}
 		if(Core_GetQuitStatus() == 1)
@@ -289,6 +292,7 @@ INT32 esl_updata(esl_updata_t *updata)
 	if(updata_addr != 0)
 	{
 		pdebug("make ack\r\n");
+		pinfo("make ack\r\n");
 		updata_make_ack(updata_cmd, updata_table, (UINT32*)&updata->ack_addr, (UINT32*)&updata->ack_len);
 	}
 
