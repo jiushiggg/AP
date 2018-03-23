@@ -106,9 +106,13 @@ INT32 Xmodem_SendCmd(INT32 dev, UINT8 cmd, UINT8 recv_ack_flag, INT32 timeout)
 		}
 
 		recCmdAckFlg = true;
-		Device_Recv_pend(EVENT_WAIT_FOREVER);
-		read_len = xcb_recv_len_once;
-		recv_ack = recv_once_buf[0];
+		if (true == Device_Recv_pend(EVENT_WAIT_US(1000000))){
+	        read_len = xcb_recv_len_once;
+	        recv_ack = recv_once_buf[0];
+		}else {
+		    read_len = 0;
+		}
+
 		if(read_len != sizeof(recv_ack))
 		{
 			retry_time--;
@@ -381,8 +385,12 @@ INT32 Xmodem_SendOnce(xmodem_t *x, INT32 dev, UINT8 *src, INT32 len, INT32 timeo
 		//recv_ack = Xmodem_RecvCmd(dev, timeout);
         recCmdAckFlg = true;
         X_DEBUG(("pend "));
-        Device_Recv_pend(EVENT_WAIT_FOREVER);
-        recv_ack = recv_once_buf[0];
+        if (true == Device_Recv_pend(EVENT_WAIT_US(1000000))){
+            recv_ack = recv_once_buf[0];
+        }else {
+            recv_ack = XMODEM_CMD_NAK;
+        }
+
 		X_DEBUG(("ack: 0x%02X.", recv_ack));
 		if(recv_ack == XMODEM_CMD_ACK)
 		{
@@ -540,8 +548,12 @@ INT32 Xmodem_RecvToFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 dst_len, INT
 			break;
 		}
 
-        Device_Recv_pend(EVENT_WAIT_FOREVER);
-		recv_len_once = Xmodem_RecvOnce(x, dev, &pRecv, timeout);
+        if (true == Device_Recv_pend(EVENT_WAIT_US(1000000))){
+            recv_len_once = Xmodem_RecvOnce(x, dev, &pRecv, timeout);
+        }else {
+            recv_len_once = -1;
+        }
+
 		if(recv_len_once < 0)
 		{
 			X_DEBUG(("len = %d, < 0!", recv_len_once));
@@ -589,6 +601,8 @@ INT32 Xmodem_SendFromFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 len, INT32
 	INT32 send_len_total = 0;
 	UINT8 send_buf[XMODEM_LEN_DAT] = {0};
 	INT32 copy_len = 0;
+	uint32_t key;
+	key = taskDisable();
 	
 	X_DEBUG((">en7:"));
 	/* init send */
@@ -632,6 +646,8 @@ INT32 Xmodem_SendFromFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 len, INT32
 		}
 	}
 	X_DEBUG(("ex7\r\n"));
+
+	taskRestore(key);
 	return send_len_total;
 }
 

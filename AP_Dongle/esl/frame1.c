@@ -8,6 +8,7 @@
 #include "crc16.h"
 #include <string.h>
 #include "core.h"
+#include "bsp.h"
 
 #pragma pack(1)
 typedef struct
@@ -37,7 +38,7 @@ static UINT8 frame1_mode0(UINT32 addr, UINT8 num, INT32 duration)
 	RF_EventMask result;
 	uint8_t pend_flg = PEND_STOP;
 	
-	if((timer=TIM_Open(1, duration, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
+	if((timer=TIM_Open(duration, 1, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
 	{
 		perr("g3_send_frame1_mode0() open timer.\r\n");
 		goto done;
@@ -45,15 +46,17 @@ static UINT8 frame1_mode0(UINT32 addr, UINT8 num, INT32 duration)
 	
 	i = 0;
 	cur = addr;
+	BSP_GPIO_test(DEBUG_TEST);
 	while(1)
 	{
+	    BSP_GPIO_test(DEBUG_IO3);
 		if(Core_GetQuitStatus() == 1)
 		{
 			pdebug("frame1_mode0 quit1\r\n");
 			break;
 		}
 		
-		if(TIM_CheckTimeout(timer))
+		if(TIM_CheckTimeout(timer)==1)
 		{
 			pdebug("g3_send_frame1_mode0() timer timeout.\r\n");
 			ret = 1;
@@ -76,7 +79,7 @@ static UINT8 frame1_mode0(UINT32 addr, UINT8 num, INT32 duration)
         }
 		result = send_without_wait(id, data, len, channel, 6000);
         pend_flg = PEND_START;
-
+        BSP_GPIO_test(DEBUG_IO3);
 //		if(send_without_wait(id, data, len, channel, 6000) == 0)
 //		{
 //			perr("frame1 send\r\n");
@@ -94,7 +97,7 @@ static UINT8 frame1_mode0(UINT32 addr, UINT8 num, INT32 duration)
 			cur += sizeof(id) + sizeof(len) + len + sizeof(channel);
 		}
 	}
-
+	BSP_GPIO_test(DEBUG_TEST);
 	TIM_Close(timer);
 	wait(1000);
 	
@@ -132,7 +135,7 @@ static UINT8 _frame2(UINT32 addr, UINT8 num, INT32 duration)
 			break;
 		}		
 		
-		if(TIM_CheckTimeout(timer))
+		if(TIM_CheckTimeout(timer) == 1)
 		{
 			pdebug("_frame2() timeout\r\n");
 			ret = 1;
@@ -211,9 +214,12 @@ INT32 frame1_start(UINT16 cmd, UINT32 addr, UINT32 len)
 		dur = frame1_para.duration;
 	}
 	
-	pdebug("frame1:datarate=%d,power=%d,duration=%dms,mode=%d,num=%d\r\n", 
-			frame1_para.datarate, frame1_para.power, dur,
-			frame1_para.mode, frame1_para.num);
+//	pdebug("frame1:datarate=%d,power=%d,duration=%dms,mode=%d,num=%d\r\n",
+//			frame1_para.datarate, frame1_para.power, dur,
+//			frame1_para.mode, frame1_para.num);
+	pinfo("frame1:d=%d,p=%d,d=%dms,m=%d,n=%d\r\n",
+	          frame1_para.datarate, frame1_para.power, dur,
+	          frame1_para.mode, frame1_para.num);
 	
 	if(frame1_para.duration == 0)
 	{

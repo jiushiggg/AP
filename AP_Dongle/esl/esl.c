@@ -148,6 +148,7 @@ INT32 parse_cmd_data(UINT32 cmd_data_addr, UINT32 cmd_data_len)
 }
 
 static updata_table_t *updata_table = NULL;
+volatile uint8_t my_frame1_flg = 0;
 
 INT32 esl_updata(esl_updata_t *updata)
 {
@@ -232,7 +233,6 @@ INT32 esl_updata(esl_updata_t *updata)
 			pdebug("esl_updata quit3\r\n");
 			break;
 		}
-
 		//step 4: tx sleep
 		if(sleep_addr != 0)
 		{
@@ -258,14 +258,15 @@ INT32 esl_updata(esl_updata_t *updata)
 			pdebug("esl_updata quit5\r\n");
 			break;
 		}
-
-		//step 6: tx frame1
-		if((frame1_addr!=0) && (frame1_cmd!=CMD_GROUP1_FRAME2))
-		{
-			pdebug("frame1\r\n");
-			pinfo("frame1\r\n");
-			frame1_start(frame1_cmd, frame1_addr, frame1_len);
-		}
+        //step 6: tx frame1
+//        if((frame1_addr!=0) && (frame1_cmd!=CMD_GROUP1_FRAME2))
+//        {
+//            pdebug("frame1\r\n");
+//            pinfo("frame1\r\n");
+//            my_frame1_flg = 1;
+//            frame1_start(frame1_cmd, frame1_addr, frame1_len);
+//            my_frame1_flg = 0;
+//        }
 		if(Core_GetQuitStatus() == 1)
 		{
 			reset_local_cmd();

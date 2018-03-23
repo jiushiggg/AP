@@ -1,6 +1,7 @@
 #include <ti/sysbios/knl/Event.h>
 #include <ti/sysbios/knl/Semaphore.h>
 #include <ti/sysbios/BIOS.h>
+#include <ti/sysbios/knl/Task.h>
 #include "event.h"
 
 Event_Handle protocol_eventHandle;
@@ -22,9 +23,9 @@ void Semphore_xmodemInit(void)
     Semaphore_construct(&recSemStruct, 0, &recSemParam);
     recSemHandle = Semaphore_handle(&recSemStruct);
 }
-void Device_Recv_pend(UINT32 timeout)
+Bool Device_Recv_pend(UINT32 timeout)
 {
-    Semaphore_pend(recSemHandle, timeout);
+    return Semaphore_pend(recSemHandle, timeout);
 }
 void Device_Recv_post(void)
 {
@@ -96,3 +97,15 @@ UINT32 Event_Pendcommunicate(void)
 {
     return Event_pend(communicateEventHandle, 0, EVENT_ALL, BIOS_WAIT_FOREVER);
 }
+
+
+uint32_t taskDisable(void)
+{
+    return Task_disable();
+}
+
+void taskRestore(uint32_t key)
+{
+    Task_restore(key);
+}
+

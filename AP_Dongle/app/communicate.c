@@ -133,7 +133,6 @@ void readHandleFnx(void)
 
 void readCallback(UART_Handle handle, void *rxBuf, size_t size)
 {
-    BSP_GPIO_test(DEBUG_IO3);
     if (recCmdAckFlg == true && XMODEM_LEN_CMD==size){
         recCmdAckFlg = false;
         Device_Recv_post();

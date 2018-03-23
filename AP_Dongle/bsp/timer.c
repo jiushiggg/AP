@@ -19,10 +19,10 @@ typedef struct
 void hwi_timerCallback0(GPTimerCC26XX_Handle handle, GPTimerCC26XX_IntMask interruptMask);
 void hwi_timerCallback1(GPTimerCC26XX_Handle handle, GPTimerCC26XX_IntMask interruptMask);
 void hwi_timerCallback2(GPTimerCC26XX_Handle handle, GPTimerCC26XX_IntMask interruptMask);
-static void ISR_Handle(timer_t* n);
+static void ISR_Handle(volatile timer_t* n);
 
 //static
-timer_t ts[] = {
+volatile timer_t ts[] = {
 	{NULL, hwi_timerCallback0, 0, 0, 0, CC2640R2_LAUNCHXL_GPTIMER0A},
 	{NULL, hwi_timerCallback1, 0, 0, 0, CC2640R2_LAUNCHXL_GPTIMER1A},
 	{NULL, hwi_timerCallback2, 0, 0, 0, CC2640R2_LAUNCHXL_GPTIMER2A},
@@ -127,6 +127,9 @@ void TIM_Close(UINT8 t)
 	{
 		GPTimerCC26XX_close(ts[t].TIMn);
 		ts[t].TIMn = NULL;
+		ts[t].count = 0;
+		ts[t].direction = 0;
+		ts[t].timeout = 0;
 	}
 }
 
@@ -167,8 +170,14 @@ void hwi_timerCallback2(GPTimerCC26XX_Handle handle, GPTimerCC26XX_IntMask inter
 {
     ISR_Handle(&ts[2]);
 }
-static void ISR_Handle(timer_t* n)
+
+extern uint8_t my_frame1_flg;
+static void ISR_Handle(volatile timer_t* n)
 {
+    if (1 == my_frame1_flg){
+        //BSP_GPIO_test(DEBUG_IO3);
+    }
+
 	if(n->TIMn != NULL)
 	{
 		if(n->direction > 0)

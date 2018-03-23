@@ -2,6 +2,7 @@
 #define _EVENT_H_
 
 #include "datatype.h"
+#include <ti/sysbios/knl/Clock.h>
 
 #define EVENT_NONE				0
 #define EVENT_PARSE_DATA		((UINT32)1<<0) //1
@@ -34,7 +35,8 @@
 
 
 #define EVENT_WAIT_FOREVER   ti_sysbios_BIOS_WAIT_FOREVER
-#define EVENT_WAIT_US(n)     (n/10)
+
+#define EVENT_WAIT_US(n)     ((uint32_t)n/Clock_tickPeriod)
 
 
 typedef enum _eventStatus{
@@ -57,6 +59,9 @@ extern UINT32 Event_communicateGetStatus(void);
 extern UINT32 Event_Pendcommunicate(void);
 
 extern void Semphore_xmodemInit(void);
-extern void Device_Recv_pend(UINT32 timeout);
+extern Bool Device_Recv_pend(UINT32 timeout);
 extern void Device_Recv_post(void);
+extern uint32_t taskDisable(void);
+extern void taskEnable(uint32_t key);
+
 #endif

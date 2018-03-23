@@ -214,7 +214,7 @@ void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
 //}
 void send_data_init(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
 {
-    RF_cmdPropTxAdv.startTrigger.triggerType = TRIG_ABSTIME;
+    RF_cmdPropTxAdv.startTrigger.triggerType = TRIG_NOW;
     RF_cmdPropTxAdv.startTrigger.pastTrig = 1;
     RF_cmdPropTxAdv.startTime = 0;
     RF_cmdPropTxAdv.pktLen = len;
@@ -230,7 +230,7 @@ RF_EventMask send_async(uint32_t interal)
    // RF_cmdPropTxAdv.startTime += interal + EasyLink_us_To_RadioTime(700);
     //result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
     result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
-    RF_yield(rfHandle);
+//    RF_yield(rfHandle);
     return result;
 }
 
