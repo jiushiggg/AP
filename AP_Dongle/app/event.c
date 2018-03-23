@@ -101,11 +101,11 @@ UINT32 Event_Pendcommunicate(void)
 
 uint32_t taskDisable(void)
 {
-    return Task_disable();
+    return 0;//return Task_disable();
 }
 
 void taskRestore(uint32_t key)
 {
-    Task_restore(key);
+    //Task_restore(key);
 }
 
