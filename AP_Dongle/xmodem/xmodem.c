@@ -81,7 +81,9 @@ INT32 Xmodem_SendCmd(INT32 dev, UINT8 cmd, UINT8 recv_ack_flag, INT32 timeout)
 	UINT8 recv_ack = 0;
 	INT32 read_len = 0;
 	INT32 send_ret = 0;
+    uint32_t key;
 
+    key = taskDisable();
 	X_DEBUG((">en1,cmd=0x%02X,flag=%d,", cmd, recv_ack_flag));
 	while(retry_time > 0)
 	{	
@@ -136,6 +138,7 @@ INT32 Xmodem_SendCmd(INT32 dev, UINT8 cmd, UINT8 recv_ack_flag, INT32 timeout)
 	}
 
 	X_DEBUG(("ex1\r\n"));
+	taskRestore(key);
 	return send_len;
 }
 
@@ -369,7 +372,9 @@ INT32 Xmodem_SendOnce(xmodem_t *x, INT32 dev, UINT8 *src, INT32 len, INT32 timeo
 	UINT8 send_buf[XMODEM_LEN_ALL] = {0};
 	INT32 retry_time = RETRYTIME_TX;
 	UINT8 recv_ack = 0;
+    uint32_t key;
 
+	key = taskDisable();
 	X_DEBUG((">en3:"));
 	send_len = len > XMODEM_LEN_DAT ? XMODEM_LEN_DAT : len;
 	Xmodem_MakePkg(XMODEM_CMD_SOH, x->send_sn, src, send_len, send_buf, sizeof(send_buf));
@@ -416,6 +421,7 @@ INT32 Xmodem_SendOnce(xmodem_t *x, INT32 dev, UINT8 *src, INT32 len, INT32 timeo
 	}
 	
 	X_DEBUG(("ex3\r\n"));
+    taskRestore(key);
 	return ret;
 }
 
@@ -601,9 +607,7 @@ INT32 Xmodem_SendFromFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 len, INT32
 	INT32 send_len_total = 0;
 	UINT8 send_buf[XMODEM_LEN_DAT] = {0};
 	INT32 copy_len = 0;
-	uint32_t key;
-	key = taskDisable();
-	
+
 	X_DEBUG((">en7:"));
 	/* init send */
 	x->send_sn = 1;
@@ -647,7 +651,6 @@ INT32 Xmodem_SendFromFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 len, INT32
 	}
 	X_DEBUG(("ex7\r\n"));
 
-	taskRestore(key);
 	return send_len_total;
 }
 
