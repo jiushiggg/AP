@@ -534,13 +534,11 @@ UINT8 m1_updata_loop(updata_table_t *table)
 		}		
 	}
 	
-	TIM_Close(timer);
-
-	m1_sleep_all(table);
-		
 	ret = 1;
-	
+	TIM_Close(timer);
+	m1_sleep_all(table);
 done:	
+
 	return ret;
 }
 
