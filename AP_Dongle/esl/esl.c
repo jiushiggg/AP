@@ -148,7 +148,7 @@ INT32 parse_cmd_data(UINT32 cmd_data_addr, UINT32 cmd_data_len)
 }
 
 static updata_table_t *updata_table = NULL;
-volatile uint8_t my_frame1_flg = 0;
+volatile uint16_t my_frame1_flg = 0;
 
 INT32 esl_updata(esl_updata_t *updata)
 {
@@ -191,15 +191,16 @@ INT32 esl_updata(esl_updata_t *updata)
 			if((set_cmd==CMD_SET_WKUP_TRN)||(set_cmd==CMD_SET_WKUP_BDC))
 			{	
 				pdebug("set wkup trn & bdc, loop:%d\r\n", set_loop_times);
-				pinfo("set_wkup\r\n");
+				pinfoEsl("sw0 bg\r\n");
 				wakeup_start(set_addr, set_len, 0);
 			}
 			else if((set_cmd==CMD_SET_WKUP_GLB) || (set_cmd==CMD_SET_WKUP_CH))
 			{
+			    pinfoEsl("sw1 bg\r\n");
 				pdebug("set wkup glb & ch\r\n");
 				wakeup_start(set_addr, set_len, 1);
 			}
-			pdebug("set wkup end\r\n");
+			pinfoEsl("sw ed\r\n");
 		}
 		if(Core_GetQuitStatus() == 1)
 		{
@@ -211,8 +212,10 @@ INT32 esl_updata(esl_updata_t *updata)
 		//step 2: tx group cmd
 		if(wkup_addr != 0)
 		{
-			pdebug("group wkup\r\n");
+			pdebug("group wkup");
+			pinfoEsl("gw bg\r\n");
 			wakeup_start(wkup_addr, wkup_len, 0);
+			pinfoEsl("gw ed\r\n");
 		}
 		if(Core_GetQuitStatus() == 1)
 		{
@@ -225,7 +228,10 @@ INT32 esl_updata(esl_updata_t *updata)
 		if(frame1_addr != 0)
 		{
 			pdebug("frame1\r\n");
+			pinfoEsl("f1 bg\r\n");
+			my_frame1_flg = 0;
 			frame1_start(frame1_cmd, frame1_addr, frame1_len);
+			pinfoEsl("f1 ed\r\n");
 		}
 		if(Core_GetQuitStatus() == 1)
 		{
@@ -237,7 +243,9 @@ INT32 esl_updata(esl_updata_t *updata)
 		if(sleep_addr != 0)
 		{
 			pdebug("sleep\r\n");
+			pinfoEsl("s4 bg\r\n");
 			sleep_start(sleep_addr, sleep_len);
+			pinfoEsl("s4 ed\r\n");
 		}
 		if(Core_GetQuitStatus() == 1)
 		{
@@ -250,7 +258,9 @@ INT32 esl_updata(esl_updata_t *updata)
 		if(updata_addr != 0)
 		{
 			pdebug("updata\r\n");
+			pinfoEsl("ud5 bg\r\n");
 			updata_do_updata(updata_cmd, updata_table);
+			pinfoEsl("up5 ed\r\n");
 		}
 		if(Core_GetQuitStatus() == 1)
 		{
@@ -259,14 +269,15 @@ INT32 esl_updata(esl_updata_t *updata)
 			break;
 		}
         //step 6: tx frame1
-//        if((frame1_addr!=0) && (frame1_cmd!=CMD_GROUP1_FRAME2))
-//        {
-//            pdebug("frame1\r\n");
-//            pinfo("frame1\r\n");
-//            my_frame1_flg = 1;
-//            frame1_start(frame1_cmd, frame1_addr, frame1_len);
-//            my_frame1_flg = 0;
-//        }
+        if((frame1_addr!=0) && (frame1_cmd!=CMD_GROUP1_FRAME2))
+        {
+            pdebug("frame1\r\n");
+            pinfo("f1.6 bg\r\n");
+            my_frame1_flg = 1000;
+            frame1_start(frame1_cmd, frame1_addr, frame1_len);
+            my_frame1_flg = 0;
+            pinfo("f1.6 ed\r\n");
+        }
 		if(Core_GetQuitStatus() == 1)
 		{
 			reset_local_cmd();
@@ -278,8 +289,9 @@ INT32 esl_updata(esl_updata_t *updata)
 		if(sleep_addr != 0)
 		{
 			pdebug("sleep\r\n");
-			pinfo("sleep\r\n");
+			pinfo("s7 bg\r\n");
 			sleep_start(sleep_addr, sleep_len);
+			pinfo("s7 ed\r\n");
 		}
 		if(Core_GetQuitStatus() == 1)
 		{

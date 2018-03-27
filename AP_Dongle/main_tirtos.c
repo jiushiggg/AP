@@ -48,6 +48,7 @@
 #include "Board.h"
 #include "cc2640r2_rf.h"
 #include "bsp.h"
+#include "timer.h"
 
 extern void app_init(void);
 
@@ -59,6 +60,7 @@ int main(void)
     Board_initGeneral();
 //    Board_initWatchdog();
     rf_init();
+    TIM_Init();
     BSP_GPIO_init();
     semaphore_RFInit();
     app_init();

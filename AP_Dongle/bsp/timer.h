@@ -9,6 +9,7 @@
 
 #define     ALL_TIMER_ACTIVE        0xff
 
+UINT8 TIM_Init(void);
 UINT8 TIM_Open(INT32 nms, UINT16 cnt, UINT8 direction);
 void TIM_Close(UINT8 t);
 UINT8 TIM_CheckTimeout(UINT8 t);

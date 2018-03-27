@@ -168,7 +168,8 @@ void Core_Mainloop(void)
     while (1) {
 
         event = Event_PendCore();
-
+        UART_recDisable();
+        pinfo("uartdis%d\r\n", event);
 //        if(event & EVENT_RX_TO_FLASH)
 //        {
 //            pinfo("core recv data to flash start.\r\n");
@@ -442,6 +443,8 @@ void Core_Mainloop(void)
             pinfo("Core_ResetQuitStatus\r\n");
             Core_ResetQuitStatus();
         }
+        pinfo("uarten\r\n");
+        UART_recEnable();
 #endif
     }
 }

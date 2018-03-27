@@ -49,6 +49,15 @@ void UART_appInit(void)
 
     UART_read(uart_handle, recv_once_buf, XMODEM_LEN_ALL);
 }
+void UART_recEnable(void)
+{
+    UART_control(uart_handle, UART_CMD_RXENABLE, NULL);
+}
+
+void UART_recDisable(void)
+{
+    UART_control(uart_handle, UART_CMD_RXDISABLE, NULL);
+}
 
 //callback mode read
 int32_t UART_appRead(void *buffer, size_t size)

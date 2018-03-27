@@ -55,7 +55,7 @@ UINT32 g3_get_sid(UINT32 addr)
 INT32 get_one_data(UINT32 addr, UINT8 *id, UINT8 *ch, UINT8 *len, UINT8 *dst, UINT8 size)
 {
 	INT32 ret = 0;
-	UINT8 head[6] = {0};
+	UINT8 head[6] = {0};    //group id[4],channel, length
 	
 	Flash_Read(addr, head, 6);
 	
@@ -116,8 +116,8 @@ UINT32 get_pkg_addr_bsearch(UINT32 first_pkg_addr, UINT16 pkg_num, UINT16 target
 	while(start <= end)
 	{
 		mid = (start + end) / 2;
-		addr = first_pkg_addr+mid * 32;
-		Flash_Read(addr+sn_offset, (UINT8 *)&fsn, 2);
+		addr = first_pkg_addr+mid * SIZE_ESL_DATA_SINGLE;
+		Flash_Read(addr+sn_offset, (UINT8 *)&fsn, sizeof(fsn));
 		fsn &= MASK_OF_PKG_SN;
 		
 		//for debug

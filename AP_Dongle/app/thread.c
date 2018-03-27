@@ -45,8 +45,8 @@ const unsigned char APP_VERSION_STRING[] = "rfd-3.2.2-rc5"; //must < 32
 #endif
 
 /* Stack size in bytes */
-#define TASK0_STACKSIZE   (2048)
-#define TASK1_STACKSIZE   (2048)
+#define TASK0_STACKSIZE   (2048 )
+#define TASK1_STACKSIZE   (2048 )
 
 
 void *mainThread(void *arg0);
@@ -83,7 +83,7 @@ void app_init(void)
     taskParams_0.arg0 = 1000000 / Clock_tickPeriod;
     taskParams_0.stackSize = TASK0_STACKSIZE;
     taskParams_0.stack = &task0_Stack;
-    taskParams_0.priority = 1;
+    taskParams_0.priority = 2;
     Task_construct(&task0_Struct, (Task_FuncPtr)mainThread, &taskParams_0, NULL);
 
 
@@ -100,7 +100,7 @@ void app_init(void)
     taskParams_0.arg0 = 1000000 / Clock_tickPeriod;
     taskParams_0.stackSize = TASK1_STACKSIZE;
     taskParams_0.stack = &task1_Stack;
-    taskParams_0.priority = 2;
+    taskParams_0.priority = 1;
     Task_construct(&task1_Struct, (Task_FuncPtr)communicate2master, &taskParams_0, NULL);
 #endif
 

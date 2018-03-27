@@ -86,7 +86,6 @@ void communicate_main(void)
                     writeFlashFlg = false;
                 }
             } else {
-
                 Core_SendCmd(CORE_CMD_FLASH_ERROR, 0, NULL);
             }
             pinfo("cp2flash exit\r\n");

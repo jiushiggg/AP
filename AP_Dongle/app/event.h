@@ -63,5 +63,7 @@ extern Bool Device_Recv_pend(UINT32 timeout);
 extern void Device_Recv_post(void);
 extern uint32_t taskDisable(void);
 extern void taskEnable(uint32_t key);
+extern uint32_t swiDisable(void);
+extern void swiRestore(uint32_t key);
 
 #endif

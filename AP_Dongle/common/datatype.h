@@ -25,6 +25,4 @@ typedef unsigned char       BOOL;
 #endif
 
 
-#define COREMEM_SIZE    9000//(1024*14)
-extern UINT8 coremem[COREMEM_SIZE];
 #endif /* COMMON_DATATYPE_H_ */

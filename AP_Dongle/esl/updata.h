@@ -4,9 +4,12 @@
 #include "datatype.h"
 
 
-#define ESL_NUM 150
-#define UPDATA_BUF_SIZE (ESL_NUM*sizeof(mode1_esl_t)+100)
-#define TABLE_BUF_SIZE  UPDATA_BUF_SIZE
+#define ESL_NUM 20
+
+#define COREMEM_SIZE    (ESL_NUM*sizeof(mode1_esl_t)+300)
+#define UPDATA_BUF_SIZE (ESL_NUM*sizeof(mode1_esl_t)+200)
+#define TABLE_BUF_SIZE  (ESL_NUM*sizeof(mode1_esl_t)+100)
+
 
 #define MAX_FAILED_PKG_NUM  10
 
@@ -23,6 +26,7 @@ typedef struct {
     UINT8  failed_pkg[MAX_FAILED_PKG_NUM*2];
 } mode1_esl_t;
 
+#define OFFSET_FIRST_PKG_ADDR   7
 
 typedef struct {
 	//para area

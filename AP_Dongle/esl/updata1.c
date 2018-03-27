@@ -188,8 +188,8 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 //				search_end_pkg = 0;
 //				memset(search_pkg_history_o, 0, sizeof(search_pkg_history_o));
 //				memset(search_first_pkg, 0, sizeof(search_first_pkg));
-				
-				taddr = get_pkg_addr_bsearch(pESL[i].first_pkg_addr, pESL[i].total_pkg_num, tsn, 7);
+                
+				taddr = get_pkg_addr_bsearch(pESL[i].first_pkg_addr, pESL[i].total_pkg_num, tsn, OFFSET_FIRST_PKG_ADDR);
 				if(taddr == 0)
 				{
 					perr("m1t can't find %02X-%02X-%02X-%02X pkg %d 0x%08X, 0x%08X, %d\r\n", 
@@ -213,14 +213,20 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 				pdebug("send miss 0x%02X-0x%02X-0x%02X-0x%02X pkg %d, ch=%d, len=%d\r\n", id[0], id[1], id[2], id[3], tsn, ch, len);
 			}
 
+#define ERR
+#ifdef ERR
  			if(get_one_data(taddr, id, &ch, &len, data, sizeof(data)) == 0)
 			{
 				perr("m1_transmit() get data!\r\n");
 				goto user_continue;
 			}
-			
+#else
+ 			memset(data1, 0,sizeof(data1));
+            data1[0] = 128;data1[1] = 1;data1[2] = 192; data1[4] = 72;data1[5] = 236;data1[6] = data1[10]= 3;data1[8] = data1[9] =1;
+            data1[12] = 50;data1[17] = 16;data1[24] = 205;data1[25] = 134;
+            id[0]=0x56; id[1]=0xb7;id[2]=0x9c;id[3]=0x13;ch=99;len=26;
+#endif
 			pdebughex(data, len);
-
 	        if (PEND_START == pend_flg){
 	            send_pend(result);
 	        }
@@ -273,6 +279,7 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 	wait(2000);
 }
 
+uint8_t mydebug = 0;
 static UINT8 query_miss_slot = 0;
 static 	UINT8 first_pkg_data[SIZE_ESL_DATA_BUF] = {0};
 
@@ -317,7 +324,7 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 		set_power_rate(RF_DEFAULT_POWER, table->tx_datarate);
 //		channel = g3_get_channel(pESL[i].first_pkg_addr);
 		get_one_data(pESL[i].first_pkg_addr, NULL, &channel, NULL, first_pkg_data, sizeof(first_pkg_data));
-		pdebug("query miss esl 0x%02x-0x%02x-0x%02x-0x%02x, txbps=%d, rxbps=%d, ch=%d, timeout=%d.\r\n", \
+		pinfo("query%02x%02x%02x%02x,tx%d,rx%d,ch%d,t%d\r\n", \
 				pESL[i].esl_id[0], pESL[i].esl_id[1], pESL[i].esl_id[2], pESL[i].esl_id[3], \
 				table->tx_datarate, table->rx_datarate, channel, deal_timeout);
 		memset(data, 0, sizeof(data));
@@ -331,15 +338,35 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 		}
 #endif
 		send_data(pESL[i].esl_id, data, sizeof(data), channel, 2000);
-		exit_txrx();
+//		exit_txrx();
 		set_power_rate(RF_DEFAULT_POWER,table->rx_datarate);
 		memset(rxbuf, 0, sizeof(rxbuf));
-		//if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), 2, 20000000) == 0)
-		if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), channel, deal_timeout) == 0)
-		{
-			pdebug("recv timeout.\r\n");
-			continue;
-		}		
+#if 0
+		if (1 == mydebug){
+		    while(1){
+	            if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), channel, deal_timeout) == 0){
+	                pdebug("recv timeout.\r\n");
+	                continue;
+	            }
+                if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), channel, 20000000) == 0){
+                    pdebug("recv timeout.\r\n");
+                    continue;
+                }
+		    }
+		}else {
+	        if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), channel, deal_timeout) == 0)
+	        {
+	            pdebug("recv timeout.\r\n");
+	            continue;
+	        }
+		}
+#else
+        if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), channel, deal_timeout) == 0)
+        {
+            pdebug("recv timeout.\r\n");
+            continue;
+        }
+#endif
 		pdebug("recv:");
 		pdebughex(rxbuf, sizeof(rxbuf));
 		ret++;
@@ -467,7 +494,7 @@ INT32 m1_sleep_all(updata_table_t *table)
 	
 	return ret;
 }
-
+extern uint8_t mydebug;
 UINT8 m1_updata_loop(updata_table_t *table)
 {
 	UINT8 ret = 0;
@@ -485,6 +512,7 @@ UINT8 m1_updata_loop(updata_table_t *table)
 	TIM_Close(timer);
 	if(Core_GetQuitStatus() == 1)
 	{
+	    pinfoEsl("m1_updata_loop quit\r\n");
 		pdebug("m1_updata_loop quit\r\n");
 		goto done;
 	}
@@ -506,7 +534,7 @@ UINT8 m1_updata_loop(updata_table_t *table)
 			pdebug("m1_updata_loop quit1\r\n");
 			break;
 		}
-		
+		mydebug = 1;
 		m1_send_sleep(table, timer);
 		if(table->ok_esl_num == table->esl_num)
 		{

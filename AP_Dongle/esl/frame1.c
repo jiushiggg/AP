@@ -190,6 +190,7 @@ done:
 	return ret;
 }
 
+extern uint16_t my_frame1_flg;
 INT32 frame1_start(UINT16 cmd, UINT32 addr, UINT32 len)
 {
 	INT32 ret = 0;
@@ -217,7 +218,7 @@ INT32 frame1_start(UINT16 cmd, UINT32 addr, UINT32 len)
 //	pdebug("frame1:datarate=%d,power=%d,duration=%dms,mode=%d,num=%d\r\n",
 //			frame1_para.datarate, frame1_para.power, dur,
 //			frame1_para.mode, frame1_para.num);
-	pinfo("frame1:d=%d,p=%d,d=%dms,m=%d,n=%d\r\n",
+	pinfo(":d=%d,p=%d,d=%dms,m=%d,n=%d\r\n",
 	          frame1_para.datarate, frame1_para.power, dur,
 	          frame1_para.mode, frame1_para.num);
 	
@@ -239,7 +240,7 @@ INT32 frame1_start(UINT16 cmd, UINT32 addr, UINT32 len)
 		{
 			case 0: // 0 is default
 			default:
-				if(frame1_mode0(addr, frame1_para.num, dur) == 1)
+				if(frame1_mode0(addr, frame1_para.num, dur+my_frame1_flg) == 1)
 				{
 					ret = 1;
 				}

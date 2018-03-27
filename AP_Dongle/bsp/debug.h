@@ -24,5 +24,6 @@ void phex(UINT8 *src, UINT16 len);
 void perrhex(UINT8 *src, UINT16 len);
 void debug_peripheral_init(void);
 void log_print(const char *fmt, ...);
+void pinfoEsl(const char *format, ...);
 
 #endif

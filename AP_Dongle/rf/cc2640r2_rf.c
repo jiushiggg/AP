@@ -163,7 +163,7 @@ void set_frequence(uint8_t  Frequency)
     RF_cmdFs.frequency = 2400+Frequency/2;
     RF_cmdFs.fractFreq = (fractFreq_flag ? 32768 : 0);
     RF_runCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
-    //RF_yield(rfHandle);
+    RF_yield(rfHandle);
 }
 
 void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
@@ -200,7 +200,7 @@ void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
         RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power];
     }
     RF_control(rfHandle, RF_CTRL_UPDATE_SETUP_CMD, NULL); //Signal update Rf core
-    //RF_yield(rfHandle);
+    RF_yield(rfHandle);
 }
 
 //RF_EventMask Rf_tx_package(RF_Handle h, uint32_t syncWord, uint8_t pktLen, uint8_t* pPkt)
@@ -230,7 +230,7 @@ RF_EventMask send_async(uint32_t interal)
    // RF_cmdPropTxAdv.startTime += interal + EasyLink_us_To_RadioTime(700);
     //result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
     result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
-//    RF_yield(rfHandle);
+    RF_yield(rfHandle);
     return result;
 }
 
@@ -262,9 +262,10 @@ uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t 
     cc2592Cfg(CC2592_TX);
     set_frequence(ch);
     send_data_init(id, data, len, timeout);
-    result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
-    RF_pendCmd(rfHandle, result, RF_EventTxEntryDone);
+    result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
+//    RF_pendCmd(rfHandle, result, RF_EventTxEntryDone);
     RF_yield(rfHandle);
+
     return len;
 }
 uint8_t rf_test_buff[26]={0};
@@ -290,7 +291,7 @@ UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t ti
         clear_queue_buf();
         len = 0;
     }
-
+    RF_yield(rfHandle);
     return len;
 }
 void clear_queue_buf(void)

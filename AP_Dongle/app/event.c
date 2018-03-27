@@ -2,6 +2,7 @@
 #include <ti/sysbios/knl/Semaphore.h>
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Task.h>
+#include <ti/sysbios/knl/Swi.h>
 #include "event.h"
 
 Event_Handle protocol_eventHandle;
@@ -101,11 +102,20 @@ UINT32 Event_Pendcommunicate(void)
 
 uint32_t taskDisable(void)
 {
-    return 0;//return Task_disable();
+    return Task_disable();
 }
 
 void taskRestore(uint32_t key)
 {
-    //Task_restore(key);
+    Task_restore(key);
 }
 
+uint32_t swiDisable(void)
+{
+    return Swi_disable();
+}
+
+void swiRestore(uint32_t key)
+{
+    Swi_restore(key);
+}

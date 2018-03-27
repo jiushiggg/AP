@@ -18,6 +18,10 @@ extern int32_t UART_appRead(void *buffer, size_t size);
 extern int32_t UART_appWrite(void *buffer, size_t size);
 extern void UART_appInit(void);
 
+extern void UART_recEnable(void);
+
+extern void UART_recDisable(void);
+
 extern UART_Handle uart_handle;
 
 #endif /* BSP_UART_H_ */

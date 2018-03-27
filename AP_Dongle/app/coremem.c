@@ -1,6 +1,7 @@
 
 #include "coremem.h"
 #include "datatype.h"
+#include "updata.h"
 
 //#define COREMEM_SIZE	14000//(1024*14)
 
@@ -8,7 +9,7 @@ static UINT8 coremem_inuse = 0;
 
 //#pragma location = (0x200001800);
 //static UINT8 coremem[COREMEM_SIZE] = {0};
-UINT8 coremem[COREMEM_SIZE] = {0};
+static UINT8 coremem[COREMEM_SIZE] = {0};
 
 void *Core_Malloc(UINT32 size)
 {
