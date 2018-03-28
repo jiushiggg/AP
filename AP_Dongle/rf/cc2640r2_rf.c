@@ -230,7 +230,7 @@ RF_EventMask send_async(uint32_t interal)
    // RF_cmdPropTxAdv.startTime += interal + EasyLink_us_To_RadioTime(700);
     //result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
     result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
-    RF_yield(rfHandle);
+//    RF_yield(rfHandle);
     return result;
 }
 
@@ -264,7 +264,7 @@ uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t 
     send_data_init(id, data, len, timeout);
     result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
 //    RF_pendCmd(rfHandle, result, RF_EventTxEntryDone);
-    RF_yield(rfHandle);
+//    RF_yield(rfHandle);
 
     return len;
 }
@@ -291,7 +291,7 @@ UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t ti
         clear_queue_buf();
         len = 0;
     }
-    RF_yield(rfHandle);
+//    RF_yield(rfHandle);
     return len;
 }
 void clear_queue_buf(void)
@@ -345,7 +345,7 @@ void enter_txrx(void)
 }
 void exit_txrx(void)
 {
-    RF_yield(rfHandle);
+//    RF_yield(rfHandle);
     cc2592Cfg(CC2592_POWERDOWN);
 }
 void rf_idle(void)

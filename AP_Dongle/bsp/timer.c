@@ -185,7 +185,7 @@ UINT8 TIM_CheckTimeout(UINT8 t)
 {
 	if(get_real_timer(t) != NULL)
 	{
-	    pinfoEsl(" %d",ts[t].count);
+//	    pinfoEsl(" %d",ts[t].count);
 //		pdebug("timecnt=%d\r\n", ts[t-1].count);
 		return ts[t].timeout;
 	}
