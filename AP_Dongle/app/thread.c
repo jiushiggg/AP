@@ -40,23 +40,19 @@
 #include "timer.h"
 
 #ifdef GOLD_BOARD
-const unsigned char APP_VERSION_STRING[] = "rfg-3.2.2-rc5"; //must < 32
+const unsigned char APP_VERSION_STRING[] = "rfd-1.0.0"; //must < 32
 #else
-const unsigned char APP_VERSION_STRING[] = "rfd-3.2.2-rc5"; //must < 32
+const unsigned char APP_VERSION_STRING[] = "rfd-1.0.0"; //must < 32
 #endif
-
-/* Stack size in bytes */
-#define TASK0_STACKSIZE   (2048 )
-#define TASK1_STACKSIZE   (2048 )
 
 
 void *mainThread(void *arg0);
 void *communicate2master(void *arg0);
 
-//#pragma location = (0x11001400);
+#pragma location = (GPRAM_BASE);
 Char task0_Stack[TASK0_STACKSIZE];
 
-#pragma location = (0x11001800);
+#pragma location = (GPRAM_BASE+TASK0_STACKSIZE);
 Char task1_Stack[TASK1_STACKSIZE];
 
 Task_Struct task0_Struct;
@@ -107,7 +103,6 @@ void app_init(void)
 
     Event_init();
     Semphore_xmodemInit();
-
 }
 
 

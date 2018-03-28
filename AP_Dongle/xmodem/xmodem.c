@@ -10,7 +10,7 @@
 #include "flash.h"
 #include "device.h"
 #include "event.h"
-
+#include "core.h"
 #include "bsp.h"
 
 
@@ -139,6 +139,7 @@ INT32 Xmodem_SendCmd(INT32 dev, UINT8 cmd, UINT8 recv_ack_flag, INT32 timeout)
 	return send_len;
 }
 
+#pragma location = (XMODEM_LEN_ALL_ADDR)
 UINT8 recv_once_buf[XMODEM_LEN_ALL] = {0};
 
 #ifdef GGG_CHANGE_MODE
@@ -369,7 +370,6 @@ INT32 Xmodem_SendOnce(xmodem_t *x, INT32 dev, UINT8 *src, INT32 len, INT32 timeo
 	UINT8 send_buf[XMODEM_LEN_ALL] = {0};
 	INT32 retry_time = RETRYTIME_TX;
 	UINT8 recv_ack = 0;
-    uint32_t key;
 
 	X_DEBUG((">en3:"));
 	send_len = len > XMODEM_LEN_DAT ? XMODEM_LEN_DAT : len;
@@ -473,6 +473,8 @@ void Xmodem_Reset(xmodem_t *x)
 
 
 xmodem_t xcb;
+
+#pragma location = (XCB_RECV_BUF_ADDR);
 UINT8 xcb_recv_buf[XCB_RECV_BUF_SIZE] = {0};
 INT32 xcb_recv_len = 0;
 INT32 xcb_recv_len_once = 0;

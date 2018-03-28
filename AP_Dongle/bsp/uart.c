@@ -33,8 +33,8 @@ void UART_appInit(void)
     uartParams.readReturnMode = UART_RETURN_FULL;
     uartParams.readMode = UART_MODE_CALLBACK;
     uartParams.readEcho = UART_ECHO_OFF;
-    uartParams.baudRate = 115200;
-    //uartParams.baudRate = 1500000;
+    //uartParams.baudRate = 115200;
+    uartParams.baudRate = 1500000;
     uartParams.readCallback  = readCallback;
 
     uart_handle = UART_open(Board_UART0, &uartParams);

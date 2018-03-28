@@ -47,6 +47,7 @@
 
 #include "CC2640R2_LAUNCHXL.h"
 
+#ifdef MY_ADC
 /*
  *  =============================== ADCBuf ===============================
  */
@@ -99,6 +100,7 @@ const uint_least8_t ADCBuf_count = CC2640R2_LAUNCHXL_ADCBUFCOUNT;
 /*
  *  =============================== ADC ===============================
  */
+
 #include <ti/drivers/ADC.h>
 #include <ti/drivers/adc/ADCCC26XX.h>
 
@@ -221,10 +223,11 @@ const ADC_Config ADC_config[CC2640R2_LAUNCHXL_ADCCOUNT] = {
 };
 
 const uint_least8_t ADC_count = CC2640R2_LAUNCHXL_ADCCOUNT;
-
+#endif
 /*
  *  =============================== Crypto ===============================
  */
+#ifdef MY_CRYPTO
 #include <ti/drivers/crypto/CryptoCC26XX.h>
 
 CryptoCC26XX_Object cryptoCC26XXObjects[CC2640R2_LAUNCHXL_CRYPTOCOUNT];
@@ -244,10 +247,12 @@ const CryptoCC26XX_Config CryptoCC26XX_config[CC2640R2_LAUNCHXL_CRYPTOCOUNT] = {
          .hwAttrs = &cryptoCC26XXHWAttrs[CC2640R2_LAUNCHXL_CRYPTO0]
     },
 };
-
+#endif
 /*
  *  =============================== Display ===============================
  */
+
+#ifdef MY_DISPLAY
 #include <ti/display/Display.h>
 #include <ti/display/DisplayUart.h>
 #include <ti/display/DisplaySharp.h>
@@ -332,6 +337,7 @@ const uint_least8_t Display_count = 0;
 
 #endif /* (BOARD_DISPLAY_USE_UART || BOARD_DISPLAY_USE_LCD) */
 
+#endif
 /*
  *  =============================== GPIO ===============================
  */
@@ -383,6 +389,7 @@ const GPIOCC26XX_Config GPIOCC26XX_config = {
  *  =============================== GPTimer ===============================
  *  Remove unused entries to reduce flash usage both in Board.c and Board.h
  */
+#ifdef MY_GPTIMER
 #include <ti/drivers/timer/GPTimerCC26XX.h>
 
 GPTimerCC26XX_Object gptimerCC26XXObjects[CC2640R2_LAUNCHXL_GPTIMERCOUNT];
@@ -412,6 +419,7 @@ const GPTimerCC26XX_Config GPTimerCC26XX_config[CC2640R2_LAUNCHXL_GPTIMERPARTSCO
 /*
  *  =============================== I2C ===============================
 */
+#ifdef MY_IIC
 #include <ti/drivers/I2C.h>
 #include <ti/drivers/i2c/I2CCC26XX.h>
 
@@ -438,7 +446,8 @@ const I2C_Config I2C_config[CC2640R2_LAUNCHXL_I2CCOUNT] = {
 };
 
 const uint_least8_t I2C_count = CC2640R2_LAUNCHXL_I2CCOUNT;
-
+#endif
+#endif
 /*
  *  =============================== NVS ===============================
  */
@@ -573,6 +582,7 @@ const PowerCC26XX_Config PowerCC26XX_config = {
  *  =============================== PWM ===============================
  *  Remove unused entries to reduce flash usage both in Board.c and Board.h
  */
+#ifdef MY_PWM
 #include <ti/drivers/PWM.h>
 #include <ti/drivers/pwm/PWMTimerCC26XX.h>
 
@@ -601,7 +611,7 @@ const PWM_Config PWM_config[CC2640R2_LAUNCHXL_PWMCOUNT] = {
 };
 
 const uint_least8_t PWM_count = CC2640R2_LAUNCHXL_PWMCOUNT;
-
+#endif
 /*
  *  =============================== RF Driver ===============================
  */

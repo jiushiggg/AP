@@ -85,7 +85,7 @@ SECTIONS
     .ccfg           :   > FLASH (HIGH)
 
     .data           :   >> SRAM | GPRAM
-    .bss            :   >> SRAM | GPRAM
+    .bss            :   >> GPRAM | SRAM
     .sysmem         :   >> SRAM | GPRAM
     .nonretenvar    :   >> SRAM | GPRAM
 

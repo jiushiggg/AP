@@ -268,7 +268,7 @@ uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t 
 
     return len;
 }
-uint8_t rf_test_buff[26]={0};
+//uint8_t rf_test_buff[26]={0};
 UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t timeout)
 {
     uint32_t sync_word=0;
@@ -287,7 +287,7 @@ UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t ti
     }else{
         RF_cancelCmd(rfHandle, rx_event,0);
         currentDataEntry = RFQueue_getDataEntry();
-        memcpy(rf_test_buff, (uint8_t*)(&currentDataEntry->data), len);
+//        memcpy(rf_test_buff, (uint8_t*)(&currentDataEntry->data), len);
         clear_queue_buf();
         len = 0;
     }
@@ -382,7 +382,7 @@ UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeo
     }else{
         RF_cancelCmd(rfHandle, rx_event,0);
         currentDataEntry = RFQueue_getDataEntry();
-        memcpy(rf_test_buff, (uint8_t*)(&currentDataEntry->data), len);
+//        memcpy(rf_test_buff, (uint8_t*)(&currentDataEntry->data), len);
         clear_queue_buf();
         len = 0;
     }

@@ -2,9 +2,9 @@
 #define _HEARTBEAT_H_
 
 #include "datatype.h"
+#include "updata.h"
 
-#define SIZE_OF_COMMON_RECV_BUF		8000
-#define G3_HB_BUF_SIZE				SIZE_OF_COMMON_RECV_BUF
+#define G3_HB_BUF_SIZE			HB_ESL_BUF_SIZE
 #define NUM_OF_MAX_ESL_UPLINK_INFO	10
 
 #pragma pack(1)

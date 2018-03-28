@@ -4,12 +4,12 @@
 #include "datatype.h"
 
 
-#define ESL_NUM 20
-
+#define ESL_NUM 300
+#define ESL_BH_NUM  400
 #define COREMEM_SIZE    (ESL_NUM*sizeof(mode1_esl_t)+300)
 #define UPDATA_BUF_SIZE (ESL_NUM*sizeof(mode1_esl_t)+200)
-#define TABLE_BUF_SIZE  (ESL_NUM*sizeof(mode1_esl_t)+100)
-
+#define TABLE_BUF_SIZE  (ESL_NUM*sizeof(mode1_esl_t)+50)
+#define HB_ESL_BUF_SIZE (ESL_BH_NUM*27)
 
 #define MAX_FAILED_PKG_NUM  10
 

@@ -329,17 +329,17 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 	
 	if(ret == 1) //need ack the esl and uplink the data //todo
 	{
-//		pesluplinkinfo = _handle_esl_uplink_data(table->esl_uplink_info, &_esl_uplink_num, ptr, len);
-//		_ack_birang(table->apid, pesluplinkinfo->modby);
-//		_ack_the_esl(ptr, len, 0);
-//		cmd = 0x1021;
-//		cmd_len = len + 1;
-//		memcpy(table->uplink_buf, &cmd, sizeof(cmd));
-//		memcpy(table->uplink_buf+sizeof(cmd), &cmd_len, sizeof(cmd_len));
-//		memcpy(table->uplink_buf+sizeof(cmd)+sizeof(cmd_len), ptr, cmd_len);
-//		uplink(table->uplink_buf, sizeof(cmd)+sizeof(cmd_len)+cmd_len);
-//		pinfo("_hb_recv() send esl uplink\r\n");
-//		BSP_Delay1MS(100);
+		pesluplinkinfo = _handle_esl_uplink_data(table->esl_uplink_info, &_esl_uplink_num, ptr, len);
+		_ack_birang(table->apid, pesluplinkinfo->modby);
+		_ack_the_esl(ptr, len, 0);
+		cmd = 0x1021;
+		cmd_len = len + 1;
+		memcpy(table->uplink_buf, &cmd, sizeof(cmd));
+		memcpy(table->uplink_buf+sizeof(cmd), &cmd_len, sizeof(cmd_len));
+		memcpy(table->uplink_buf+sizeof(cmd)+sizeof(cmd_len), ptr, cmd_len);
+		uplink(table->uplink_buf, sizeof(cmd)+sizeof(cmd_len)+cmd_len);
+		pinfo("_hb_recv() send esl uplink\r\n");
+		BSP_Delay1MS(100);      //todo
 	}
 	
 	if(recv_len_total >= 0)

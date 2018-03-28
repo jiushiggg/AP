@@ -19,7 +19,9 @@ void readHandleFnx(void);
 
 void (*tim_soft_callback)(void);
 
-UINT8 cmd_buf[256] = {0};
+
+#pragma location = (CMD_BUF_ADDR);
+UINT8 cmd_buf[CMD_BUF] = {0};
 
 uint8_t Core_SendCmd(uint16_t cmd, uint32_t cmd_len, uint8_t *cmd_data)
 {

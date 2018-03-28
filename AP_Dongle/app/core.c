@@ -44,7 +44,7 @@
 #include "event.h"
 
 
-
+#pragma location=(CORE_TASK_ADDR)
 core_task_t local_task;
 UINT32 core_idel_flag = 0;
 

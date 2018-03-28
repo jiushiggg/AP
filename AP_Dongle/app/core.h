@@ -36,23 +36,44 @@
 #define CORE_CMD_ERROR					0x10FF
 
 #define CORE_CMD_LEN					256
-
 typedef struct
 {
-	UINT16 cmd;
-	UINT32 cmd_len;
-	UINT8 cmd_buf[CORE_CMD_LEN];
-	UINT8 *data_ptr;
-	UINT32 data_len;
-	UINT32 flash_data_addr;
-	UINT32 flash_data_len;
-	UINT32 flash_ack_addr;
-	UINT32 flash_ack_len;
-	UINT16 ack;
-	UINT8 ack_len;
-	UINT8 *ack_ptr;
-	UINT8 ack_buf[CORE_CMD_LEN];
+    UINT16 cmd;
+    UINT32 cmd_len;
+    UINT8 cmd_buf[CORE_CMD_LEN];
+    UINT8 *data_ptr;
+    UINT32 data_len;
+    UINT32 flash_data_addr;
+    UINT32 flash_data_len;
+    UINT32 flash_ack_addr;
+    UINT32 flash_ack_len;
+    UINT16 ack;
+    UINT8 ack_len;
+    UINT8 *ack_ptr;
+    UINT8 ack_buf[CORE_CMD_LEN];
 }core_task_t;
+
+
+/* Stack size in bytes */
+#define GPRAM_BASE  0x11000000
+#define TASK0_STACKSIZE   (2048- 512)
+#define TASK0_ADDR  (GPRAM_BASE)
+
+#define TASK1_STACKSIZE   (2048)
+#define TASK1_ADDR              (GPRAM_BASE+TASK0_STACKSIZE)
+
+#define CMD_BUF     256
+#define CMD_BUF_ADDR            (GPRAM_BASE+TASK0_STACKSIZE+TASK1_STACKSIZE)
+
+
+#define XCB_RECV_BUF_ADDR       (GPRAM_BASE+TASK0_STACKSIZE+TASK1_STACKSIZE+CMD_BUF)
+
+
+#define XMODEM_LEN_ALL_SIZE     XMODEM_LEN_ALL
+#define XMODEM_LEN_ALL_ADDR     (GPRAM_BASE+TASK0_STACKSIZE+TASK1_STACKSIZE+CMD_BUF+XCB_RECV_BUF_SIZE)
+
+#define CORE_TASK_SIZE          (sizeof(core_task_t))
+#define CORE_TASK_ADDR          (GPRAM_BASE+TASK0_STACKSIZE+TASK1_STACKSIZE+CMD_BUF+XCB_RECV_BUF_SIZE+XMODEM_LEN_ALL_SIZE)
 
 extern void Core_Init(void);
 extern void Core_RxHandler(void);
