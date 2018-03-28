@@ -163,7 +163,7 @@ void set_frequence(uint8_t  Frequency)
     RF_cmdFs.frequency = 2400+Frequency/2;
     RF_cmdFs.fractFreq = (fractFreq_flag ? 32768 : 0);
     RF_runCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
-    RF_yield(rfHandle);
+//    RF_yield(rfHandle);
 }
 
 void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)

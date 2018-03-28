@@ -97,7 +97,7 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 		duration_ms = (uint32_t)duration * 1000 - 500;
 	}
 	
-	if((timer=TIM_Open(slot_duration, duration_ms/slot_duration, TIMER_DOWN_CNT)) == ALL_TIMER_ACTIVE)
+	if((timer=TIM_Open(slot_duration, duration_ms/slot_duration, TIMER_DOWN_CNT, TIMER_PERIOD)) == TIMER_UNKNOW)
 	{
 		perr("g3_wkup() open timer.\r\n");
 		ret = -4;
@@ -105,7 +105,7 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 	}
 	LED_TOGGLE(DEBUG_IO0);
 	interval = EasyLink_us_To_RadioTime(interval);
-	while(!TIM_CheckTimeout(timer))
+	while(TIME_COUNTING==TIM_CheckTimeout(timer))
 	{
 		if(Core_GetQuitStatus() == 1)
 		{

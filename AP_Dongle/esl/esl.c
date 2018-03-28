@@ -273,7 +273,7 @@ INT32 esl_updata(esl_updata_t *updata)
         {
             pdebug("frame1\r\n");
             pinfo("f1.6 bg\r\n");
-            my_frame1_flg = 1000;
+            my_frame1_flg = 0;
             frame1_start(frame1_cmd, frame1_addr, frame1_len);
             my_frame1_flg = 0;
             pinfo("f1.6 ed\r\n");

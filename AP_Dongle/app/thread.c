@@ -37,6 +37,7 @@
 #include "communicate.h"
 #include "bsp.h"
 #include "bsp_spi.h"
+#include "timer.h"
 
 #ifdef GOLD_BOARD
 const unsigned char APP_VERSION_STRING[] = "rfg-3.2.2-rc5"; //must < 32
@@ -158,6 +159,27 @@ void *mainThread(void *arg0)
 //        continue;
 //    }
 //}
+//    while(1){
+//        uint8_t t=1;
+//
+//        t = TIM_Open(20, 20000, TIMER_UP_CNT, TIMER_PERIOD);
+//        while(TIME_COUNTING==TIM_CheckTimeout(t));
+//        BSP_GPIO_test(DEBUG_TEST);
+//        TIM_Close(t);
+//
+//        BSP_GPIO_test(DEBUG_TEST);
+//        t = TIM_Open(20, 200, TIMER_DOWN_CNT, TIMER_PERIOD);
+//        while(TIME_COUNTING==TIM_CheckTimeout(t));
+//        BSP_GPIO_test(DEBUG_TEST);
+//        TIM_Close(t);
+//
+//
+//        t = TIM_Open(100, 40, TIMER_UP_CNT, TIMER_ONCE);
+//        while(TIME_COUNTING==TIM_CheckTimeout(t));
+//
+//        TIM_Close(t);
+//    }
+
     Core_Mainloop();
 
     return 0;

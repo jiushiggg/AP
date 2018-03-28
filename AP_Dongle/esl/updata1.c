@@ -159,7 +159,7 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 			break;
 		}
 		
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			pdebug("timeout.\r\n");
 			break;
@@ -305,7 +305,7 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 			break;
 		}
 		
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			pdebug("mode0_query_miss_round, timer timeout.\r\n");
 			break;
@@ -324,9 +324,11 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 		set_power_rate(RF_DEFAULT_POWER, table->tx_datarate);
 //		channel = g3_get_channel(pESL[i].first_pkg_addr);
 		get_one_data(pESL[i].first_pkg_addr, NULL, &channel, NULL, first_pkg_data, sizeof(first_pkg_data));
+#if 1
 		pinfo("query%02x%02x%02x%02x,tx%d,rx%d,ch%d,t%d\r\n", \
 				pESL[i].esl_id[0], pESL[i].esl_id[1], pESL[i].esl_id[2], pESL[i].esl_id[3], \
 				table->tx_datarate, table->rx_datarate, channel, deal_timeout);
+#endif
 		memset(data, 0, sizeof(data));
 		g3_make_link_query(pESL[i].esl_id, get_pkg_sn_f(pESL[i].first_pkg_addr+(pESL[i].total_pkg_num-1)*32, 7), \
 								query_miss_slot, first_pkg_data, data, sizeof(data));
@@ -441,7 +443,7 @@ INT32 m1_send_sleep(updata_table_t *table, UINT8 timer)
 			break;
 		}
 		
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			break;
 		}
@@ -503,7 +505,7 @@ UINT8 m1_updata_loop(updata_table_t *table)
 	UINT16 leftime = 0;
 		
 	pdebug("m1_updata_loop().\r\nfirst rount timeout is %d.\r\n", timeout);	
-	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
+	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT, TIMER_ONCE)) == TIMER_UNKNOW)
 	{
 		goto done;
 	}
@@ -518,14 +520,14 @@ UINT8 m1_updata_loop(updata_table_t *table)
 	}
 	timeout = table->esl_work_duration * 10 * 15 / 100 + leftime;
 	pdebug("first round left %d ms.\r\nsecond timeout is %d.\r\n", leftime, timeout);
-	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
+	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT, TIMER_ONCE)) == TIMER_UNKNOW)
 	{
 		goto done;
 	}
 	while(1)
 	{
 		m1_query_miss(table, timer);
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			break;
 		}
@@ -540,7 +542,7 @@ UINT8 m1_updata_loop(updata_table_t *table)
 		{
 			break;
 		}
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			break;
 		}
@@ -551,7 +553,7 @@ UINT8 m1_updata_loop(updata_table_t *table)
 		}	
 		
 		m1_transmit(table, timer);
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			break;
 		}

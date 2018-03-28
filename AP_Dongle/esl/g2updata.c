@@ -58,7 +58,7 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
 			break;		
 		}
 		
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			pdebug("timeout.\r\n");
 			break;
@@ -194,7 +194,7 @@ static INT32 g2_query_miss(updata_table_t *table, UINT8 timer)
 			break;		
 		}
 		
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			pdebug("timeout %d!\r\n", timer);
 			break;
@@ -285,7 +285,7 @@ UINT8 g2_updata_loop(updata_table_t *table)
 	UINT16 leftime = 0;
 		
 	pdebug("g2 updata loop\r\nfirst rount timeout is %d.\r\n", timeout);	
-	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
+	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT, TIMER_ONCE)) == TIMER_UNKNOW)
 	{
 		goto done;
 	}
@@ -299,7 +299,7 @@ UINT8 g2_updata_loop(updata_table_t *table)
 	}
 	timeout = table->esl_work_duration * 10 * 15 / 100 + leftime;
 	pdebug("first round left %d ms.\r\nsecond timeout is %d.\r\n", leftime, timeout);
-	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
+	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT, TIMER_ONCE)) == TIMER_UNKNOW)
 	{
 		goto done;
 	}
@@ -307,7 +307,7 @@ UINT8 g2_updata_loop(updata_table_t *table)
 	while(1)
 	{
 		g2_query_miss(table, timer);
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			break;
 		}
@@ -321,7 +321,7 @@ UINT8 g2_updata_loop(updata_table_t *table)
 		{
 			break;
 		}
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			break;
 		}
@@ -331,7 +331,7 @@ UINT8 g2_updata_loop(updata_table_t *table)
 			break;
 		}		
 		g2_transmit(table, timer);
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			break;
 		}

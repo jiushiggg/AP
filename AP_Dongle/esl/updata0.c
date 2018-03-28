@@ -130,7 +130,7 @@ static INT32 fisrt_transmit_round(updata_table_t *table, UINT8 timer)
 			break;
 		}
 		
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			pdebug("transmit_round, timer timeout.\r\n");
 			ret = -1;
@@ -214,7 +214,7 @@ static INT32 query_miss_round(updata_table_t *table, UINT8 timer)
 			break;
 		}
 		
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			pdebug("mode0_query_miss_round, timer timeout.\r\n");
 			break;
@@ -296,7 +296,7 @@ static INT32 send_sleep_round(updata_table_t *table, UINT8 timer)
 			break;
 		}
 		
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			break;
 		}
@@ -388,7 +388,7 @@ static INT32 send_miss_round(updata_table_t *table, UINT8 timer)
 			break;
 		}
 		
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			pdebug("timeout.\r\n");
 			break;
@@ -465,7 +465,7 @@ UINT8 updata_loop(updata_table_t *table)
 	UINT16 leftime = 0;
 	
 	pdebug("updata_loop\r\nfirst rount timeout is %d.\r\n", timeout);	
-	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
+	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT, TIMER_ONCE)) == TIMER_UNKNOW)
 	{
 		goto done;
 	}
@@ -480,14 +480,14 @@ UINT8 updata_loop(updata_table_t *table)
 	
 	timeout = table->esl_work_duration * 10 * 15 / 100 + leftime;
 	pdebug("first round left %d ms.\r\nsecond timeout is %d.\r\n", leftime, timeout);
-	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
+	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT, TIMER_ONCE)) == TIMER_UNKNOW)
 	{
 		goto done;
 	}
 	while(1)
 	{
 		query_miss_round(table, timer);
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			break;
 		}
@@ -496,12 +496,12 @@ UINT8 updata_loop(updata_table_t *table)
 		{
 			break;
 		}
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			break;
 		}		
 		send_miss_round(table, timer);
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			break;
 		}	

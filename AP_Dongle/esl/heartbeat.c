@@ -23,7 +23,7 @@ UINT8 set_timer(INT32 timeout)
 			pinfo("warning: set_timer timeout change to 4294.\r\n");
 		}
 		
-		if((timer=TIM_Open(timeout*1000, 1, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
+		if((timer=TIM_Open(timeout*1000, 1, TIMER_UP_CNT, TIMER_ONCE)) == TIMER_UNKNOW)
 		{
 			perr("set_timer open.\r\n");
 		}
@@ -38,7 +38,7 @@ UINT8 set_timer(INT32 timeout)
 
 UINT8 check_timer_timeout(UINT8 timer)
 {
-	if(timer > getTimerCount())
+	if(timer > getTimerNum())
 	{
 		return 0;
 	}
@@ -50,7 +50,7 @@ UINT8 check_timer_timeout(UINT8 timer)
 
 void close_timer(UINT8 timer)
 {
-	if(timer < getTimerCount())
+	if(timer < getTimerNum())
 	{
 		TIM_Close(timer);
 		timer = 0;

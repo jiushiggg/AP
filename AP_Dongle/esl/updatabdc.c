@@ -30,7 +30,7 @@ static void _bdc_transmit_mode0(updata_table_t *table, UINT8 timer)
 			break;		
 		}
 		
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			pdebug("_bdc_transmit_mode0 timeout.\r\n");
 			break;
@@ -85,7 +85,7 @@ static void _bdc_transmit_mode1(updata_table_t *table, UINT8 timer)
 			break;		
 		}
 		
-		if(TIM_CheckTimeout(timer) == 1)
+		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			pdebug("_bdc_transmit_mode1(%d) timeout\r\n", timer);
 			break;
@@ -118,7 +118,7 @@ UINT8 bdc_updata_loop(updata_table_t *table)
 	UINT8 timer = 0;
 	UINT16 timeout = table->esl_work_duration * 10;
 		
-	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT)) == ALL_TIMER_ACTIVE)
+	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT, TIMER_ONCE)) == TIMER_UNKNOW)
 	{
 		perr("bdc_updata_loop open timer\r\n");
 		goto done;
