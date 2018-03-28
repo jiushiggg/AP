@@ -126,39 +126,38 @@ UINT8 TIM_Open(UINT32 nms, UINT16 cnt, UINT16 direction, emTimerMode mode)
 
     switch(mode)
     {
-    case TIMER_PERIOD:
-        if(direction == TIMER_UP_CNT)
-        {
-            ts[t].count = 0;
-            ts[t].direction = cnt;
-        }
-        else
-        {
-            ts[t].count = cnt;
-            ts[t].direction = 0;
-        }
-        ts[t].timeout = TIME_COUNTING;
-        nms = nms*TIRTOS_1MS;
-        Clock_setPeriod(ts[t].TIMn, nms);
-        break;
-        case TIMER_ONCE:
+        case TIMER_PERIOD:
             if(direction == TIMER_UP_CNT)
             {
                 ts[t].count = 0;
-                ts[t].direction = 1;
+                ts[t].direction = cnt;
             }
             else
             {
-                ts[t].count = 1;
+                ts[t].count = cnt;
                 ts[t].direction = 0;
             }
             ts[t].timeout = TIME_COUNTING;
-            nms = nms*TIRTOS_1MS*cnt;
-            Clock_setPeriod(ts[t].TIMn, 0);
+            nms = nms*TIRTOS_1MS;
+            Clock_setPeriod(ts[t].TIMn, nms);
             break;
-
-        default:
-            break;
+            case TIMER_ONCE:
+                if(direction == TIMER_UP_CNT)
+                {
+                    ts[t].count = 0;
+                    ts[t].direction = 1;
+                }
+                else
+                {
+                    ts[t].count = 1;
+                    ts[t].direction = 0;
+                }
+                ts[t].timeout = TIME_COUNTING;
+                nms = nms*TIRTOS_1MS*cnt;
+                Clock_setPeriod(ts[t].TIMn, 0);
+                break;
+            default:
+                break;
     }
     Clock_setTimeout(ts[t].TIMn, nms);
     swiRestore(key);
