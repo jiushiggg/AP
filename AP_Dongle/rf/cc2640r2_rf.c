@@ -12,7 +12,7 @@
 #define RF_RX_DATA_TEST_IO  IOID_16
 #define RF_RX_SYNC_TEST_IO  IOID_17
 
-
+#define CRC_ERR             0x40
 
 /***** Defines *****/
 #define RF_convertMsToRatTicks(microsecond_10)    ((uint32_t)(microsecond_10) * 4 * 10)   // ((uint32_t)(milliseconds) * 4 * 1000)
@@ -51,6 +51,8 @@ rfc_dataEntryGeneral_t* currentDataEntry;
 RF_Object rfObject;
 RF_Handle rfHandle;
 dataQueue_t dataQueue;
+volatile UINT8 crcErrflg = 0;
+
 static UINT8 _hb_rssi = 0;
 
 Semaphore_Handle txDoneSem;
@@ -62,6 +64,7 @@ void txcallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
     {
         Semaphore_post(txDoneSem);
     }
+
     if(e & RF_EventLastCmdDone)
     {
           //指令已经执行完成
@@ -353,8 +356,15 @@ void rf_idle(void)
     RF_yield(rfHandle);
 }
 
-void rf_preset_for_hb_recv(void)
+void rf_preset_hb_recv(uint8_t b)
 {
+    if (b){
+        RF_cmdPropRxAdv.rxConf.bAutoFlushCrcErr = 0;
+    //    RF_cmdPropRxAdv.pktConf.bUseCrc = 0;
+    }else {
+        RF_cmdPropRxAdv.rxConf.bAutoFlushCrcErr = 1;
+    //    RF_cmdPropRxAdv.pktConf.bUseCrc = 1;
+    }
 }
 UINT8 get_rssi(void)
 {
@@ -371,14 +381,18 @@ UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeo
     cc2592Cfg(CC2592_RX_HG_MODE);
     sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
 //    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);
-
     rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , timeout/Clock_tickPeriod);
     if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout/Clock_tickPeriod))){
         currentDataEntry = RFQueue_getDataEntry();
-        memcpy(data, (uint8_t*)(&currentDataEntry->data), len+1);
+        memcpy(data, (uint8_t*)(&currentDataEntry->data), len+2);
         RFQueue_nextEntry();
         RF_cancelCmd(rfHandle, rx_event,0);
-        _hb_rssi = data[len];   
+        _hb_rssi = data[len];
+        crcErrflg = data[len+1];
+        if (crcErrflg == CRC_ERR){
+            crcErrflg = 0;
+            len = 255;
+        }
     }else{
         RF_cancelCmd(rfHandle, rx_event,0);
         currentDataEntry = RFQueue_getDataEntry();

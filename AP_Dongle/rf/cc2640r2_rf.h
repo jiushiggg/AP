@@ -78,7 +78,7 @@ extern RF_EventMask send_without_wait(uint8_t *id, uint8_t *data, uint8_t len, u
 extern void enter_txrx(void);
 extern void exit_txrx(void);
 extern void wait(uint32_t nus);
-extern void rf_preset_for_hb_recv(void);
+extern void rf_preset_hb_recv(uint8_t b);
 void rf_preset_for_hb_recv(void);
 uint8_t get_rssi(void);
 extern void rf_exit_from_hb_recv(void);

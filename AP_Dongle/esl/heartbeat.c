@@ -247,7 +247,7 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 
 	hb_timer = set_timer(table->timeout);
 	set_power_rate(RF_DEFAULT_POWER, table->recv_bps);
-	rf_preset_for_hb_recv();
+	rf_preset_hb_recv(true);
 	enter_txrx();
 	cc2592Cfg(CC2592_RX_HG_MODE);
 	while(1)
@@ -295,7 +295,7 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 			continue;
 		}
 		GPIO_toggleDio(DEBUG_TEST);
-		len = len == table->recv_len ? table->recv_len : 16;
+		len = (len == table->recv_len ? table->recv_len : 16);
 		ret = _check_hb_data(ptr, len);
 		GPIO_toggleDio(DEBUG_TEST);
 		if(ret == 0)
@@ -325,7 +325,7 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 
 	close_timer(hb_timer);
 	exit_txrx();
-
+	rf_preset_hb_recv(false);
 	
 	if(ret == 1) //need ack the esl and uplink the data //todo
 	{
