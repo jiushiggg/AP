@@ -3,7 +3,7 @@
 #include <ti/sysbios/knl/Clock.h>
 #include <xdc/runtime/Error.h>
 #include "CC2592.h"
-
+#include "rftest.h"
 #include <ti/drivers/pin/PINCC26XX.h>
 
 #define RF_TEST
@@ -23,6 +23,9 @@
                                    * 1 Header byte (RF_cmdPropRx.rxConf.bIncludeHdr = 0x1)
                                    * Max 30 payload bytes
                                    * 1 status byte (RF_cmdPropRx.rxConf.bAppendStatus = 0x1) */
+#define EASYLINK_RF_EVENT_MASK  ( RF_EventLastCmdDone | RF_EventCmdError | \
+             RF_EventCmdAborted | RF_EventCmdStopped | RF_EventCmdCancelled )
+
 
 #if defined(__TI_COMPILER_VERSION__)
     #pragma DATA_ALIGN (rxDataEntryBuffer, 4);
@@ -60,15 +63,11 @@ Semaphore_Handle rxDoneSem;
 
 void txcallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
 {
-    if(e & RF_EventRxEntryDone)
+    if(e & RF_EventLastCmdDone)
     {
         Semaphore_post(txDoneSem);
     }
 
-    if(e & RF_EventLastCmdDone)
-    {
-          //指令已经执行完成
-    }
 }
 
 void rxcallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
@@ -252,18 +251,18 @@ RF_EventMask send_async(uint32_t interal)
 
 void send_pend(RF_EventMask result)
 {
-    RF_pendCmd(rfHandle, result, RF_EventTxEntryDone|RF_EventLastCmdDone);
+    RF_pendCmd(rfHandle, result, EASYLINK_RF_EVENT_MASK);
 }
 #endif
 void rfCancle(RF_EventMask result)
 {
     RF_cancelCmd(rfHandle, result,0);
 }
-uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t timeout)
+uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint16_t timeout)
 {
     RF_EventMask result;
     cc2592Cfg(CC2592_TX);
-    set_frequence(ch);
+//    set_frequence(ch);
     send_data_init(id, data, len, timeout);
     result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
 //    RF_pendCmd(rfHandle, result, RF_EventTxEntryDone);
@@ -272,12 +271,12 @@ uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t 
     return len;
 }
 //uint8_t rf_test_buff[26]={0};
-UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t timeout)
+UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout)
 {
     uint32_t sync_word=0;
  //   uint32_t tmp_timeout = 0;
     RF_EventMask rx_event;
-    set_frequence(ch);
+//    set_frequence(ch);
 
     sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
 //    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);

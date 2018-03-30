@@ -35,6 +35,7 @@
 #define  RF_TX_POWER_3DB    ((uint8_t)3)
 #define  RF_TX_POWER_4DB    ((uint8_t)4)
 #define  RF_TX_POWER_5DB    ((uint8_t)5)
+#define  RF_FREQUENCY_UNKNOW   254
 
 /// \brief macro to convert from Radio Time Ticks to ms
 #define EasyLink_RadioTime_To_ms(radioTime) ((1000 * radioTime) / 4000000)
@@ -68,8 +69,8 @@ extern void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  F
 extern void send_data_init(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout);
 extern RF_EventMask send_async(uint32_t interval);
 extern void send_pend(RF_EventMask result);
-extern uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint16_t timeout);
-extern uint8_t recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t timeout);
+extern uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint16_t timeout);
+extern uint8_t recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout);
 
 extern void set_frequence(uint8_t  Frequency);
 extern void set_power_rate(uint8_t Tx_power, uint16_t Data_rate);

@@ -37,7 +37,8 @@ static INT32 sleep_mode0()
 	INT32 i, j;
 	UINT32 cur = 0;
 	INT32 read_len = 0;
-		
+	volatile UINT8 prev_channel=RF_FREQUENCY_UNKNOW;
+
 	for(j = 0; j < sleep_times; j++)
 	{
 		if(Core_GetQuitStatus() == 1)
@@ -70,8 +71,13 @@ static INT32 sleep_mode0()
 				sleep_data_len = sleep_default_len;
 				make_sleep_data(sleep_id, sleep_idx, sleep_data, sleep_data_len);
 			}
-			
-			send_data(sleep_id, sleep_data, sleep_data_len, sleep_channel, 1000);
+
+	        if (sleep_channel != prev_channel){
+	            set_frequence(sleep_channel);
+	        }
+	        prev_channel = sleep_channel;
+	        send_data(sleep_id, sleep_data, sleep_data_len, 1000);
+//			send_data(sleep_id, sleep_data, sleep_data_len, sleep_channel, 1000);
 			
 			pdebug("sleep %02X-%02X-%02X-%02X, channel=%d, datalen=%d: ", \
 					sleep_id[0], sleep_id[1], sleep_id[2], sleep_id[3], sleep_channel, sleep_data_len);

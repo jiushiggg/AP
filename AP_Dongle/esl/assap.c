@@ -124,6 +124,7 @@ INT32 assap_scan_wkup(UINT8 *dst, INT32 dsize)
 //	phex((UINT8 *)p_assack_cmd, sizeof(assack_cmd_t));
 	
 	set_power_rate(RF_DEFAULT_POWER, p_assack_cmd->assack_cmd_para[0].datarate);
+	set_frequence(p_assack_cmd->assack_cmd_para[0].wkupch);
 	t = set_timer(p_assack_cmd->assack_cmd_head.timeout);
 	enter_txrx();
 	
@@ -144,7 +145,7 @@ INT32 assap_scan_wkup(UINT8 *dst, INT32 dsize)
 		
 		if( recv_data(p_assack_cmd->assack_cmd_para[0].wkupid, wkupbuf, 
 						p_assack_cmd->assack_cmd_para[0].wkupdatalen, 
-						p_assack_cmd->assack_cmd_para[0].wkupch, TIMEOUT_OF_RF_RX) \
+						TIMEOUT_OF_RF_RX) \
 						== p_assack_cmd->assack_cmd_para[0].wkupdatalen)
 		{
 			if(_check_wkup_buf(wkupbuf, p_assack_cmd->assack_cmd_para[0].wkupdatalen, p_assack_cmd->assack_cmd_head.type) == 0)
@@ -235,7 +236,7 @@ INT32 assap_ack(assap_ack_table_t *table)
 
 	t = set_timer(table->timeout);
 	set_power_rate(RF_DEFAULT_POWER, table->recv_bps);
-	
+	set_frequence(table->channel);
 	enter_txrx();
 	
 	while(1)
@@ -278,7 +279,7 @@ INT32 assap_ack(assap_ack_table_t *table)
 			break;
 		}
 		
-		if(recv_data(table->id, ptr+LEN_OF_ESLID, table->recv_len, table->channel, 20000) == table->recv_len) //20ms
+		if(recv_data(table->id, ptr+LEN_OF_ESLID, table->recv_len, 20000) == table->recv_len) //20ms
 		{
 //			pinfo("recved: ");
 //			phex(ptr+LEN_OF_ESLID, table->recv_len);

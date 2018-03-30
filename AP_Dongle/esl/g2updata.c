@@ -179,6 +179,7 @@ static INT32 g2_query_miss(updata_table_t *table, UINT8 timer)
 	INT32 i;
 	UINT32 deal_timeout = table->deal_duration*1000;
 	UINT8 channel = 0;
+	volatile UINT8 prev_channel=RF_FREQUENCY_UNKNOW;
 	mode1_esl_t *pESL = (mode1_esl_t *)table->data;
 		
 	set_power_rate(table->tx_power, table->tx_datarate);
@@ -217,10 +218,15 @@ static INT32 g2_query_miss(updata_table_t *table, UINT8 timer)
 		memset(data, 0, sizeof(data));
 		g2_make_link_query(pESL[i].esl_id, get_pkg_sn_f(pESL[i].first_pkg_addr+(pESL[i].total_pkg_num-1)*32, 8), \
 								query_miss_slot, first_pkg_data, data, sizeof(data));
-		send_data(pESL[i].esl_id, data, sizeof(data), channel, 2000);
+        if (channel != prev_channel){
+            set_frequence(channel);
+        }
+        prev_channel = channel;
+		send_data(pESL[i].esl_id, data, sizeof(data), 2000);
+
 		set_power_rate(RF_DEFAULT_POWER ,table->rx_datarate);
 		memset(rxbuf, 0, sizeof(rxbuf));
-		if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), channel, deal_timeout) == 0)
+		if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), deal_timeout) == 0)
 		{
 			pdebug("recv timeout.\r\n");
 			continue;

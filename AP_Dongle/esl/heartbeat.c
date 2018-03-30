@@ -220,7 +220,9 @@ static INT32 _ack_the_esl(UINT8 *uplink_data, INT32 len, UINT8 status)
 	crc = CRC16_CaculateStepByStep(crc, eslid, 4);
 	memcpy(ack_buf+7, &crc, sizeof(crc));
 	set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
-	send_data(eslid, ack_buf, sizeof(ack_buf), eslch, 2000);
+    set_frequence(eslch);
+    send_data(eslid, ack_buf, sizeof(ack_buf), 2000);
+//	send_data(eslid, ack_buf, sizeof(ack_buf), eslch, 2000);
 	//pinfo("_ack_the_esl %02X-%02X-%02X-%02X, %d: ", eslid[0], eslid[1], eslid[2], eslid[3], eslch);
 	//phex(ack_buf, sizeof(ack_buf));
 	return 0;
