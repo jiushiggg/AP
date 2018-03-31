@@ -406,7 +406,7 @@ UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeo
 
 UINT8 get_hb_rssi(void)
 {
-    return _hb_rssi;
+    return (~_hb_rssi + 1);
 }
 
 
