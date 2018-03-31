@@ -46,7 +46,6 @@ static void _bdc_transmit_mode0(updata_table_t *table, UINT8 timer)
         }
         result = send_without_wait(id, data, len, ch, 6000);
         pend_flg = PEND_START;
-//		send_without_wait(id, data, len, ch, 2000);
 		j++;
 		if(j >= k)
 		{
@@ -104,7 +103,6 @@ static void _bdc_transmit_mode1(updata_table_t *table, UINT8 timer)
         }
         result = send_without_wait(id, data, len, ch, 6000);
         pend_flg = PEND_START;
-//		send_without_wait(id, data, len, ch, 2000);
 		txaddr += sizeof(id)+sizeof(ch)+sizeof(len)+len;
 		i++;
 	}

@@ -27,8 +27,10 @@ void dummy(updata_table_t *table, INT32 nus)
 {
 	if(table->frame1_addr == 0)
 	{
+	    BSP_GPIO_test(DEBUG_TEST);
 		pdebug("dummy %d us.\r\n", nus);
 		BSP_Delay100US(nus/100+1);
+		BSP_GPIO_test(DEBUG_TEST);
 	}
 	else
 	{
@@ -77,7 +79,7 @@ UINT16 init_data(UINT32 addr, UINT32 len, updata_table_t *table)
 			pESL[num].ack = 0;
 			pESL[num].total_pkg_num = 0;
 			pESL[num].failed_pkg_num = 0;
-			pESL[num].sleep_flag = 2;
+			pESL[num].sleep_flag = SLEEP_FRAME_CNT;
 			num++;
 			table->esl_num++;
 		}
@@ -155,11 +157,6 @@ static INT32 fisrt_transmit_round(updata_table_t *table, UINT8 timer)
 	        }
 	        result = send_without_wait(id, data, len, ch, 6000);
 	        pend_flg = PEND_START;
-//			if(send_without_wait(id, data, len, ch, 6000) == 0)
-//			{
-//				perr("transmit_round() send data.\r\n");
-//				wait(1000);
-//			}
 							
 			left_pkg_num--;
 			k++;
@@ -431,11 +428,6 @@ static INT32 send_miss_round(updata_table_t *table, UINT8 timer)
 	        }
 	        result = send_without_wait(id, data, len, ch, 6000);
 	        pend_flg = PEND_START;
-//			if(send_without_wait(id, data, len, ch, 6000) == 0)
-//			{
-//				perr("mode0_send_miss_round() send data!\r\n");
-//				wait(1000);
-//			}
 			
 			left_pkg_num--;
 			k++;
@@ -485,7 +477,7 @@ UINT8 updata_loop(updata_table_t *table)
 	UINT16 leftime = 0;
 	
 	pdebug("updata_loop\r\nfirst rount timeout is %d.\r\n", timeout);	
-	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT, TIMER_ONCE)) == TIMER_UNKNOW)
+	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT, TIMER_PERIOD)) == TIMER_UNKNOW)
 	{
 		goto done;
 	}

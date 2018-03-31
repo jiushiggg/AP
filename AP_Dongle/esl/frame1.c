@@ -77,11 +77,6 @@ static UINT8 frame1_mode0(UINT32 addr, UINT8 num, INT32 duration)
         }
 		result = send_without_wait(id, data, len, channel, 6000);
         pend_flg = PEND_START;
-//		if(send_without_wait(id, data, len, channel, 6000) == 0)
-//		{
-//			perr("frame1 send\r\n");
-//			wait(1000);
-//		}
 		
 		i += 1;		
 		if(i == num)
@@ -161,11 +156,6 @@ static UINT8 _frame2(UINT32 addr, UINT8 num, INT32 duration)
         }
         result = send_without_wait(id, data, len, channel, 6000);
         pend_flg = PEND_START;
-//		if(send_without_wait(id, data, len, channel, 6000) == 0)
-//		{
-//			perr("frame1 send\r\n");
-//			wait(1000);
-//		}
 		
 		i += 1;		
 		if(i == num)
@@ -274,7 +264,7 @@ INT32 frame1_dummy(UINT32 addr, UINT32 len, UINT32 *dummy_offset, INT32 dummy_nu
 			frame1_para.mode, frame1_para.num);
 	
 
-	set_power_rate(frame1_para.power, frame1_para.datarate);
+//	set_power_rate(frame1_para.power, frame1_para.datarate);//todo: 涉及到切换速率，耗时长。与原程序设计不一致。
 	
 	while(tx_num < dummy_num)
 	{	
@@ -298,11 +288,6 @@ INT32 frame1_dummy(UINT32 addr, UINT32 len, UINT32 *dummy_offset, INT32 dummy_nu
         }
         result = send_without_wait(id, data, len, channel, 6000);
         pend_flg = PEND_START;
-//		if(send_without_wait(id, data, data_len, channel, 6000) == 0)
-//		{
-//			perr("frame1 dummy send data\r\n");
-//			wait(1000);
-//		}
 
 		*dummy_offset += sizeof(id)+sizeof(channel)+sizeof(data_len)+data_len;
 		tx_num++;

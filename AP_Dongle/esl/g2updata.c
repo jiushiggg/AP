@@ -120,11 +120,6 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
 	        }
 	        result = send_without_wait(id, data, len, ch, 6000);
 	        pend_flg = PEND_START;
-//			if(send_without_wait(id, data, len, ch, 6000) == 0)
-//			{
-//				perr("g2_transmit send data!\r\n");
-//				wait(1000);
-//			}
 					
 		user_continue:
 			left_pkg_num--;
@@ -291,7 +286,7 @@ UINT8 g2_updata_loop(updata_table_t *table)
 	UINT16 leftime = 0;
 		
 	pdebug("g2 updata loop\r\nfirst rount timeout is %d.\r\n", timeout);	
-	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT, TIMER_ONCE)) == TIMER_UNKNOW)
+	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT, TIMER_PERIOD)) == TIMER_UNKNOW)
 	{
 		goto done;
 	}

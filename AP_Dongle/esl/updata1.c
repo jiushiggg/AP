@@ -82,7 +82,7 @@ UINT16 m1_init_data(UINT32 addr, UINT32 len, updata_table_t *table)
 			pESL[num].ack = 0;
 			pESL[num].total_pkg_num = 0;
 			pESL[num].failed_pkg_num = 0;
-			pESL[num].sleep_flag = 2;
+			pESL[num].sleep_flag = SLEEP_FRAME_CNT;
 			num++;
 			table->esl_num++;
 		}
@@ -232,11 +232,6 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 	        }
 	        result = send_without_wait(id, data, len, ch, 6000);
 	        pend_flg = PEND_START;
-//			if(send_without_wait(id, data, len, ch, 6000) == 0)
-//			{
-//				perr("m1_transmit() send data!\r\n");
-//				wait(1000);
-//			}
 		user_continue:
 			left_pkg_num--;
 			k++;
@@ -250,17 +245,17 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 			i = 0;
 			j++;
 			
-			if((dummy_us=(table->tx_interval*1000-k*table->tx_duration)) >= 0)
+			if((dummy_us=((uint16_t)table->tx_interval*1000-k*table->tx_duration)) >= 0)
 			{
 				dummy(table, dummy_us);
 				f = 1;
 			}
 			k = 0;
 		}	
-		if((t%50==0) && (f==0))
-		{
-			dummy(table, table->tx_duration);
-		}
+//		if((t%50==0) && (f==0))     //可以不用补帧1？，因为收帧1开1S
+//		{
+//			dummy(table, table->tx_duration);
+//		}
 	}
 	
 	if((i != table->esl_num) && (f == 0))
@@ -458,10 +453,11 @@ INT32 m1_send_sleep(updata_table_t *table, UINT8 timer)
 		
 		if((pESL[i].failed_pkg_num==0) && (pESL[i].sleep_flag>0))
 		{
-			pdebug("sleep 0x%02X-0x%02X-0x%02X-0x%02X\r\n", \
+		    pdebug("sp %02X%02X%02X%02X\r\n", \
 					pESL[i].esl_id[0], pESL[i].esl_id[1], \
 					pESL[i].esl_id[2], pESL[i].esl_id[3]);
 			pESL[i].sleep_flag--;
+
 			make_sleep_data(pESL[i].esl_id, table->id_x_ctrl, data, sizeof(data));
 			get_one_data(pESL[i].first_pkg_addr, NULL, &channel, NULL, NULL, 0);
 
@@ -526,7 +522,7 @@ UINT8 m1_updata_loop(updata_table_t *table)
 	UINT16 leftime = 0;
 		
 	pdebug("m1_updata_loop().\r\nfirst rount timeout is %d.\r\n", timeout);	
-	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT, TIMER_ONCE)) == TIMER_UNKNOW)
+	if((timer=TIM_Open(100, timeout, TIMER_UP_CNT, TIMER_PERIOD)) == TIMER_UNKNOW)
 	{
 		goto done;
 	}
@@ -559,7 +555,7 @@ UINT8 m1_updata_loop(updata_table_t *table)
 		}
 		mydebug = 1;
 		m1_send_sleep(table, timer);
-		if(table->ok_esl_num == table->esl_num)
+		if(table->ok_esl_num==table->esl_num ||  table->esl_num==(table->ok_esl_num/SLEEP_FRAME_CNT))
 		{
 			break;
 		}

@@ -3,7 +3,7 @@
 #include "datatype.h"
 #include "updata.h"
 
-
+#define SLEEP_FRAME_CNT   2
 UINT16 get_missed_sn_r(UINT8 *data, UINT8 offset);
 UINT8 check_failed_pkg_r(UINT16 sn, UINT8 *buf, UINT8 failed_num);
 
