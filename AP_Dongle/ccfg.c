@@ -46,23 +46,26 @@
  *        made to this file will be applied to all projects.  This file must
  *        remain unmodified.
  */
+//#define ENABLE_BACKDOOR
 
-#define SET_CCFG_BL_CONFIG_BOOTLOADER_ENABLE            0x00       // Disable ROM boot loader
-//#define SET_CCFG_BL_CONFIG_BOOTLOADER_ENABLE         0xC5       // Enable ROM boot loader
+#ifdef ENABLE_BACKDOOR
+
+//#define SET_CCFG_BL_CONFIG_BOOTLOADER_ENABLE            0x00       // Disable ROM boot loader
+#define SET_CCFG_BL_CONFIG_BOOTLOADER_ENABLE         0xC5       // Enable ROM boot loader
 
 #define SET_CCFG_BL_CONFIG_BL_LEVEL                  0x0        // Active low to open boot loader backdoor
 //#define SET_CCFG_BL_CONFIG_BL_LEVEL                     0x1        // Active high to open boot loader backdoor
 
-#define SET_CCFG_BL_CONFIG_BL_PIN_NUMBER                0xFF       // DIO number for boot loader backdoor
-//#define SET_CCFG_BL_CONFIG_BL_PIN_NUMBER                15       // DIO number for boot loader backdoor
+//#define SET_CCFG_BL_CONFIG_BL_PIN_NUMBER                0xFF       // DIO number for boot loader backdoor
+#define SET_CCFG_BL_CONFIG_BL_PIN_NUMBER                15       // DIO number for boot loader backdoor
 
-//#define SET_CCFG_BL_CONFIG_BL_ENABLE                 0xC5       // Enabled boot loader backdoor
-#define SET_CCFG_BL_CONFIG_BL_ENABLE                    0xFF       // Disabled boot loader backdoor
+#define SET_CCFG_BL_CONFIG_BL_ENABLE                 0xC5       // Enabled boot loader backdoor
+//#define SET_CCFG_BL_CONFIG_BL_ENABLE                    0xFF       // Disabled boot loader backdoor
+#endif
 
 #define SET_CCFG_MODE_CONF_SCLK_LF_OPTION            0x3        // LF RCOSC
 #define SET_CCFG_MODE_CONF_XOSC_CAP_MOD              0          // Apply cap-array delta
 #define SET_CCFG_MODE_CONF_XOSC_CAPARRAY_DELTA       (-1)       // Signed 8-bit value, directly modifying trimmed XOSC cap-array value
-
 #define SET_CCFG_SIZE_AND_DIS_FLAGS_DIS_GPRAM        0x0        // Cache is disabled and GPRAM is available at 0x11000000-0x11001FFF
 
 #include <ti/devices/DeviceFamily.h>

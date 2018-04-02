@@ -40,9 +40,9 @@
 #include "timer.h"
 
 #ifdef GOLD_BOARD
-const unsigned char APP_VERSION_STRING[] = "rfd-1.0.0"; //must < 32
+const unsigned char APP_VERSION_STRING[] = "rfd-5.0.1"; //must < 32
 #else
-const unsigned char APP_VERSION_STRING[] = "rfd-1.0.0"; //must < 32
+const unsigned char APP_VERSION_STRING[] = "rfd-5.0.1"; //must < 32
 #endif
 
 
@@ -159,13 +159,10 @@ void *mainThread(void *arg0)
 //
 //        t = TIM_Open(20, 20000, TIMER_UP_CNT, TIMER_PERIOD);
 //        while(TIME_COUNTING==TIM_CheckTimeout(t));
-//        BSP_GPIO_test(DEBUG_TEST);
 //        TIM_Close(t);
 //
-//        BSP_GPIO_test(DEBUG_TEST);
 //        t = TIM_Open(20, 200, TIMER_DOWN_CNT, TIMER_PERIOD);
 //        while(TIME_COUNTING==TIM_CheckTimeout(t));
-//        BSP_GPIO_test(DEBUG_TEST);
 //        TIM_Close(t);
 //
 //

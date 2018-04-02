@@ -87,11 +87,6 @@ INT32 TIM_GetCount(UINT8 t)
     }
 }
 
-Void clk0Fxn(UArg arg0)
-{
-    UInt32 time;
-    BSP_GPIO_test(DEBUG_TEST);
-}
 
 void TIM_Init(void)
 {

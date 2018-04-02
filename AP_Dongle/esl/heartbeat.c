@@ -289,14 +289,12 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 			pinfo("numout 60000\r\n");
 			break;
 		}
-		GPIO_toggleDio(DEBUG_TEST);
 		len = recv_data_for_hb(table->id, ptr, table->recv_len, table->channel, 2000000);
 		if(len <= 0)
 		{
 			BSP_Delay1MS(table->interval);
 			continue;
 		}
-		GPIO_toggleDio(DEBUG_TEST);
 		len = (len == table->recv_len ? table->recv_len : 16);
 		ret = _check_hb_data(ptr, len);
 		GPIO_toggleDio(DEBUG_TEST);

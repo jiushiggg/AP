@@ -32,13 +32,13 @@ void BSP_GPIO_init(void)
 //    GPIO_setDio(DEBUG_IO2);
 //    GPIO_setOutputEnableDio(DEBUG_IO3, GPIO_OUTPUT_ENABLE);
 //    GPIO_setDio(DEBUG_IO3);
-    GPIO_setOutputEnableDio(DEBUG_TEST, GPIO_OUTPUT_ENABLE);
-    GPIO_setDio(DEBUG_TEST);
+//    GPIO_setOutputEnableDio(DEBUG_TEST, GPIO_OUTPUT_ENABLE);
+//    GPIO_setDio(DEBUG_TEST);
 }
 
 void BSP_GPIO_test(uint32_t n)
 {
-    GPIO_toggleDio(n);
+//    GPIO_toggleDio(n);
 }
 
 void BSP_highGPIO(uint32_t n)

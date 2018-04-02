@@ -27,10 +27,8 @@ void dummy(updata_table_t *table, INT32 nus)
 {
 	if(table->frame1_addr == 0)
 	{
-	    BSP_GPIO_test(DEBUG_TEST);
 		pdebug("dummy %d us.\r\n", nus);
 		BSP_Delay100US(nus/100+1);
-		BSP_GPIO_test(DEBUG_TEST);
 	}
 	else
 	{
