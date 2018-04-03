@@ -96,46 +96,19 @@ static UINT8 g1_general_data_transfer(transfer_data_t* pData, transfer_para_t* p
 	UINT8 ack_buf[6] = {0};
 	INT32 to = pPara->deal_duration * 10; // unit is 100us
 	
- 	RFC_SetDataRate(pPara->tx_datarate);
-	RFC_SetChannel(pData->channel);
-	RFC_WriteID(pData->id);
-	RFC_SetFifoLen(pData->len);
-	pData->data[1] = sort; 
-	RFC_WriteFifo(pData->data, pData->len);
-	
-	RFC_Cmd(RFC_CMD_TX);
-	BSP_Delay1US(50);
-	while(RFC_CheckTXOrRX())
-	{
-		if((to--) <= 0)
-		{
-			goto done;
-		}
-		BSP_Delay100US(1);
-	}
+	set_frequence(pData->channel);
+	set_power_rate(RF_DEFAULT_POWER, pPara->tx_datarate);
 
- 	RFC_SetDataRate(pPara->rx_datarate);
-	RFC_WriteID(pPara->myid);
-	RFC_SetFifoLen(sizeof(ack_buf));
-	
-	RFC_Cmd(RFC_CMD_RX);
-	BSP_Delay1US(50);
-	while(RFC_CheckTXOrRX())
-	{
-		if((to--) <= 0)
-		{
-			goto done;
-		}
-		BSP_Delay100US(1);
-	}
-	
-	if(RFC_CheckCRC() == 0)
-	{
-		ret = RF_ACK_CRCERR;
-		goto done;
-	}
-	
-	RFC_ReadFifo(ack_buf, sizeof(ack_buf));
+	pData->data[1] = sort;
+	send_data(pData->id, pData->data, pData->len, 2000);
+
+
+	set_power_rate(RF_DEFAULT_POWER, pPara->rx_datarate);
+    if(recv_data(pPara->myid, ack_buf, sizeof(ack_buf), 8000) == 0)
+    {
+        pdebug("recv timeout.\r\n");
+        goto done;
+    }
 	
 	if((ack_buf[2] == pData->id[0])
 		&& (ack_buf[3] == pData->id[1])
@@ -154,8 +127,6 @@ done:
 	{
 		BSP_Delay100US(1);
 	}
-	
-	RFC_Cmd(RFC_CMD_PLL);
 	
 	return ret;
 }
@@ -246,7 +217,8 @@ void g1_sleep_one(UINT8 *id, UINT8 ch, UINT8 id_ctrl_x, UINT8 len)
 	UINT8 buf[64] = {0};
 
 	buf[0] = 0xe0 | (id[id_ctrl_x] & 0x1f);
-	send_data(id, buf, len, ch, 2000);
+	set_frequence(ch);
+	send_data(id, buf, len, 2000);
 }
 
 void convert_transfer_para(transfer_para_t *para, updata_table_t *table)
@@ -269,7 +241,7 @@ INT32 g1_updata_loop(updata_table_t *table)
 
 	pdebug("g1 updata loop\r\n");
 	
-	if((t=TIM_Open(100, table->esl_work_duration*10, 0)) == 0)
+	if((t=TIM_Open(100, table->esl_work_duration*10, 0, TIMER_ONCE)) == 0)
 	{
 		ret = -1;
 		goto done;
@@ -302,7 +274,7 @@ INT32 g1_updata_loop(updata_table_t *table)
 									td.id[0], td.id[1], td.id[2], td.id[3], pESL[i].ack);
 		if(pESL[i].ack != 0)
 		{
-			set_datarate(table->tx_datarate);
+		    set_power_rate(RF_DEFAULT_POWER, table->tx_datarate);
 			pdebug(", sleep it\r\n", td.id[0], td.id[1], td.id[2], td.id[3]);
 			g1_sleep_one(td.id, td.channel, table->id_x_ctrl, td.len);
 			table->ok_esl_num++;
@@ -332,7 +304,7 @@ user_continue:
 
 	TIM_Close(t);
 
-	set_datarate(table->tx_datarate);
+	set_power_rate(RF_DEFAULT_POWER, table->tx_datarate);
 	pESL = (esl_t *)&table->data[0];
 	for(i = 0; i < table->real_pkg_num; i++)
 	{

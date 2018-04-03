@@ -157,7 +157,7 @@ void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequenc
     }
     RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power];
     RF_control(rfHandle, RF_CTRL_UPDATE_SETUP_CMD, NULL); //Signal update Rf core
-//    RF_yield(rfHandle);  // Force a power down using RF_yield() API. This will power down RF after all pending radio commands are complete.
+    RF_yield(rfHandle);  // Force a power down using RF_yield() API. This will power down RF after all pending radio commands are complete.
 }
 void set_frequence(uint8_t  Frequency)
 {

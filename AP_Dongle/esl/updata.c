@@ -107,10 +107,10 @@ INT32 updata_do_updata(UINT16 the_updata_cmd, updata_table_t *table)
 			}
 			break;
 		case CMD_GROUPN_DATA_G2:
-			//g2_updata_loop(table);
+			g2_updata_loop(table);
 			break;
 		case CMD_GROUPN_DATA_G1:
-			//g1_updata_loop(table);
+			g1_updata_loop(table);
 			break;
 		case CMD_GROUP1_DATA_BDC:
 			bdc_updata_loop(table);
