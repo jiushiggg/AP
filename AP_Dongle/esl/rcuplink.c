@@ -178,7 +178,7 @@ static INT32 _check_recv(rcreq_table_t *table)
 	if(rcreq_check_data(ptr, table->recv_len) == 0)
 	{			
 		table->data_num += 1;
-		*(ptr+table->recv_len) = get_rssi();
+		*(ptr+table->recv_len) = get_recPkgRSSI();
 		return 1;
 	}
 	else

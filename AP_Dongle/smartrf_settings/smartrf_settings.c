@@ -173,7 +173,7 @@ rfc_CMD_TX_TEST_t RF_cmdTxTest =
     .startTrigger.pastTrig = 0x0,
     .condition.rule = 0x1,
     .condition.nSkip = 0x0,
-    .config.bUseCw = 0x0,
+    .config.bUseCw = 0x1,
     .config.bFsOff = 0x1,
     .config.whitenMode = 0x2,
     .__dummy0 = 0x00,
@@ -186,3 +186,19 @@ rfc_CMD_TX_TEST_t RF_cmdTxTest =
     .syncWord = 0x930B51DE,
     .endTime = 0x00000000,
 };
+
+// CMD_RX_TEST
+rfc_CMD_RX_TEST_t RF_cmdRxTest =
+{
+    .commandNo = 0x0807,
+    .status = 0x0002,
+    .pNextOp = 0, // INSERT APPLICABLE POINTER: (uint8_t*)&xxx
+    .startTime = 0x00000000,
+    .startTrigger = 0x0,
+    .condition = 0x1,
+    .config     = 0x04,
+    .endTrigger = 0x01,
+    .syncWord   = 0x52567853,
+    .endTime    = 0x00000000,
+};
+

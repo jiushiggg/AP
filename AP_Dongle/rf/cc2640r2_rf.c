@@ -5,6 +5,7 @@
 #include "CC2592.h"
 #include "rftest.h"
 #include <ti/drivers/pin/PINCC26XX.h>
+#include "event.h"
 
 #define RF_TEST
 #define RF_TX_TEST_IO       IOID_28
@@ -54,7 +55,7 @@ rfc_dataEntryGeneral_t* currentDataEntry;
 RF_Object rfObject;
 RF_Handle rfHandle;
 dataQueue_t dataQueue;
-volatile UINT8 crcErrflg = 0;
+RF_Status rf_status;
 
 static UINT8 _hb_rssi = 0;
 
@@ -81,6 +82,12 @@ void rxcallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
           //指令已经执行完成
     }
 }
+
+void RF_semaTxPost(void)
+{
+    Semaphore_post(txDoneSem);
+}
+
 void semaphore_RFInit(void)
 {
     Semaphore_Params params;
@@ -258,7 +265,7 @@ void rfCancle(RF_EventMask result)
 {
     RF_cancelCmd(rfHandle, result,0);
 }
-uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint16_t timeout)
+uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout)
 {
     RF_EventMask result;
     cc2592Cfg(CC2592_TX);
@@ -365,10 +372,6 @@ void rf_preset_hb_recv(uint8_t b)
     //    RF_cmdPropRxAdv.pktConf.bUseCrc = 1;
     }
 }
-UINT8 get_rssi(void)
-{
-    return 0;
-}
 
 
 UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeout)
@@ -387,9 +390,8 @@ UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeo
         RFQueue_nextEntry();
         RF_cancelCmd(rfHandle, rx_event,0);
         _hb_rssi = data[len];
-        crcErrflg = data[len+1];
-        if (crcErrflg == CRC_ERR){
-            crcErrflg = 0;
+        if (data[len+1] == CRC_ERR){
+            data[len+1] = 0;
             len = 255;
         }
     }else{
@@ -403,14 +405,64 @@ UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeo
     return len;
 }
 
+//convert CC2640's RSSI to A7106's RSSI. history question ,reference the page 76 of A7106 manual
+#define RSSI_FACTOR     31    //(105, 170),(55, 15) => (rssi-15)/(dBm-55) = (170-15)/(105-55) =>rssi = 3.1dBm-155.5
+#define RSSI_CONSTANT   1555
 
-UINT8 get_hb_rssi(void)
+static uint8_t convertRSSI(INT8 n)
 {
-    return (~_hb_rssi + 1);
+    uint16_t tmp_rssi = (~n + 1);
+    if (tmp_rssi < 50) {
+        return 10;
+    } else if (tmp_rssi < 55){
+        return 15;
+    } else {
+        return (tmp_rssi*RSSI_FACTOR-RSSI_CONSTANT)/10;
+    }
 }
 
+uint8_t get_recPkgRSSI(void)
+{
+    return convertRSSI(_hb_rssi);
+}
 
+uint8_t RF_readRegRSSI(void)
+{
+    int8_t n = RF_getRssi(rfHandle);
+    //return ~n+1;
+    return convertRSSI(n);
+}
 
+void RF_carrierWave(void)
+{
+    /* Send CMD_TX_TEST which sends forever */
+    cc2592Cfg(CC2592_TX);
+    RF_postCmd(rfHandle, (RF_Op*)&RF_cmdTxTest, RF_PriorityNormal, NULL, 0);
+    rf_status = RF_Status_carrierWave;
+//    if (TRUE ==  Semaphore_pend (txDoneSem, EVENT_WAIT_FOREVER)){
+//        RF_yield(rfHandle);
+//        rf_status = RF_Status_idle;
+//    }
+}
+void RF_measureRSSI(void)
+{
+    cc2592Cfg(CC2592_RX_HG_MODE);
+    RF_postCmd(rfHandle, (RF_Op*)&RF_cmdRxTest, RF_PriorityNormal, NULL, 0);
+}
+
+//untest
+void RF_setMeasureRSSI(uint8_t b)
+{
+    if (b){
+        //RF_cmdPropRxAdv.rxConf.bAutoFlushCrcErr = 0;
+        RF_cmdPropRxAdv.pktConf.bRepeatOk = 1;
+        RF_cmdPropRxAdv.pktConf.bUseCrc = 0;
+    }else {
+        //RF_cmdPropRxAdv.rxConf.bAutoFlushCrcErr = 1;
+        RF_cmdPropRxAdv.pktConf.bRepeatOk = 0;
+        RF_cmdPropRxAdv.pktConf.bUseCrc = 1;
+    }
+}
 
 
 static void RF_MapIO(void)
@@ -435,3 +487,5 @@ while(1){
     }
 }
 #endif
+
+

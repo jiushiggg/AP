@@ -6,7 +6,6 @@
 #include "CC2640R2_LAUNCHXL.h"
 #include "bsp.h"
 #include "event.h"
-#include <xdc/runtime/System.h>
 
 
 typedef enum{
