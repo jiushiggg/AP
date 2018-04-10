@@ -174,10 +174,9 @@ static INT32 g2_query_miss(updata_table_t *table, UINT8 timer)
 	INT32 i;
 	UINT32 deal_timeout = table->deal_duration*1000;
 	UINT8 channel = 0;
-	volatile UINT8 prev_channel=RF_FREQUENCY_UNKNOW;
 	mode1_esl_t *pESL = (mode1_esl_t *)table->data;
 		
-	set_power_rate(table->tx_power, table->tx_datarate);
+//	set_power_rate(table->tx_power, table->tx_datarate);
 
 	pdebug("g2 query miss(), t=%d, txbps=%d, rxbps=%d, power=%d, timeout=%d.\r\n", timer, \
 			table->tx_datarate, table->rx_datarate, table->tx_power, deal_timeout);
@@ -205,21 +204,20 @@ static INT32 g2_query_miss(updata_table_t *table, UINT8 timer)
 		{
 			query_miss_slot = 1;
 		}
+
+        get_one_data(pESL[i].first_pkg_addr, NULL, &channel, NULL, first_pkg_data, sizeof(first_pkg_data));
+        pdebug("query 0x%02x-0x%02x-0x%02x-0x%02x, ch=%d.\r\n", \
+                pESL[i].esl_id[0], pESL[i].esl_id[1], pESL[i].esl_id[2], pESL[i].esl_id[3], channel);
+        memset(data, 0, sizeof(data));
+        g2_make_link_query(pESL[i].esl_id, get_pkg_sn_f(pESL[i].first_pkg_addr+(pESL[i].total_pkg_num-1)*32, 8), \
+                                query_miss_slot, first_pkg_data, data, sizeof(data));
 		
-		set_power_rate(RF_DEFAULT_POWER, table->tx_datarate);
-		get_one_data(pESL[i].first_pkg_addr, NULL, &channel, NULL, first_pkg_data, sizeof(first_pkg_data));
-		pdebug("query 0x%02x-0x%02x-0x%02x-0x%02x, ch=%d.\r\n", \
-				pESL[i].esl_id[0], pESL[i].esl_id[1], pESL[i].esl_id[2], pESL[i].esl_id[3], channel);
-		memset(data, 0, sizeof(data));
-		g2_make_link_query(pESL[i].esl_id, get_pkg_sn_f(pESL[i].first_pkg_addr+(pESL[i].total_pkg_num-1)*32, 8), \
-								query_miss_slot, first_pkg_data, data, sizeof(data));
-        if (channel != prev_channel){
-            set_frequence(channel);
-        }
-        prev_channel = channel;
+		set_power_rate(table->tx_power, table->tx_datarate);
+		set_frequence(channel);
 		send_data(pESL[i].esl_id, data, sizeof(data), 2000);
 
 		set_power_rate(RF_DEFAULT_POWER ,table->rx_datarate);
+		set_frequence(channel);
 		memset(rxbuf, 0, sizeof(rxbuf));
 		if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), deal_timeout) == 0)
 		{

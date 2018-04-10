@@ -14,7 +14,7 @@
 #include DeviceFamily_constructPath(driverlib/rf_common_cmd.h)
 #include DeviceFamily_constructPath(driverlib/rf_prop_cmd.h)
 #include <ti/drivers/rf/RF.h>
-
+//#define TI_180408
 
 // TI-RTOS RF Mode Object
 extern RF_Mode RF_prop;

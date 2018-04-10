@@ -317,7 +317,7 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 			query_miss_slot = 1;
 		}
 		
-		set_power_rate(table->tx_power, table->tx_datarate);
+
 //		channel = g3_get_channel(pESL[i].first_pkg_addr);
 		get_one_data(pESL[i].first_pkg_addr, NULL, &channel, NULL, first_pkg_data, sizeof(first_pkg_data));
 #if 1
@@ -336,14 +336,13 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 		}
 #endif
 
-        if (channel != prev_channel){
-            set_frequence(channel);
-        }
-        prev_channel = channel;
+		set_power_rate(table->tx_power, table->tx_datarate);
+        set_frequence(channel);
         send_data(pESL[i].esl_id, data, sizeof(data), 2000);
 		//send_data(pESL[i].esl_id, data, sizeof(data), channel, 2000);
 //		exit_txrx();
 		set_power_rate(RF_DEFAULT_POWER,table->rx_datarate);
+		set_frequence(channel);
 		memset(rxbuf, 0, sizeof(rxbuf));
 #if 0
 		if (1 == mydebug){

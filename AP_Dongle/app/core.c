@@ -169,8 +169,9 @@ void Core_Mainloop(void)
 
         event = Event_PendCore();
 
-        if (RF_Status_carrierWave==rf_status){
+        if (RF_Status_idle != rf_status){
             rf_idle();
+            rf_status = RF_Status_idle;
         }
         UART_recDisable();
         pinfo("uartdis%d\r\n", event);

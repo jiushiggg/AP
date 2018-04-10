@@ -195,7 +195,6 @@ static INT32 query_miss_round(updata_table_t *table, UINT8 timer)
 	INT32 i;
 	UINT32 deal_timeout = table->deal_duration*1000;
 	UINT8 channel = 0;
-	volatile UINT8 prev_channel=RF_FREQUENCY_UNKNOW;
 	mode0_esl_t *pESL = (mode0_esl_t *)table->data;
 	
 //	set_power_rate(table->tx_power, table->tx_datarate);
@@ -232,18 +231,16 @@ static INT32 query_miss_round(updata_table_t *table, UINT8 timer)
 				pESL[i].esl_id[0], pESL[i].esl_id[1], \
 				pESL[i].esl_id[2], pESL[i].esl_id[3], \
 				table->tx_datarate, table->rx_datarate, channel, deal_timeout);
-		set_power_rate(table->tx_power, table->tx_datarate);
 		memset(data, 0, sizeof(data));
 		g3_make_link_query(pESL[i].esl_id, get_pkg_sn_f(pESL[i].first_pkg_addr+(pESL[i].total_pkg_num-1)*32, 7), \
 							query_miss_slot, first_pkg_data, data, sizeof(data));
+		set_power_rate(table->tx_power, table->tx_datarate);
+		set_frequence(channel);
 
-        if (channel != prev_channel){
-            set_frequence(channel);
-        }
-        prev_channel = channel;
         send_data(pESL[i].esl_id, data, sizeof(data), 2000);
-//		send_data(pESL[i].esl_id, data, sizeof(data), channel, 2000);
+
 		set_power_rate(RF_DEFAULT_POWER, table->rx_datarate);
+		set_frequence(channel);
 		memset(data, 0, sizeof(data));
 		if(recv_data(table->master_id, data, sizeof(data), deal_timeout) == 0)
 		{

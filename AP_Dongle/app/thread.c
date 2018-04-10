@@ -142,7 +142,7 @@ void *mainThread(void *arg0)
     pinfo("core init complete.\r\n");
     pinfo("enter main loop.\r\n");
 
-#define GGG_RSSI_TEST
+//#define GGG_RSSI_TEST
 #ifdef GGG_RSSI_TEST
     //
     while(1){
@@ -154,15 +154,19 @@ void *mainThread(void *arg0)
 #endif
     }
 #endif
+#define GGG_RF_SEND_REC
 #ifdef GGG_RF_SEND_REC
+#define TEST_CHANNEL    2
     while(1){
         uint8_t id[4] = {0x52,0x56,0x78,0x53};
-        set_power_rate(RF_DEFAULT_POWER, 500);
-        send_data(id, mybuf, 26, 99, 2000);
-        exit_txrx();
-        set_power_rate(RF_DEFAULT_POWER,100);
+//        set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
+//        set_frequence(TEST_CHANNEL);
+//        send_data(id, mybuf, 26, 2000);
+//        exit_txrx();
+        set_power_rate(RF_DEFAULT_POWER,DATA_RATE_100K);
+        set_frequence(TEST_CHANNEL);
         memset(mybuf, 0, sizeof(mybuf));
-        if(recv_data(id, mybuf, sizeof(mybuf), 2, 20000000) == 0)
+        if(recv_data(id, mybuf, sizeof(mybuf), 2000000) == 0)
         {
             pdebug("recv timeout.\r\n");
             continue;

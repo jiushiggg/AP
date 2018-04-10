@@ -96,14 +96,14 @@ static UINT8 g1_general_data_transfer(transfer_data_t* pData, transfer_para_t* p
 	UINT8 ack_buf[6] = {0};
 	INT32 to = pPara->deal_duration * 10; // unit is 100us
 	
-	set_frequence(pData->channel);
-	set_power_rate(RF_DEFAULT_POWER, pPara->tx_datarate);
 
+	set_power_rate(RF_DEFAULT_POWER, pPara->tx_datarate);
+	set_frequence(pData->channel);
 	pData->data[1] = sort;
 	send_data(pData->id, pData->data, pData->len, 2000);
 
-
 	set_power_rate(RF_DEFAULT_POWER, pPara->rx_datarate);
+	set_frequence(pData->channel);
     if(recv_data(pPara->myid, ack_buf, sizeof(ack_buf), 8000) == 0)
     {
         pdebug("recv timeout.\r\n");

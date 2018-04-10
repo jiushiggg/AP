@@ -55,7 +55,7 @@ rfc_dataEntryGeneral_t* currentDataEntry;
 RF_Object rfObject;
 RF_Handle rfHandle;
 dataQueue_t dataQueue;
-RF_Status rf_status;
+RF_Status rf_status = RF_Status_idle;
 
 static UINT8 _hb_rssi = 0;
 
@@ -129,11 +129,7 @@ void rf_init(void)
 const uint16_t rf_tx_power[POWER_LEVEL]={0x3161, 0x4214,0x4e18,0x5a1c, 0x9324, 0x9330};
 void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequency)
 {
-    uint8_t fractFreq_flag;
-    fractFreq_flag = Frequency%2;
-    RF_cmdFs.frequency = 2400+Frequency/2;
-    RF_cmdFs.fractFreq = (fractFreq_flag ? 32768 : 0);
-    RF_postCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
+    //if use RF_runCmd set rate, rate must be set firstly.
     switch(Data_rate)
     {
         case DATA_RATE_100K:
@@ -163,16 +159,19 @@ void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequenc
         break;
     }
     RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power];
-    RF_control(rfHandle, RF_CTRL_UPDATE_SETUP_CMD, NULL); //Signal update Rf core
-    RF_yield(rfHandle);  // Force a power down using RF_yield() API. This will power down RF after all pending radio commands are complete.
+    RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropRadioSetup, RF_PriorityNormal, NULL, 0);
+
+    RF_cmdFs.frequency = 2400+Frequency/2;
+    RF_cmdFs.fractFreq = (Frequency%2 ? 32768 : 0);
+    RF_postCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
+//    RF_control(rfHandle, RF_CTRL_UPDATE_SETUP_CMD, NULL); //Signal update Rf core
+//    RF_yield(rfHandle);  // Force a power down using RF_yield() API. This will power down RF after all pending radio commands are complete.
 }
 void set_frequence(uint8_t  Frequency)
 {
-    uint8_t  fractFreq_flag = Frequency%2;
     RF_cmdFs.frequency = 2400+Frequency/2;
-    RF_cmdFs.fractFreq = (fractFreq_flag ? 32768 : 0);
-    RF_runCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
-//    RF_yield(rfHandle);
+    RF_cmdFs.fractFreq = (Frequency%2 ? 32768 : 0);
+    RF_postCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
 }
 
 void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
@@ -208,8 +207,12 @@ void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
     if (Tx_power < POWER_LEVEL){
         RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power];
     }
+#if 0
     RF_control(rfHandle, RF_CTRL_UPDATE_SETUP_CMD, NULL); //Signal update Rf core
     RF_yield(rfHandle);
+#else
+   RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropRadioSetup, RF_PriorityNormal, NULL, 0);
+#endif
 }
 
 //RF_EventMask Rf_tx_package(RF_Handle h, uint32_t syncWord, uint8_t pktLen, uint8_t* pPkt)
@@ -330,7 +333,11 @@ RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord
     RF_cmdPropRxAdv.syncWord0 = syncWord;
     RF_cmdPropRxAdv.pQueue = dataQueue;           /* Set the Data Entity queue for received data */
     RF_cmdPropRxAdv.maxPktLen = pktLen;        /* Implement packet length filtering to avoid PROP_ERROR_RXBUF */
+#ifndef TI_180408
     RF_cmdPropRxAdv.endTrigger.triggerType = (enableTrigger? TRIG_ABSTIME : TRIG_NEVER );
+#else
+    RF_cmdPropRxAdv.endTrigger.triggerType = TRIG_REL_START;
+#endif
     RF_cmdPropRxAdv.endTrigger.bEnaCmd = (enableTrigger? 1 : 0 );
     RF_cmdPropRxAdv.endTime = RF_getCurrentTime();
     RF_cmdPropRxAdv.endTime += RF_convertMsToRatTicks(timeout);  //10us
@@ -448,6 +455,7 @@ void RF_measureRSSI(void)
 {
     cc2592Cfg(CC2592_RX_HG_MODE);
     RF_postCmd(rfHandle, (RF_Op*)&RF_cmdRxTest, RF_PriorityNormal, NULL, 0);
+    rf_status = RF_Status_measureRSSI;
 }
 
 //untest
