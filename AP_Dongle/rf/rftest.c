@@ -773,8 +773,8 @@ INT32 rf_txrx(UINT8 *cmd_buf, INT32 cmd_len, UINT8 *ack_buf, INT32 ack_buf_size)
 void RSSI_test(void)
 {
     volatile uint8_t readrssi=0;
+    set_power_rate(RF_FREQUENCY_UNKNOW, DATA_RATE_100K);
     set_frequence(151);
-    set_power_rate(RF_FREQUENCY_UNKNOW, DATA_RATE_500K);
     RF_measureRSSI();
     while(1)
     {
@@ -793,8 +793,9 @@ UINT8 RFC_CalcBgRssi(UINT8 ch, UINT8 initrssi, UINT8 rssithreshold, UINT8 noiser
     UINT8 arssi = 0;
     float farssi = 0.0;
 
-    set_frequence(ch);
+
     set_power_rate(RF_FREQUENCY_UNKNOW, DATA_RATE_500K);
+    set_frequence(ch);
     RF_measureRSSI();
 
     if(initrssi != 0)

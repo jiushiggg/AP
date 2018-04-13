@@ -122,7 +122,6 @@ void rf_init(void)
     RF_MapIO();
 #endif
     cc2592Init();
-    RF_yield(rfHandle);    //使射频进入低功耗状态 //without this function, can't receive data, why?
 }
 
 #define POWER_LEVEL  6
@@ -164,14 +163,12 @@ void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequenc
     RF_cmdFs.frequency = 2400+Frequency/2;
     RF_cmdFs.fractFreq = (Frequency%2 ? 32768 : 0);
     RF_postCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
-//    RF_control(rfHandle, RF_CTRL_UPDATE_SETUP_CMD, NULL); //Signal update Rf core
-//    RF_yield(rfHandle);  // Force a power down using RF_yield() API. This will power down RF after all pending radio commands are complete.
 }
 void set_frequence(uint8_t  Frequency)
 {
     RF_cmdFs.frequency = 2400+Frequency/2;
     RF_cmdFs.fractFreq = (Frequency%2 ? 32768 : 0);
-    RF_postCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
+    RF_runCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
 }
 
 void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
@@ -215,15 +212,6 @@ void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
 #endif
 }
 
-//RF_EventMask Rf_tx_package(RF_Handle h, uint32_t syncWord, uint8_t pktLen, uint8_t* pPkt)
-//{
-//    RF_cmdPropTxAdv.pktLen = pktLen;
-//    RF_cmdPropTxAdv.pPkt = pPkt;
-//    RF_cmdPropTxAdv.syncWord = syncWord;
-//    RF_EventMask result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
-//  //  RF_yield(rfHandle);
-//    return result;
-//}
 void send_data_init(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
 {
     RF_cmdPropTxAdv.startTrigger.triggerType = TRIG_NOW;
@@ -232,7 +220,7 @@ void send_data_init(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
     RF_cmdPropTxAdv.pktLen = len;
     RF_cmdPropTxAdv.pPkt = data;
     RF_cmdPropTxAdv.syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
-    cc2592Cfg(CC2592_TX);
+
 }
 #define MY_TEST_RF
 #ifdef MY_TEST_RF
@@ -271,25 +259,20 @@ void rfCancle(RF_EventMask result)
 uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout)
 {
     RF_EventMask result;
-    cc2592Cfg(CC2592_TX);
 //    set_frequence(ch);
+    cc2592Cfg(CC2592_TX);
     send_data_init(id, data, len, timeout);
     result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
-//    RF_pendCmd(rfHandle, result, RF_EventTxEntryDone);
-//    RF_yield(rfHandle);
-
     return len;
 }
 //uint8_t rf_test_buff[26]={0};
 UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout)
 {
     uint32_t sync_word=0;
- //   uint32_t tmp_timeout = 0;
     RF_EventMask rx_event;
 //    set_frequence(ch);
 
     sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
-//    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);
     cc2592Cfg(CC2592_RX_HG_MODE);
     rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , timeout/Clock_tickPeriod);
     if (TRUE ==  Semaphore_pend (rxDoneSem, ((timeout+100)/Clock_tickPeriod))){
@@ -303,7 +286,6 @@ UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout)
         clear_queue_buf();
         len = 0;
     }
-//    RF_yield(rfHandle);
     return len;
 }
 void clear_queue_buf(void)
@@ -344,7 +326,6 @@ RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord
 //    RF_cmdPropRxAdv.pktConf.bRepeatOk = 1;
 //    RF_cmdPropRxAdv.pktConf.bUseCrc = 0x1;
 //    RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropRx, RF_PriorityNormal, &callback, IRQ_RX_ENTRY_DONE);
-//    RF_yield(rfHandle);
     RF_EventMask result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropRxAdv, RF_PriorityNormal, &rxcallback, IRQ_RX_ENTRY_DONE);
     return result;
 }
@@ -373,9 +354,11 @@ void rf_preset_hb_recv(uint8_t b)
 {
     if (b){
         RF_cmdPropRxAdv.rxConf.bAutoFlushCrcErr = 0;
+        RF_cmdPropRxAdv.pktConf.bRepeatOk = 0x1;
     //    RF_cmdPropRxAdv.pktConf.bUseCrc = 0;
     }else {
         RF_cmdPropRxAdv.rxConf.bAutoFlushCrcErr = 1;
+        RF_cmdPropRxAdv.pktConf.bRepeatOk = 0x0;
     //    RF_cmdPropRxAdv.pktConf.bUseCrc = 1;
     }
 }
