@@ -301,7 +301,7 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 		if(ret == 0)
 		{
 			table->num += 1;
-			*(ptr+len) = get_hb_rssi();
+			*(ptr+len) = get_recPkgRSSI();
 			pdebug("_hb_recv() num: %08d:", table->num);
 			pdebughex(ptr, len+1);
 			ptr += len+1;
@@ -312,7 +312,7 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 		{
 			if(table->apid > 0)
 			{
-				*(ptr+len) = get_rssi();
+				*(ptr+len) = get_recPkgRSSI();
 				break;
 			}
 			else

@@ -26,6 +26,7 @@ extern rfc_CMD_FS_t RF_cmdFs;
 extern rfc_CMD_PROP_TX_ADV_t RF_cmdPropTxAdv;
 extern rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv;
 extern rfc_CMD_TX_TEST_t RF_cmdTxTest;
+extern rfc_CMD_RX_TEST_t RF_cmdRxTest;
 
 
 #endif // _SMARTRF_SETTINGS_H_

@@ -38,6 +38,7 @@
 #include "bsp.h"
 #include "bsp_spi.h"
 #include "timer.h"
+#include "rftest.h"
 
 #ifdef GOLD_BOARD
 const unsigned char APP_VERSION_STRING[] = "rfd-5.0.1"; //must < 32
@@ -141,37 +142,62 @@ void *mainThread(void *arg0)
     pinfo("core init complete.\r\n");
     pinfo("enter main loop.\r\n");
 
-//while(1){
-//    uint8_t id[4] = {0x52,0x56,0x78,0x53};
-//    set_power_rate(RF_DEFAULT_POWER, 500);
-//    send_data(id, mybuf, 26, 99, 2000);
-//    exit_txrx();
-//    set_power_rate(RF_DEFAULT_POWER,100);
-//    memset(mybuf, 0, sizeof(mybuf));
-//    if(recv_data(id, mybuf, sizeof(mybuf), 2, 20000000) == 0)
-//    {
-//        pdebug("recv timeout.\r\n");
-//        continue;
-//    }
-//}
-//    while(1){
-//        uint8_t t=1;
-//
-//        t = TIM_Open(20, 20000, TIMER_UP_CNT, TIMER_PERIOD);
-//        while(TIME_COUNTING==TIM_CheckTimeout(t));
-//        TIM_Close(t);
-//
-//        t = TIM_Open(20, 200, TIMER_DOWN_CNT, TIMER_PERIOD);
-//        while(TIME_COUNTING==TIM_CheckTimeout(t));
-//        TIM_Close(t);
-//
-//
-//        t = TIM_Open(100, 40, TIMER_UP_CNT, TIMER_ONCE);
-//        while(TIME_COUNTING==TIM_CheckTimeout(t));
-//
-//        TIM_Close(t);
-//    }
+//#define GGG_RSSI_TEST
+#ifdef GGG_RSSI_TEST
+    //
+    while(1){
+//#define CW
+#ifdef CW
+        rft_tx_null();
+#else
+        RSSI_test();
+#endif
+    }
+#endif
+//#define GGG_RF_SEND_REC
+#ifdef GGG_RF_SEND_REC
+#define TEST_CHANNEL    2
+    uint8_t i;
+    set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
+    set_frequence(TEST_CHANNEL);
+    for (i=0; i<26; i++)
+        mybuf[i] = i;
+    while(1){
+        uint8_t id[4] = {0x52,0x56,0x78,0x53};
 
+        set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
+        set_frequence(TEST_CHANNEL);
+        send_data(id, mybuf, 26, 2000);
+//        exit_txrx();
+//        set_power_rate(RF_DEFAULT_POWER,DATA_RATE_100K);
+//        set_frequence(TEST_CHANNEL);
+//        memset(mybuf, 0, sizeof(mybuf));
+//        if(recv_data(id, mybuf, sizeof(mybuf), 2000000) == 0)
+//        {
+//            pdebug("recv timeout.\r\n");
+//            continue;
+//        }
+    }
+#endif
+#ifdef GGG_CLOCK_TIMER
+    while(1){
+        uint8_t t=1;
+
+        t = TIM_Open(20, 20000, TIMER_UP_CNT, TIMER_PERIOD);
+        while(TIME_COUNTING==TIM_CheckTimeout(t));
+        TIM_Close(t);
+
+        t = TIM_Open(20, 200, TIMER_DOWN_CNT, TIMER_PERIOD);
+        while(TIME_COUNTING==TIM_CheckTimeout(t));
+        TIM_Close(t);
+
+
+        t = TIM_Open(100, 40, TIMER_UP_CNT, TIMER_ONCE);
+        while(TIME_COUNTING==TIM_CheckTimeout(t));
+
+        TIM_Close(t);
+    }
+#endif
     Core_Mainloop();
 
     return 0;

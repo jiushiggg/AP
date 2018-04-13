@@ -15,6 +15,14 @@
 #include "datatype.h"
 #include "CC2592.h"
 
+typedef enum
+{
+    RF_Status_idle            = 0, ///Success
+    RF_Status_carrierWave     = 1, ///carrierWave
+    RF_Status_measureRSSI     = 2 ///measureRSSI
+} RF_Status;
+
+
 #define TRUE  1
 #define FALSE 0
 
@@ -51,25 +59,19 @@ extern dataQueue_t dataQueue;
 extern rfc_dataEntryGeneral_t* currentDataEntry;
 extern uint8_t packetLength;
 extern uint8_t* packetDataPointer;
-extern RF_Handle rfHandle;
-
-//extern uint8_t buffer[26];
-//extern uint8_t buffer_temp[26];
+extern RF_Status rf_status;
 
 
 
 extern void rf_init(void);
-extern Semaphore_Handle txDoneSem;
-extern Semaphore_Handle rxDoneSem;
 extern void semaphore_RFInit(void);
+extern void RF_semaTxPost(void);
 
 extern void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequency);
-//extern RF_EventMask Rf_tx_package(RF_Handle h, uint32_t syncWord, uint8_t pktLen, uint8_t* pPkt);
-//extern RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord, uint8_t pktLen,uint8_t enableTrigger,  uint32_t  timeout);
 extern void send_data_init(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout);
 extern RF_EventMask send_async(uint32_t interval);
 extern void send_pend(RF_EventMask result);
-extern uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint16_t timeout);
+extern uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout);
 extern uint8_t recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout);
 
 extern void set_frequence(uint8_t  Frequency);
@@ -80,10 +82,14 @@ extern void enter_txrx(void);
 extern void exit_txrx(void);
 extern void wait(uint32_t nus);
 extern void rf_preset_hb_recv(uint8_t b);
-void rf_preset_for_hb_recv(void);
-uint8_t get_rssi(void);
-extern void rf_exit_from_hb_recv(void);
+extern uint8_t RF_readRegRSSI(void);
+extern UINT8 get_recPkgRSSI(void);
 extern UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeout);
-extern UINT8 get_hb_rssi(void);
+
 extern void rfCancle(RF_EventMask result);
+extern void rf_idle(void);
+extern void RF_carrierWave(void);
+extern void RF_measureRSSI(void);
+extern void RF_setMeasureRSSI(uint8_t);
+
 #endif

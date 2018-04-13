@@ -335,15 +335,12 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 			perrhex(data, sizeof(data));
 		}
 #endif
-
-        if (channel != prev_channel){
-            set_frequence(channel);
-        }
-        prev_channel = channel;
+        set_frequence(channel);
         send_data(pESL[i].esl_id, data, sizeof(data), 2000);
 		//send_data(pESL[i].esl_id, data, sizeof(data), channel, 2000);
 //		exit_txrx();
 		set_power_rate(RF_DEFAULT_POWER,table->rx_datarate);
+		set_frequence(channel);
 		memset(rxbuf, 0, sizeof(rxbuf));
 #if 0
 		if (1 == mydebug){

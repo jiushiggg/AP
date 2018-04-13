@@ -168,6 +168,11 @@ void Core_Mainloop(void)
     while (1) {
 
         event = Event_PendCore();
+
+        if (RF_Status_idle != rf_status){
+            rf_idle();
+            rf_status = RF_Status_idle;
+        }
         UART_recDisable();
         pinfo("uartdis%d\r\n", event);
 //        if(event & EVENT_RX_TO_FLASH)
