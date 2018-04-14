@@ -186,7 +186,7 @@ void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
             RF_cmdPropRadioSetup.symbolRate.preScale = 15;
             RF_cmdPropRadioSetup.symbolRate.rateWord = 327680;
             RF_cmdPropRadioSetup.modulation.modType = 0x0;
-            RF_cmdPropRadioSetup.modulation.deviation = 744;
+            RF_cmdPropRadioSetup.modulation.deviation = 920;
             RF_cmdPropRadioSetup.rxBw = 10;
         break;
         case  DATA_RATE_1M:
@@ -220,7 +220,7 @@ void send_data_init(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
     RF_cmdPropTxAdv.pktLen = len;
     RF_cmdPropTxAdv.pPkt = data;
     RF_cmdPropTxAdv.syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
-
+    cc2592Cfg(CC2592_TX);
 }
 #define MY_TEST_RF
 #ifdef MY_TEST_RF
@@ -260,7 +260,7 @@ uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout)
 {
     RF_EventMask result;
 //    set_frequence(ch);
-    cc2592Cfg(CC2592_TX);
+//    cc2592Cfg(CC2592_TX);
     send_data_init(id, data, len, timeout);
     result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
     return len;
@@ -315,11 +315,7 @@ RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord
     RF_cmdPropRxAdv.syncWord0 = syncWord;
     RF_cmdPropRxAdv.pQueue = dataQueue;           /* Set the Data Entity queue for received data */
     RF_cmdPropRxAdv.maxPktLen = pktLen;        /* Implement packet length filtering to avoid PROP_ERROR_RXBUF */
-#ifndef TI_180408
     RF_cmdPropRxAdv.endTrigger.triggerType = (enableTrigger? TRIG_ABSTIME : TRIG_NEVER );
-#else
-    RF_cmdPropRxAdv.endTrigger.triggerType = TRIG_REL_START;
-#endif
     RF_cmdPropRxAdv.endTrigger.bEnaCmd = (enableTrigger? 1 : 0 );
     RF_cmdPropRxAdv.endTime = RF_getCurrentTime();
     RF_cmdPropRxAdv.endTime += RF_convertMsToRatTicks(timeout);  //10us
@@ -429,10 +425,7 @@ void RF_carrierWave(void)
     cc2592Cfg(CC2592_TX);
     RF_postCmd(rfHandle, (RF_Op*)&RF_cmdTxTest, RF_PriorityNormal, NULL, 0);
     rf_status = RF_Status_carrierWave;
-//    if (TRUE ==  Semaphore_pend (txDoneSem, EVENT_WAIT_FOREVER)){
-//        RF_yield(rfHandle);
-//        rf_status = RF_Status_idle;
-//    }
+
 }
 void RF_measureRSSI(void)
 {
@@ -478,5 +471,3 @@ while(1){
     }
 }
 #endif
-
-

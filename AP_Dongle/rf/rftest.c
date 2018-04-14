@@ -626,7 +626,7 @@ INT32 rft_check_ber_data(UINT8 *src, INT32 len)
 
 #endif
 
-    return actor;
+	return actor;
 }
 
 void print_ber_para(void)

@@ -317,7 +317,7 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 			query_miss_slot = 1;
 		}
 		
-
+		set_power_rate(table->tx_power, table->tx_datarate);
 //		channel = g3_get_channel(pESL[i].first_pkg_addr);
 		get_one_data(pESL[i].first_pkg_addr, NULL, &channel, NULL, first_pkg_data, sizeof(first_pkg_data));
 #if 1
@@ -335,8 +335,6 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 			perrhex(data, sizeof(data));
 		}
 #endif
-
-		set_power_rate(table->tx_power, table->tx_datarate);
         set_frequence(channel);
         send_data(pESL[i].esl_id, data, sizeof(data), 2000);
 		//send_data(pESL[i].esl_id, data, sizeof(data), channel, 2000);

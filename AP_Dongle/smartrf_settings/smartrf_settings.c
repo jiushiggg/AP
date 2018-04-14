@@ -122,7 +122,7 @@ rfc_CMD_PROP_TX_ADV_t RF_cmdPropTxAdv =
     .syncWord = 0x52567853,
     .pPkt = 0, // INSERT APPLICABLE POINTER: (uint8_t*)&xxx
 };
-#ifndef TI_180408
+
 // CMD_PROP_RX_ADV
 rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv =
 {
@@ -159,44 +159,7 @@ rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv =
     .pQueue = 0, // INSERT APPLICABLE POINTER: (dataQueue_t*)&xxx
     .pOutput = 0, // INSERT APPLICABLE POINTER: (uint8_t*)&xxx
 };
-#else
-// CMD_PROP_RX_ADV
-rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv =
-{
-    .commandNo = CMD_PROP_RX_ADV,
-    .status = 0x0000,
-    .pNextOp = 0, // INSERT APPLICABLE POINTER: (uint8_t*)&xxx
-    .startTime = 0x00000000,
-    .startTrigger.triggerType = 0x0,
-    .startTrigger.bEnaCmd = 0x0,
-    .startTrigger.triggerNo = 0x0,
-    .startTrigger.pastTrig = 0x0,
-    .condition.rule = 0x1,
-    .condition.nSkip = 0x0,
-    .pktConf.bRepeatOk = 0x1,
-    .pktConf.bFsOff = 0x0,
-    .pktConf.bRepeatNok = 1,
-    .pktConf.bUseCrc = 0x1,
-    .pktConf.bCrcIncSw = 0,
-    .pktConf.bCrcIncHdr = 0,
-    .pktConf.endType = 0x0,
-    .rxConf.bAutoFlushIgnored = 0x1,
-    .rxConf.bAutoFlushCrcErr = 0x1,
-    .rxConf.bAppendRssi = 0x1,
-    .rxConf.bAppendTimestamp = 0x0,
-    .rxConf.bAppendStatus = 0x1,     // 0x1,  append a status byte to the packet in the RX queue
-    .syncWord0 = 0x52567853,
-    .syncWord1 = 0,
-    .maxPktLen = 0x80, // MAKE SURE DATA ENTRY IS LARGE ENOUGH
-    .endTrigger.triggerType = 0x1,
-    .endTrigger.bEnaCmd = 0x1,
-    .endTrigger.triggerNo = 0x0,
-    .endTrigger.pastTrig = 0x0,
-    .endTime = 0x00000000,
-    .pQueue = 0, // INSERT APPLICABLE POINTER: (dataQueue_t*)&xxx
-    .pOutput = 0, // INSERT APPLICABLE POINTER: (uint8_t*)&xxx
-};
-#endif
+
 // CMD_TX_TEST
 rfc_CMD_TX_TEST_t RF_cmdTxTest =
 {
