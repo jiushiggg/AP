@@ -321,7 +321,7 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 //		channel = g3_get_channel(pESL[i].first_pkg_addr);
 		get_one_data(pESL[i].first_pkg_addr, NULL, &channel, NULL, first_pkg_data, sizeof(first_pkg_data));
 #if 1
-		pinfo("query%02x%02x%02x%02x,tx%d,rx%d,ch%d,t%d\r\n", \
+		pdebug("query%02x%02x%02x%02x,tx%d,rx%d,ch%d,t%d\r\n", \
 				pESL[i].esl_id[0], pESL[i].esl_id[1], pESL[i].esl_id[2], pESL[i].esl_id[3], \
 				table->tx_datarate, table->rx_datarate, channel, deal_timeout);
 #endif
