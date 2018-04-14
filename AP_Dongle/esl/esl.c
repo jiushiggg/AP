@@ -148,7 +148,6 @@ INT32 parse_cmd_data(UINT32 cmd_data_addr, UINT32 cmd_data_len)
 }
 
 static updata_table_t *updata_table = NULL;
-volatile uint16_t my_frame1_flg = 0;
 
 INT32 esl_updata(esl_updata_t *updata)
 {
@@ -229,7 +228,6 @@ INT32 esl_updata(esl_updata_t *updata)
 		{
 			pdebug("frame1\r\n");
 			pinfoEsl("f1 bg\r\n");
-			my_frame1_flg = 0;
 			frame1_start(frame1_cmd, frame1_addr, frame1_len);
 			pinfoEsl("f1 ed\r\n");
 		}
@@ -273,9 +271,7 @@ INT32 esl_updata(esl_updata_t *updata)
         {
             pdebug("frame1\r\n");
             pinfo("f1.6 bg\r\n");
-            my_frame1_flg = 0;
             frame1_start(frame1_cmd, frame1_addr, frame1_len);
-            my_frame1_flg = 0;
             pinfo("f1.6 ed\r\n");
         }
 		if(Core_GetQuitStatus() == 1)

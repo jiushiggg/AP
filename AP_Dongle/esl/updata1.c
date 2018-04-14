@@ -252,10 +252,10 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 			}
 			k = 0;
 		}	
-//		if((t%50==0) && (f==0))     //可以不用补帧1？，因为收帧1开1S
-//		{
-//			dummy(table, table->tx_duration);
-//		}
+		if((t%50==0) && (f==0))     //可以不用补帧1？，因为收帧1开1S
+		{
+			dummy(table, table->tx_duration);
+		}
 	}
 	
 	if((i != table->esl_num) && (f == 0))
@@ -334,8 +334,8 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 			perr("OSD CTRL:%02X-%02X-%02X-%02X\r\n", pESL[i].esl_id[0], pESL[i].esl_id[1], pESL[i].esl_id[2], pESL[i].esl_id[3]);
 			perrhex(data, sizeof(data));
 		}
-#endif
-        set_frequence(channel);
+#endif		
+		set_frequence(channel);
         send_data(pESL[i].esl_id, data, sizeof(data), 2000);
 		//send_data(pESL[i].esl_id, data, sizeof(data), channel, 2000);
 //		exit_txrx();
@@ -415,7 +415,7 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 		pdebug("failed pkg num = %d\r\n", pESL[i].failed_pkg_num);
 	}
 
-	dummy(table, table->tx_duration*2);
+	dummy(table, table->tx_duration);
 	exit_txrx();
 	wait(2000);
 		
