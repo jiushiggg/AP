@@ -335,6 +335,7 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 			perrhex(data, sizeof(data));
 		}
 #endif		
+//        set_power_rate(table->tx_power, table->tx_datarate);
 		set_frequence(channel);
         send_data(pESL[i].esl_id, data, sizeof(data), 2000);
 		//send_data(pESL[i].esl_id, data, sizeof(data), channel, 2000);

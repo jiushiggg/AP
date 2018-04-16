@@ -24,6 +24,7 @@
 
 #include <ti/drivers/Power/PowerCC26XX.h>
 #include <ti/drivers/GPIO.h>
+#include <ti/drivers/utils/list.h>
 
 /* Board Header file */
 #include "Board.h"
@@ -141,7 +142,29 @@ void *mainThread(void *arg0)
     Core_Init();
     pinfo("core init complete.\r\n");
     pinfo("enter main loop.\r\n");
+//#define LIST
+#ifdef LIST
+    while(1){
+        typedef struct MyStruct {
+            List_Elem elem;
+            uint8_t buffer[26];
+        } MyStruct;
 
+        List_List list;
+        MyStruct foo[2];
+
+        List_clearList(&list);
+        List_put(&list, (List_Elem *)&foo[0]);
+        List_put(&list, (List_Elem *)&foo[1]);
+//        bar = (MyStruct *)List_get(&list);        //delete one element
+
+//        List_List list;
+        List_Elem *temp;
+        for (temp = List_head(&list); temp != NULL; temp = List_next(temp)) {
+           printf("address = 0x%x\r\n", temp);
+        }
+    }
+#endif
 //#define GGG_RSSI_TEST
 #ifdef GGG_RSSI_TEST
     //
