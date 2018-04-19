@@ -156,6 +156,8 @@ void *mainThread(void *arg0)
         List_clearList(&list);
         List_put(&list, (List_Elem *)&foo[0]);
         List_put(&list, (List_Elem *)&foo[1]);
+        list.tail->next = (List_Elem *)&foo[0];
+        //foo[1].elem.next = (List_Elem *)&foo[0];
 //        bar = (MyStruct *)List_get(&list);        //delete one element
 
 //        List_List list;
@@ -179,14 +181,15 @@ void *mainThread(void *arg0)
 #endif
 //#define GGG_RF_SEND_REC
 #ifdef GGG_RF_SEND_REC
-#define TEST_CHANNEL    2
+#define TEST_CHANNEL    151
     uint8_t i;
     set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
     set_frequence(TEST_CHANNEL);
     for (i=0; i<26; i++)
         mybuf[i] = i;
     while(1){
-        uint8_t id[4] = {0x52,0x56,0x78,0x53};
+        //uint8_t id[4] = {0x52,0x56,0x78,0x53};
+        uint8_t id[4] = {0x56,0xb7,0x9c,0x13};
 
         set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
         set_frequence(TEST_CHANNEL);

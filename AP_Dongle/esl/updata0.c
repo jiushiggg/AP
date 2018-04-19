@@ -315,7 +315,9 @@ static INT32 send_sleep_round(updata_table_t *table, UINT8 timer)
 	        prev_channel = channel;
 	        send_data(pESL[i].esl_id, data, sizeof(data), 2000);
 //			send_data(pESL[i].esl_id, data, sizeof(data), channel, 6000);
-			ret++;
+            if (pESL[i].sleep_flag == 0){
+                ret++;
+            }
 		}
 	}
 	
