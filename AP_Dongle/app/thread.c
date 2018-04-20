@@ -186,7 +186,7 @@ void *mainThread(void *arg0)
     set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
     set_frequence(TEST_CHANNEL);
     for (i=0; i<26; i++)
-        mybuf[i] = i;
+        mybuf[i] = rand();
     while(1){
         //uint8_t id[4] = {0x52,0x56,0x78,0x53};
         uint8_t id[4] = {0x56,0xb7,0x9c,0x13};
