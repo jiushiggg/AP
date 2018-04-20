@@ -126,6 +126,8 @@ UINT16 m1_init_data(UINT32 addr, UINT32 len, updata_table_t *table)
 //extern UINT8 search_first_pkg[32];
 //extern UINT16 search_pkg_history_o[40];
 
+#define ESL_REC_FRAME1_TIMEOUT 1200    //1000ms/0.85ms
+
 #define RF_CHANING_MODE
 static void m1_transmit(updata_table_t *table, UINT8 timer)
 {
@@ -222,21 +224,11 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 //				pESL[i].failed_pkg_offset = (taddr-pESL[i].first_pkg_addr)/SIZE_ESL_DATA_SINGLE + 1;
 				pdebug("send miss 0x%02X-0x%02X-0x%02X-0x%02X pkg %d, ch=%d, len=%d\r\n", id[0], id[1], id[2], id[3], tsn, ch, len);
 			}
-
-#define ERR
-#ifdef ERR
  			if(get_one_data(taddr, id, &ch, &len, data, SIZE_ESL_DATA_BUF) == 0)
 			{
 				perr("m1_transmit() get data!\r\n");
 				goto user_continue;
-			}
-#else
- 			memset(data1, 0,sizeof(data1));
-            data1[0] = 128;data1[1] = 1;data1[2] = 192; data1[4] = 72;data1[5] = 236;data1[6] = data1[10]= 3;data1[8] = data1[9] =1;
-            data1[12] = 50;data1[17] = 16;data1[24] = 205;data1[25] = 134;
-            id[0]=0x56; id[1]=0xb7;id[2]=0x9c;id[3]=0x13;ch=99;len=26;
-#endif
-			pdebughex(data, len);
+			}			pdebughex(data, len);
 #ifdef RF_CHANING_MODE
 			if (RF_IDLE == rf_flg){
 			    rf_flg = RF_WORKING;
@@ -246,7 +238,6 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 			    write2buf = List_next(write2buf);
 			}else{
 			    RF_wait_send_finish(id);
-			   //memcpy(RF_cancle(result);, ((MyStruct*)write2buf)->pbuf, PAYLOAD_LENGTH);
 			}
 			data = ((MyStruct*)write2buf)->pbuf;
 
@@ -266,22 +257,20 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 		
 		f = 0;
 		i++;
-//		if(i == table->esl_num)
-//		{
-//			i = 0;
-//			j++;
-//
-//			if((dummy_us=((uint16_t)table->tx_interval*1000-k*table->tx_duration)) >= 0)
-//			{
-//				dummy(table, dummy_us);
-//				f = 1;
-//			}
-//			k = 0;
-//		}
-//		if((t%50==0) && (t<1200) && (f==0))     //可以不用补帧1？，因为收帧1开1S
-//		{
-//			dummy(table, table->tx_duration);
-//		}
+		if(i == table->esl_num)
+		{
+			if((dummy_us=((uint16_t)table->tx_interval*1000-k*table->tx_duration)) >= 0)
+			{
+			    dummy_chaining_mode(table, dummy_us);
+				f = 1;
+			}
+            i = k = 0;
+            j++;
+		}
+		if((t%50==0) && (t<ESL_REC_FRAME1_TIMEOUT) && (f==0))
+		{
+		    dummy_chaining_mode(table, table->tx_duration);
+		}
 	}
 #ifdef RF_CHANING_MODE
 	RF_wait_cmd_finish(); //Wait for the last packet to be sent
@@ -296,7 +285,7 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 		}
 		else
 		{
-			dummy(table, table->tx_duration*2);
+			dummy(table, table->tx_duration);
 		}
 	}
 	
