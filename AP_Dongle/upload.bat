@@ -11,5 +11,8 @@ mv %myPatch%\AP_Dongle.bin  %myPatch%\rfd-%tmp%.bin
 REM compress
 "D:\Program Files (x86)\Haozip"\HaoZipC a -tzip %myPatch%\AP_Dongle.zip %myPatch%\rfd-%tmp%.bin
 
+REM delete *.bin
+del /P %myPatch%\rfd-%tmp%.bin
+
 REM open filezilla
 "C:\Program Files (x86)\FileZilla FTP Client"\filezilla ftp://upload:upload@192.168.5.95/rfd_new --local=%myPatch%
