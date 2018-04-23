@@ -24,6 +24,7 @@
 
 #include <ti/drivers/Power/PowerCC26XX.h>
 #include <ti/drivers/GPIO.h>
+#include <ti/drivers/utils/list.h>
 
 /* Board Header file */
 #include "Board.h"
@@ -45,7 +46,7 @@
 #ifdef GOLD_BOARD
 const unsigned char APP_VERSION_STRING[] = "rfd-5.0.1"; //must < 32
 #else
-const unsigned char APP_VERSION_STRING[24] = "rfd-5.0.3"; //must < 32
+const unsigned char APP_VERSION_STRING[24] = "rfd-5.0.4"; //must < 32
 #endif
 
 
@@ -143,7 +144,31 @@ void *mainThread(void *arg0)
     Core_Init();
     pinfo("core init complete.\r\n");
     pinfo("enter main loop.\r\n");
+//#define LIST
+#ifdef LIST
+    while(1){
+        typedef struct MyStruct {
+            List_Elem elem;
+            uint8_t buffer[26];
+        } MyStruct;
 
+        List_List list;
+        MyStruct foo[2];
+
+        List_clearList(&list);
+        List_put(&list, (List_Elem *)&foo[0]);
+        List_put(&list, (List_Elem *)&foo[1]);
+        list.tail->next = (List_Elem *)&foo[0];
+        //foo[1].elem.next = (List_Elem *)&foo[0];
+//        bar = (MyStruct *)List_get(&list);        //delete one element
+
+//        List_List list;
+        List_Elem *temp;
+        for (temp = List_head(&list); temp != NULL; temp = List_next(temp)) {
+           printf("address = 0x%x\r\n", temp);
+        }
+    }
+#endif
 //#define GGG_RSSI_TEST
 #ifdef GGG_RSSI_TEST
     //

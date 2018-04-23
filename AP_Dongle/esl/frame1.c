@@ -176,7 +176,7 @@ done:
 	return ret;
 }
 
-extern uint16_t my_frame1_flg;
+
 INT32 frame1_start(UINT16 cmd, UINT32 addr, UINT32 len)
 {
 	INT32 ret = 0;
@@ -226,7 +226,7 @@ INT32 frame1_start(UINT16 cmd, UINT32 addr, UINT32 len)
 		{
 			case 0: // 0 is default
 			default:
-				if(frame1_mode0(addr, frame1_para.num, dur+my_frame1_flg) == 1)
+				if(frame1_mode0(addr, frame1_para.num, dur) == 1)
 				{
 					ret = 1;
 				}
@@ -263,8 +263,8 @@ INT32 frame1_dummy(UINT32 addr, UINT32 len, UINT32 *dummy_offset, INT32 dummy_nu
 			frame1_para.datarate, frame1_para.power, frame1_para.duration,
 			frame1_para.mode, frame1_para.num);
 	
+	set_power_rate(frame1_para.power, frame1_para.datarate);
 
-//	set_power_rate(frame1_para.power, frame1_para.datarate);//todo: 涉及到切换速率，耗时长。与原程序设计不一致。
 	
 	while(tx_num < dummy_num)
 	{	
@@ -286,7 +286,7 @@ INT32 frame1_dummy(UINT32 addr, UINT32 len, UINT32 *dummy_offset, INT32 dummy_nu
         if (PEND_START == pend_flg){
             send_pend(result);
         }
-        result = send_without_wait(id, data, len, channel, 6000);
+        result = send_without_wait(id, data, data_len, channel, 6000);
         pend_flg = PEND_START;
 
 		*dummy_offset += sizeof(id)+sizeof(channel)+sizeof(data_len)+data_len;

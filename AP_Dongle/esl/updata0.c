@@ -38,6 +38,50 @@ void dummy(updata_table_t *table, INT32 nus)
 	}
 }
 
+void dummy_chaining_mode(updata_table_t *table, INT32 nus)
+{
+    INT32 tx_num = 0;
+
+    UINT8 id[4] = {0};
+    UINT8 channel = 0;
+    UINT8 *data = ((MyStruct*)write2buf)->pbuf;
+    UINT8 data_len = 0;
+    UINT32 addr = table->frame1_addr;
+    UINT32 len = table->frame1_len;
+    UINT32 *dummy_offset = (UINT32*)&table->frame1_offset;
+    UINT8 dummy_num = nus/table->tx_duration;
+
+    while(tx_num < dummy_num)
+    {
+        if (0 != addr){
+            if((*dummy_offset == 0) || (*dummy_offset >= (addr+len)))
+            {
+                *dummy_offset = addr+LEN_OF_FRAME1_PARA;
+            }
+
+            if(get_one_data(*dummy_offset, id, &channel, &data_len, data, sizeof(data)) == 0)
+            {
+                perr("frame1 dummy get data\r\n");
+                break;
+            }
+
+            pdebug("frame1 dummy: id=0x%02X-0x%02X-0x%02X-0x%02X, channel=%d, len=%d, data=", \
+                    id[0], id[1], id[2], id[3], channel, data_len);
+            pdebughex(data, data_len);
+
+            RF_wait_send_finish(id);
+            data = ((MyStruct*)write2buf)->pbuf;
+            //result = send_without_wait(id, data, data_len, channel, 6000);
+
+            *dummy_offset += sizeof(id)+sizeof(channel)+sizeof(data_len)+data_len;
+            tx_num++;
+        } else {
+            RF_wait_send_finish(id);        //null frame
+        }
+    }
+}
+
+
 UINT16 init_data(UINT32 addr, UINT32 len, updata_table_t *table)
 {
 	INT32 left_len = len;
@@ -230,13 +274,14 @@ static INT32 query_miss_round(updata_table_t *table, UINT8 timer)
 		pdebug("query miss esl 0x%02x-0x%02x-0x%02x-0x%02x, txbps=%d, rxbps=%d, ch=%d, timeout=%d.\r\n", \
 				pESL[i].esl_id[0], pESL[i].esl_id[1], \
 				pESL[i].esl_id[2], pESL[i].esl_id[3], \
-				table->tx_datarate, table->rx_datarate, channel, deal_timeout);
+				table->tx_datarate, table->rx_datarate, channel, deal_timeout);	
+    	memset(data, 0, sizeof(data));
 		set_power_rate(table->tx_power, table->tx_datarate);
 		memset(data, 0, sizeof(data));
 		g3_make_link_query(pESL[i].esl_id, get_pkg_sn_f(pESL[i].first_pkg_addr+(pESL[i].total_pkg_num-1)*32, 7), \
 							query_miss_slot, first_pkg_data, data, sizeof(data));
-
-        set_frequence(channel);
+		
+		set_frequence(channel);
         send_data(pESL[i].esl_id, data, sizeof(data), 2000);
 		set_power_rate(RF_DEFAULT_POWER, table->rx_datarate);
 		set_frequence(channel);
@@ -314,7 +359,9 @@ static INT32 send_sleep_round(updata_table_t *table, UINT8 timer)
 	        prev_channel = channel;
 	        send_data(pESL[i].esl_id, data, sizeof(data), 2000);
 //			send_data(pESL[i].esl_id, data, sizeof(data), channel, 6000);
-			ret++;
+            if (pESL[i].sleep_flag == 0){
+                ret++;
+            }
 		}
 	}
 	

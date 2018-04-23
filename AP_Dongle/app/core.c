@@ -170,7 +170,7 @@ void Core_Mainloop(void)
         event = Event_PendCore();
 
         if (RF_Status_idle != rf_status){
-            rf_idle();
+            RF_idle();
             rf_status = RF_Status_idle;
         }
         UART_recDisable();

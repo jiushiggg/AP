@@ -14,9 +14,11 @@
 #define RF_RX_SYNC_TEST_IO  IOID_17
 
 #define CRC_ERR             0x40
-
+#define RF_SEND_TIME        900     //900us
 /***** Defines *****/
 #define RF_convertMsToRatTicks(microsecond_10)    ((uint32_t)(microsecond_10) * 4 * 10)   // ((uint32_t)(milliseconds) * 4 * 1000)
+/* Packet TX/RX Configuration */
+#define PAYLOAD_LENGTH      26
 #define DATA_ENTRY_HEADER_SIZE 8  /* Constant header size of a Generic Data Entry */
 #define MAX_LENGTH             30 /* Max length byte the radio will accept */
 #define NUM_DATA_ENTRIES       1  /* NOTE: Only two data entries supported at the moment */
@@ -44,8 +46,7 @@
 #else
     #error This compiler is not supported.
 #endif
-
-
+uint8_t txPacket[PAYLOAD_LENGTH];
 
 static void RF_MapIO(void);
 void clear_queue_buf(void);
@@ -58,17 +59,45 @@ dataQueue_t dataQueue;
 RF_Status rf_status = RF_Status_idle;
 
 static UINT8 _hb_rssi = 0;
+static volatile Bool send_one_finish = false;
 
 Semaphore_Handle txDoneSem;
 Semaphore_Handle rxDoneSem;
 
+List_List list;
+MyStruct foo[2];
+List_Elem *write2buf;
+UINT8 data0[PAYLOAD_LENGTH] = {0};
+UINT8 data1[PAYLOAD_LENGTH] = {0};
+
+List_Elem* listInit(uint8_t* pack0, uint8_t* pack1)
+{
+    foo[0].pbuf = pack0;
+    foo[1].pbuf = pack1;
+    List_clearList(&list);
+    List_put(&list, (List_Elem *)&foo[0]);
+    List_put(&list, (List_Elem *)&foo[1]);
+    list.tail->next = (List_Elem *)&foo[0];
+
+    return List_head(&list);
+}
+
 void txcallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
 {
-    if(e & RF_EventLastCmdDone)
+    if (e & RF_EventCmdAborted)
     {
-        Semaphore_post(txDoneSem);
+        //send_one_finish = true;
     }
+    if (e & RF_EventCmdDone)
+    {
+        /* Successful TX */
+        memcpy(txPacket, ((MyStruct*)write2buf)->pbuf, PAYLOAD_LENGTH);
+        write2buf = List_next(write2buf);
+        Semaphore_post(txDoneSem);
+        //send_one_finish = true;
+    }else {
 
+    }
 }
 
 void rxcallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
@@ -186,7 +215,7 @@ void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
             RF_cmdPropRadioSetup.symbolRate.preScale = 15;
             RF_cmdPropRadioSetup.symbolRate.rateWord = 327680;
             RF_cmdPropRadioSetup.modulation.modType = 0x0;
-            RF_cmdPropRadioSetup.modulation.deviation = 744;
+            RF_cmdPropRadioSetup.modulation.deviation = 920;
             RF_cmdPropRadioSetup.rxBw = 10;
         break;
         case  DATA_RATE_1M:
@@ -197,7 +226,7 @@ void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
             RF_cmdPropRadioSetup.symbolRate.preScale = 15;
             RF_cmdPropRadioSetup.symbolRate.rateWord = 327680;
             RF_cmdPropRadioSetup.modulation.modType = 0x0;
-            RF_cmdPropRadioSetup.modulation.deviation = 744;
+            RF_cmdPropRadioSetup.modulation.deviation = 920;
             RF_cmdPropRadioSetup.rxBw = 10;
         break;
     }
@@ -220,6 +249,9 @@ void send_data_init(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
     RF_cmdPropTxAdv.pktLen = len;
     RF_cmdPropTxAdv.pPkt = data;
     RF_cmdPropTxAdv.syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+    RF_cmdPropTxAdv.pNextOp = NULL;
+    /* Only run the RX command if TX is successful */
+    RF_cmdPropTxAdv.condition.rule = COND_NEVER;
     cc2592Cfg(CC2592_TX);
 }
 #define MY_TEST_RF
@@ -232,6 +264,49 @@ RF_EventMask send_async(uint32_t interal)
     result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
 //    RF_yield(rfHandle);
     return result;
+}
+
+#if 0
+void RF_wait_send_finish(UINT8 *id)
+{
+    RF_cmdPropTxAdv.syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+    while(PROP_DONE_OK!=((volatile RF_Op*)&RF_cmdPropTxAdv)->status ||
+            send_one_finish == false);
+    send_one_finish = false;
+}
+#else
+void RF_wait_send_finish(UINT8 *id)
+{
+    RF_cmdPropTxAdv.syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+    Semaphore_pend (txDoneSem, RF_SEND_TIME/Clock_tickPeriod);
+}
+#endif
+
+void RF_wait_cmd_finish(void)
+{
+//    while(PROP_DONE_OK!=((volatile RF_Op*)&RF_cmdPropTxAdv)->status);
+    Semaphore_pend (txDoneSem, RF_SEND_TIME/Clock_tickPeriod);
+//    send_one_finish = false;
+}
+
+uint64_t send_chaningmode(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
+{
+    RF_EventMask result;
+    cc2592Cfg(CC2592_TX);
+    /* Modify CMD_PROP_TX and CMD_PROP_RX commands for application needs */
+    RF_cmdPropTxAdv.startTrigger.triggerType = TRIG_NOW;
+    RF_cmdPropTxAdv.startTrigger.pastTrig = 1;
+    RF_cmdPropTxAdv.startTime = 0;
+    RF_cmdPropTxAdv.pktLen = len;
+    RF_cmdPropTxAdv.pPkt = txPacket;
+    RF_cmdPropTxAdv.syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+    RF_cmdPropTxAdv.pNextOp = (rfc_radioOp_t *)&RF_cmdPropTxAdv;
+    /* Only run the RX command if TX is successful */
+    RF_cmdPropTxAdv.condition.rule = COND_STOP_ON_FALSE;
+    send_one_finish = false;
+    result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, txcallback,
+                        (RF_EventCmdDone | RF_EventLastCmdDone| RF_EventCmdAborted));
+    return (uint64_t)result;
 }
 
 void send_pend(RF_EventMask result)
@@ -252,16 +327,14 @@ void send_pend(RF_EventMask result)
     RF_pendCmd(rfHandle, result, EASYLINK_RF_EVENT_MASK);
 }
 #endif
-void rfCancle(RF_EventMask result)
+void RF_cancle(uint64_t result)
 {
-    RF_cancelCmd(rfHandle, result,0);
+    RF_cancelCmd(rfHandle, (RF_EventMask)result,0);
 }
 uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout)
 {
-    RF_EventMask result;
-    cc2592Cfg(CC2592_TX);
     send_data_init(id, data, len, timeout);
-    result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
+    RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
     return len;
 }
 //uint8_t rf_test_buff[26]={0};
@@ -285,7 +358,6 @@ UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout)
         clear_queue_buf();
         len = 0;
     }
-//    RF_yield(rfHandle);
     return len;
 }
 void clear_queue_buf(void)
@@ -341,7 +413,7 @@ void exit_txrx(void)
 //    RF_yield(rfHandle);
     cc2592Cfg(CC2592_POWERDOWN);
 }
-void rf_idle(void)
+void RF_idle(void)
 {
     RF_yield(rfHandle);
 }

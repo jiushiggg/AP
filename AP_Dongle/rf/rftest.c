@@ -371,7 +371,7 @@ static INT32 ber_tx_result(void)
     }
     pprint("ber tx result ack: ");
     phex(ack_buf, sizeof(ack_buf));
-    rf_idle();
+    RF_idle();
 #else
     UINT8 result_buf[26] = {0};
     UINT8 ack_buf[26] = {0};
@@ -465,7 +465,7 @@ cal_ber:
     }
     ber = (float)ber_err_bit/(float)(test_rounds*TEST_DATA_LEN*8);
 
-    rf_idle();
+    RF_idle();
 
 #else
 
@@ -833,7 +833,7 @@ UINT8 RFC_CalcBgRssi(UINT8 ch, UINT8 initrssi, UINT8 rssithreshold, UINT8 noiser
         BSP_Delay10US(5);
     }
 
-    rf_idle();
+    RF_idle();
 
     if(dutycycle != NULL)
     {

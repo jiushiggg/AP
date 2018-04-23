@@ -126,22 +126,32 @@ UINT16 m1_init_data(UINT32 addr, UINT32 len, updata_table_t *table)
 //extern UINT8 search_first_pkg[32];
 //extern UINT16 search_pkg_history_o[40];
 
+#define ESL_REC_FRAME1_TIMEOUT 1200    //1000ms/0.85ms
+
+#define RF_CHANING_MODE
 static void m1_transmit(updata_table_t *table, UINT8 timer)
 {
 	INT32 i = 0, j = 0, k = 0, t = 0;
 	UINT8 id[4] = {0};
 	UINT8 ch = 0;
 	UINT8 len = 0;
+#ifdef RF_CHANING_MODE
+	UINT8 *data = NULL;
+#else
 	UINT8 data[SIZE_ESL_DATA_BUF] = {0};
+#endif
 	INT32 left_pkg_num = 0;
 	INT32 dummy_us = 0;
 	mode1_esl_t *pESL = (mode1_esl_t *)table->data;
 	UINT16 tsn = 0;
 	UINT32 taddr = 0;
 	UINT8 f = 0;
-    RF_EventMask result;
-    uint8_t pend_flg = PEND_STOP;
-	
+    uint64_t result;
+    UINT8 rf_flg = RF_IDLE;
+#ifdef RF_CHANING_MODE
+    write2buf = listInit(data0, data1);
+    data = ((MyStruct*)write2buf)->pbuf;
+#endif
 	set_power_rate(table->tx_power, table->tx_datarate);
 	
 	for(i = 0; i < table->esl_num; i++)
@@ -164,7 +174,7 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 			pdebug("timeout.\r\n");
 			break;
 		}
-				
+
 		if((pESL[i].failed_pkg_num != 0) && (j < pESL[i].failed_pkg_num))
 		{
 			if(pESL[i].failed_pkg_num == pESL[i].total_pkg_num)
@@ -180,7 +190,7 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 			else // > 0 && < 10
 			{
 				tsn = get_missed_sn_r(pESL[i].failed_pkg, j);
-				
+
 				//for debug
 //				search_pkg_sn_times = 0;
 //				memset(search_pkg_history, 0, sizeof(search_pkg_history));
@@ -188,7 +198,7 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 //				search_end_pkg = 0;
 //				memset(search_pkg_history_o, 0, sizeof(search_pkg_history_o));
 //				memset(search_first_pkg, 0, sizeof(search_first_pkg));
-                
+
 				taddr = get_pkg_addr_bsearch(pESL[i].first_pkg_addr, pESL[i].total_pkg_num, tsn, OFFSET_FIRST_PKG_ADDR);
 				if(taddr == 0)
 				{
@@ -212,26 +222,31 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 //				pESL[i].failed_pkg_offset = (taddr-pESL[i].first_pkg_addr)/SIZE_ESL_DATA_SINGLE + 1;
 				pdebug("send miss 0x%02X-0x%02X-0x%02X-0x%02X pkg %d, ch=%d, len=%d\r\n", id[0], id[1], id[2], id[3], tsn, ch, len);
 			}
-
-#define ERR
-#ifdef ERR
- 			if(get_one_data(taddr, id, &ch, &len, data, sizeof(data)) == 0)
+ 			if(get_one_data(taddr, id, &ch, &len, data, SIZE_ESL_DATA_BUF) == 0)
 			{
 				perr("m1_transmit() get data!\r\n");
 				goto user_continue;
 			}
+ 			pdebughex(data, len);
+#ifdef RF_CHANING_MODE
+			if (RF_IDLE == rf_flg){
+			    rf_flg = RF_WORKING;
+			    set_frequence(ch);
+			    memcpy(txPacket, data, PAYLOAD_LENGTH);
+			    result = send_chaningmode(id, data, len, 6000);
+			    write2buf = List_next(write2buf);
+			}else{
+			    RF_wait_send_finish(id);
+			}
+			data = ((MyStruct*)write2buf)->pbuf;
+
 #else
- 			memset(data1, 0,sizeof(data1));
-            data1[0] = 128;data1[1] = 1;data1[2] = 192; data1[4] = 72;data1[5] = 236;data1[6] = data1[10]= 3;data1[8] = data1[9] =1;
-            data1[12] = 50;data1[17] = 16;data1[24] = 205;data1[25] = 134;
-            id[0]=0x56; id[1]=0xb7;id[2]=0x9c;id[3]=0x13;ch=99;len=26;
+            if (PEND_START == rf_flg){
+                send_pend(result);
+            }
+            result = send_without_wait(id, data, len, ch, 6000);
+            rf_flg = PEND_START;
 #endif
-			pdebughex(data, len);
-	        if (PEND_START == pend_flg){
-	            send_pend(result);
-	        }
-	        result = send_without_wait(id, data, len, ch, 6000);
-	        pend_flg = PEND_START;
 		user_continue:
 			left_pkg_num--;
 			k++;
@@ -242,22 +257,23 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 		i++;
 		if(i == table->esl_num)
 		{
-			i = 0;
-			j++;
-			
 			if((dummy_us=((uint16_t)table->tx_interval*1000-k*table->tx_duration)) >= 0)
 			{
-				dummy(table, dummy_us);
+			    dummy_chaining_mode(table, dummy_us);
 				f = 1;
 			}
-			k = 0;
-		}	
-//		if((t%50==0) && (f==0))     //可以不用补帧1？，因为收帧1开1S
-//		{
-//			dummy(table, table->tx_duration);
-//		}
+            i = k = 0;
+            j++;
+		}
+		if((t%50==0) && (t<ESL_REC_FRAME1_TIMEOUT) && (f==0))
+		{
+		    dummy_chaining_mode(table, table->tx_duration);
+		}
 	}
-	
+#ifdef RF_CHANING_MODE
+	RF_wait_cmd_finish(); //Wait for the last packet to be sent
+	RF_cancle(result);
+#endif
 	if((i != table->esl_num) && (f == 0))
 	{
 		if((dummy_us=(table->tx_interval*1000-k*table->tx_duration)) >= 0)
@@ -267,7 +283,7 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 		}
 		else
 		{
-			dummy(table, table->tx_duration*2);
+			dummy(table, table->tx_duration);
 		}
 	}
 	
@@ -320,7 +336,7 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 		set_power_rate(table->tx_power, table->tx_datarate);
 //		channel = g3_get_channel(pESL[i].first_pkg_addr);
 		get_one_data(pESL[i].first_pkg_addr, NULL, &channel, NULL, first_pkg_data, sizeof(first_pkg_data));
-#if 1
+#if 0
 		pdebug("query%02x%02x%02x%02x,tx%d,rx%d,ch%d,t%d\r\n", \
 				pESL[i].esl_id[0], pESL[i].esl_id[1], pESL[i].esl_id[2], pESL[i].esl_id[3], \
 				table->tx_datarate, table->rx_datarate, channel, deal_timeout);
@@ -334,8 +350,9 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 			perr("OSD CTRL:%02X-%02X-%02X-%02X\r\n", pESL[i].esl_id[0], pESL[i].esl_id[1], pESL[i].esl_id[2], pESL[i].esl_id[3]);
 			perrhex(data, sizeof(data));
 		}
-#endif
-        set_frequence(channel);
+#endif		
+//        set_power_rate(table->tx_power, table->tx_datarate);
+		set_frequence(channel);
         send_data(pESL[i].esl_id, data, sizeof(data), 2000);
 		//send_data(pESL[i].esl_id, data, sizeof(data), channel, 2000);
 //		exit_txrx();
@@ -415,7 +432,7 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 		pdebug("failed pkg num = %d\r\n", pESL[i].failed_pkg_num);
 	}
 
-	dummy(table, table->tx_duration*2);
+	dummy(table, table->tx_duration);
 	exit_txrx();
 	wait(2000);
 		
@@ -464,7 +481,9 @@ INT32 m1_send_sleep(updata_table_t *table, UINT8 timer)
 	        prev_channel = channel;
 	        send_data(pESL[i].esl_id, data, sizeof(data), 2000);
 			//send_data(pESL[i].esl_id, data, sizeof(data), channel, 6000);
-			ret++;
+	        if (pESL[i].sleep_flag == 0){
+	            ret++;
+	        }
 		}
 	}
 	
@@ -552,7 +571,8 @@ UINT8 m1_updata_loop(updata_table_t *table)
 		}
 		mydebug = 1;
 		m1_send_sleep(table, timer);
-		if(table->ok_esl_num==table->esl_num ||  table->esl_num==(table->ok_esl_num/SLEEP_FRAME_CNT))
+		//if(table->ok_esl_num==table->esl_num ||  table->esl_num==(table->ok_esl_num/SLEEP_FRAME_CNT))
+		if(table->ok_esl_num==table->esl_num)
 		{
 			break;
 		}
