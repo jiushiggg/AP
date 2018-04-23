@@ -105,7 +105,7 @@ extern void RF_wait_send_finish(UINT8 *id);
 extern void RF_cancle(uint64_t result);
 extern void RF_idle(void);
 extern void RF_carrierWave(void);
-extern void RF_measureRSSI(void);
+extern void RF_measureRSSI(Bool flg);
 extern void RF_setMeasureRSSI(uint8_t);
 extern List_Elem* listInit(uint8_t* pack0, uint8_t* pack1);
 

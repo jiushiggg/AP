@@ -753,6 +753,7 @@ INT32 rf_txrx(UINT8 *cmd_buf, INT32 cmd_len, UINT8 *ack_buf, INT32 ack_buf_size)
 	else //rx
 	{
 	    set_power_rate(RF_DEFAULT_POWER, bps);
+        set_frequence(*(cmd_buf+OFFSET_OF_CHANNEL_IN_RFTXRX_CMD));
 //		printf("actor rx %d, timeout is %d\r\n", data_len, timeout);
 		if(recv_data_for_hb(cmd_buf+OFFSET_OF_ID_IN_RFTXRX_CMD,
 		   rx_buf, data_len, *(cmd_buf+OFFSET_OF_CHANNEL_IN_RFTXRX_CMD), timeout)
@@ -773,13 +774,17 @@ INT32 rf_txrx(UINT8 *cmd_buf, INT32 cmd_len, UINT8 *ack_buf, INT32 ack_buf_size)
 void RSSI_test(void)
 {
     volatile uint8_t readrssi=0;
-    set_power_rate(RF_FREQUENCY_UNKNOW, DATA_RATE_100K);
-    set_frequence(151);
-    RF_measureRSSI();
+    uint8_t i = 0;
     while(1)
     {
-        readrssi = RF_readRegRSSI();
-        pinfo("%d\r\n", readrssi);
+        RF_measureRSSI(false);
+        set_power_rate(RF_FREQUENCY_UNKNOW, DATA_RATE_500K);
+        set_frequence(151);
+        RF_measureRSSI(true);
+        for (i=0; i<200; i++){
+            readrssi = RF_readRegRSSI();
+            pinfo("%d\r\n", readrssi);
+        }
     }
 
 }
@@ -793,10 +798,10 @@ UINT8 RFC_CalcBgRssi(UINT8 ch, UINT8 initrssi, UINT8 rssithreshold, UINT8 noiser
     UINT8 arssi = 0;
     float farssi = 0.0;
 
-
+    RF_measureRSSI(false);
     set_power_rate(RF_FREQUENCY_UNKNOW, DATA_RATE_500K);
     set_frequence(ch);
-    RF_measureRSSI();
+    RF_measureRSSI(true);
 
     if(initrssi != 0)
     {

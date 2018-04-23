@@ -499,11 +499,16 @@ void RF_carrierWave(void)
     rf_status = RF_Status_carrierWave;
 
 }
-void RF_measureRSSI(void)
+void RF_measureRSSI(Bool flg)
 {
-    cc2592Cfg(CC2592_RX_HG_MODE);
-    RF_postCmd(rfHandle, (RF_Op*)&RF_cmdRxTest, RF_PriorityNormal, NULL, 0);
-    rf_status = RF_Status_measureRSSI;
+    static RF_CmdHandle rssi_ret = 0;
+    if (true == flg){
+        cc2592Cfg(CC2592_RX_HG_MODE);
+        rssi_ret = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdRxTest, RF_PriorityNormal, NULL, 0);
+        rf_status = RF_Status_measureRSSI;
+    }else {
+        RF_cancle(rssi_ret);
+    }
 }
 
 //untest
