@@ -228,7 +228,8 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 			{
 				perr("m1_transmit() get data!\r\n");
 				goto user_continue;
-			}			pdebughex(data, len);
+			}
+ 			pdebughex(data, len);
 #ifdef RF_CHANING_MODE
 			if (RF_IDLE == rf_flg){
 			    rf_flg = RF_WORKING;
@@ -338,7 +339,7 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 		set_power_rate(table->tx_power, table->tx_datarate);
 //		channel = g3_get_channel(pESL[i].first_pkg_addr);
 		get_one_data(pESL[i].first_pkg_addr, NULL, &channel, NULL, first_pkg_data, sizeof(first_pkg_data));
-#if 1
+#if 0
 		pinfo("query%02x%02x%02x%02x,tx%d,rx%d,ch%d,t%d\r\n", \
 				pESL[i].esl_id[0], pESL[i].esl_id[1], pESL[i].esl_id[2], pESL[i].esl_id[3], \
 				table->tx_datarate, table->rx_datarate, channel, deal_timeout);

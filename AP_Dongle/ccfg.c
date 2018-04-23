@@ -46,7 +46,7 @@
  *        made to this file will be applied to all projects.  This file must
  *        remain unmodified.
  */
-//#define ENABLE_BACKDOOR
+#define ENABLE_BACKDOOR
 
 #ifdef ENABLE_BACKDOOR
 

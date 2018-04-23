@@ -215,7 +215,7 @@ void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
             RF_cmdPropRadioSetup.symbolRate.preScale = 15;
             RF_cmdPropRadioSetup.symbolRate.rateWord = 327680;
             RF_cmdPropRadioSetup.modulation.modType = 0x0;
-            RF_cmdPropRadioSetup.modulation.deviation = 744;
+            RF_cmdPropRadioSetup.modulation.deviation = 920;
             RF_cmdPropRadioSetup.rxBw = 10;
         break;
         case  DATA_RATE_1M:
@@ -226,7 +226,7 @@ void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
             RF_cmdPropRadioSetup.symbolRate.preScale = 15;
             RF_cmdPropRadioSetup.symbolRate.rateWord = 327680;
             RF_cmdPropRadioSetup.modulation.modType = 0x0;
-            RF_cmdPropRadioSetup.modulation.deviation = 744;
+            RF_cmdPropRadioSetup.modulation.deviation = 920;
             RF_cmdPropRadioSetup.rxBw = 10;
         break;
     }
