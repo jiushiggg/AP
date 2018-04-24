@@ -126,7 +126,7 @@ UINT16 m1_init_data(UINT32 addr, UINT32 len, updata_table_t *table)
 //extern UINT8 search_first_pkg[32];
 //extern UINT16 search_pkg_history_o[40];
 
-#define ESL_REC_FRAME1_TIMEOUT 1200    //1000ms/0.85ms
+
 
 #define RF_CHANING_MODE
 static void m1_transmit(updata_table_t *table, UINT8 timer)

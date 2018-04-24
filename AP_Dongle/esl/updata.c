@@ -73,7 +73,7 @@ INT32 updata_init_data(UINT16 the_updata_cmd, updata_table_t *table,
 			m1_init_data(the_updata_addr,the_updata_len, table);
 			break;
 		case CMD_GROUPN_DATA_G1:
-//			g1_init_data(the_updata_addr,the_updata_len, table);
+			g1_init_data(the_updata_addr,the_updata_len, table);
 			break;
 		case CMD_GROUP1_DATA_BDC:
 			break;
@@ -148,7 +148,7 @@ INT32 updata_make_ack(UINT16 the_updata_cmd, updata_table_t * table, UINT32 *ack
 			m1_make_ack(table, ack_addr, ack_len, 8);
 			break;
 		case CMD_GROUPN_DATA_G1:
-//			g1_make_ack(table, ack_addr, ack_len);
+			g1_make_ack(table, ack_addr, ack_len);
 			break;
 		case CMD_GROUP1_DATA_BDC:
 			break;

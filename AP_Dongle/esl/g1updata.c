@@ -241,7 +241,7 @@ INT32 g1_updata_loop(updata_table_t *table)
 
 	pdebug("g1 updata loop\r\n");
 	
-	if((t=TIM_Open(100, table->esl_work_duration*10, 0, TIMER_ONCE)) == 0)
+	if((t=TIM_Open(100, table->esl_work_duration*10, 0, TIMER_ONCE)) == TIMER_UNKNOW)
 	{
 		ret = -1;
 		goto done;

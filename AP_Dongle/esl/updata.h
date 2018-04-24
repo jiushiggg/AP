@@ -15,6 +15,7 @@
 #define HB_ESL_BUF_SIZE (ESL_BH_NUM*27)
 
 #define MAX_FAILED_PKG_NUM  10
+#define ESL_REC_FRAME1_TIMEOUT 1200    //1000ms/0.85ms
 
 #pragma pack(1)
 //36byte
