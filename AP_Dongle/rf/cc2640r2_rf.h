@@ -102,14 +102,14 @@ extern uint64_t send_chaningmode(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeo
 extern void RF_wait_cmd_finish(void);
 
 extern void RF_wait_send_finish(UINT8 *id);
-extern void RF_cancle(uint16_t result);
+extern void RF_cancle(int16_t result);
 extern void RF_idle(void);
 extern void RF_carrierWave(void);
 extern void RF_measureRSSI(Bool flg);
 extern void RF_setMeasureRSSI(uint8_t);
 extern List_Elem* listInit(uint8_t* pack0, uint8_t* pack1);
 
-extern void set_rx_para(UINT8 *id, UINT16 datarate, UINT8 ch, UINT8 fifosize, UINT32 timeout);
+extern int16_t set_rx_para(UINT8 *id, UINT16 datarate, UINT8 ch, UINT8 fifosize, UINT32 timeout);
 extern int8_t check_rx_status(UINT16 timeout);
 extern INT32 get_rx_data(UINT8 *dst, UINT8 dstsize);
 

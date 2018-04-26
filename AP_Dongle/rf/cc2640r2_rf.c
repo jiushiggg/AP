@@ -327,7 +327,7 @@ void send_pend(RF_EventMask result)
     RF_pendCmd(rfHandle, result, EASYLINK_RF_EVENT_MASK);
 }
 #endif
-void RF_cancle(uint16_t result)
+void RF_cancle(int16_t result)
 {
     RF_cancelCmd(rfHandle, (RF_CmdHandle)result,0);
 }
@@ -526,11 +526,11 @@ void RF_setMeasureRSSI(uint8_t b)
 }
 
 
-void set_rx_para(UINT8 *id, UINT16 datarate, UINT8 ch, UINT8 fifosize, UINT32 timeout)
+int16_t set_rx_para(UINT8 *id, UINT16 datarate, UINT8 ch, UINT8 fifosize, UINT32 timeout)
 {
     set_power_rate(RF_DEFAULT_POWER, datarate);
     set_frequence(ch);
-    Rf_rx_package(rfHandle, &dataQueue, id, fifosize, TRUE , timeout/Clock_tickPeriod);
+    return Rf_rx_package(rfHandle, &dataQueue, id, fifosize, TRUE , timeout/Clock_tickPeriod);
 }
 
 int8_t check_rx_status(UINT16 timeout) //unit ms

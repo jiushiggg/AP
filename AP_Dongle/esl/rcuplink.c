@@ -23,11 +23,11 @@
 #define STATE_OF_ACKRC			5
 #define STATE_OF_EXIT			99
 
-static UINT8 rcreq_timeout_timer = 0;
+static UINT8 rcreq_timeout_timer = TIMER_UNKNOW;
 
 static UINT8 rcreq_set_timer(UINT32 timeout)
 {
-	if((timeout != 0) && (rcreq_timeout_timer == 0))
+	if((timeout != 0) && (rcreq_timeout_timer == TIMER_UNKNOW))
 	{	
 		if(timeout > 60000)
 		{
@@ -47,7 +47,7 @@ static UINT8 rcreq_set_timer(UINT32 timeout)
 
 static UINT8 rcreq_check_timeout(void)
 {
-	if(rcreq_timeout_timer == 0)
+	if(rcreq_timeout_timer == TIMER_UNKNOW)
 	{
 		return 0;
 	}
@@ -59,10 +59,10 @@ static UINT8 rcreq_check_timeout(void)
 
 static void rcreq_close_timer(void)
 {
-	if(rcreq_timeout_timer != 0)
+	if(rcreq_timeout_timer != TIMER_UNKNOW)
 	{
 		TIM_Close(rcreq_timeout_timer);
-		rcreq_timeout_timer = 0;
+		rcreq_timeout_timer = TIMER_UNKNOW;
 	}
 }
 
@@ -103,7 +103,7 @@ static INT32 rcreq_check_data(UINT8 *src, UINT8 len)
 
 extern UINT32 core_idel_flag;
 
-static INT32 _init_recv(rcreq_table_t *table)
+static INT16 _init_recv(rcreq_table_t *table)
 {
 	pdebug("init recv\r\n");
 	pdebughex((UINT8 *)table, 23);
@@ -114,15 +114,13 @@ static INT32 _init_recv(rcreq_table_t *table)
 	enter_txrx();
 	
 	//set recv para
-
-	set_rx_para(table->id, table->recv_bps, table->channel, table->recv_len, table->timeout);
 	//enable rx
 //	set_rx_start();
 
 	//start timer
 	rcreq_set_timer(table->timeout);
 
-	return 0;
+	return set_rx_para(table->id, table->recv_bps, table->channel, table->recv_len, table->timeout);
 }
 
 static INT32 _recv(rcreq_table_t *table)
@@ -261,13 +259,14 @@ INT32 RcReq_Mainloop(rcreq_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 le
 {
 	INT32 state = STATE_OF_INIT;
 	INT32 ret = 0;
+	int16_t rec_handle;
 	
 	while(1)
 	{
 		switch(state)
 		{
 			case STATE_OF_INIT:
-				_init_recv(table);
+			    rec_handle = _init_recv(table);
 				table->uplink = uplink;
 				state = STATE_OF_RECV;
 				break;
@@ -286,6 +285,7 @@ INT32 RcReq_Mainloop(rcreq_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 le
 				{
 					state = STATE_OF_EXIT;
 				}
+				RF_cancle(rec_handle);
 				break;
 			case STATE_OF_CHECK_RECV:
 				ret = _check_recv(table);
