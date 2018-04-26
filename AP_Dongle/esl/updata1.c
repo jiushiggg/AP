@@ -302,7 +302,7 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 	INT32 i;
 	UINT32 deal_timeout = table->deal_duration*1000;
 	UINT8 channel = 0;
-	volatile UINT8 prev_channel=RF_FREQUENCY_UNKNOW;
+
 	mode1_esl_t *pESL = (mode1_esl_t *)table->data;
 	
 //	set_power_rate(table->tx_power, table->tx_datarate);

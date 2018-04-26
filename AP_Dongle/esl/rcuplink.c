@@ -114,10 +114,10 @@ static INT32 _init_recv(rcreq_table_t *table)
 	enter_txrx();
 	
 	//set recv para
-	set_rx_para(table->id, table->recv_bps, table->channel, table->recv_len);
 
+	set_rx_para(table->id, table->recv_bps, table->channel, table->recv_len, table->timeout);
 	//enable rx
-	set_rx_start();
+//	set_rx_start();
 
 	//start timer
 	rcreq_set_timer(table->timeout);
@@ -153,8 +153,6 @@ static INT32 _recv(rcreq_table_t *table)
 			break;
 		}
 	}
-	
-	set_cmd_pll();
 	return ret;
 }
 
@@ -255,7 +253,6 @@ static INT32 _ack_rc(rcreq_table_t *table)
 	set_power_rate(table->ack_power, table->ack_bps);
     set_frequence(table->channel);
     send_data(rcid, table->rc_ack_buf, table->rc_ack_len, 2000);
-//	send_data(rcid, table->rc_ack_buf, table->rc_ack_len, table->channel, 2);
 	
 	return 0;
 }

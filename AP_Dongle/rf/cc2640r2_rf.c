@@ -50,7 +50,7 @@ uint8_t txPacket[PAYLOAD_LENGTH];
 
 static void RF_MapIO(void);
 void clear_queue_buf(void);
-RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord, uint8_t pktLen,uint8_t enableTrigger,  uint32_t  timeout);
+static RF_CmdHandle Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint8_t* id, uint8_t pktLen,uint8_t enableTrigger,  uint32_t  timeout);
 
 rfc_dataEntryGeneral_t* currentDataEntry;
 RF_Object rfObject;
@@ -327,9 +327,9 @@ void send_pend(RF_EventMask result)
     RF_pendCmd(rfHandle, result, EASYLINK_RF_EVENT_MASK);
 }
 #endif
-void RF_cancle(uint64_t result)
+void RF_cancle(uint16_t result)
 {
-    RF_cancelCmd(rfHandle, (RF_EventMask)result,0);
+    RF_cancelCmd(rfHandle, (RF_CmdHandle)result,0);
 }
 uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout)
 {
@@ -340,13 +340,13 @@ uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout)
 //uint8_t rf_test_buff[26]={0};
 UINT8 recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout)
 {
-    uint32_t sync_word=0;
-    RF_EventMask rx_event;
+    //uint32_t sync_word=0;
+    RF_CmdHandle rx_event;
 //    set_frequence(ch);
 
-    sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+    //sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
     cc2592Cfg(CC2592_RX_HG_MODE);
-    rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , timeout/Clock_tickPeriod);
+    rx_event = Rf_rx_package(rfHandle, &dataQueue, id, len, TRUE , timeout/Clock_tickPeriod);
     if (TRUE ==  Semaphore_pend (rxDoneSem, ((timeout+100)/Clock_tickPeriod))){
         currentDataEntry = RFQueue_getDataEntry();
         memcpy(data, (uint8_t*)(&currentDataEntry->data), len);
@@ -381,10 +381,10 @@ RF_EventMask send_without_wait(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT
     return result;
 }
 
-RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord, uint8_t pktLen,uint8_t enableTrigger,  uint32_t  timeout)
+static RF_CmdHandle Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint8_t* id, uint8_t pktLen,uint8_t enableTrigger,  uint32_t  timeout)
 {
     /* Modify CMD_PROP_RX command for application needs */
-    RF_cmdPropRxAdv.syncWord0 = syncWord;
+    RF_cmdPropRxAdv.syncWord0 = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
     RF_cmdPropRxAdv.pQueue = dataQueue;           /* Set the Data Entity queue for received data */
     RF_cmdPropRxAdv.maxPktLen = pktLen;        /* Implement packet length filtering to avoid PROP_ERROR_RXBUF */
     RF_cmdPropRxAdv.endTrigger.triggerType = (enableTrigger? TRIG_ABSTIME : TRIG_NEVER );
@@ -394,7 +394,7 @@ RF_EventMask Rf_rx_package(RF_Handle h,dataQueue_t *dataQueue, uint32_t syncWord
 //    RF_cmdPropRxAdv.pktConf.bRepeatOk = 1;
 //    RF_cmdPropRxAdv.pktConf.bUseCrc = 0x1;
 //    RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropRx, RF_PriorityNormal, &callback, IRQ_RX_ENTRY_DONE);
-    RF_EventMask result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropRxAdv, RF_PriorityNormal, &rxcallback, IRQ_RX_ENTRY_DONE);
+    RF_CmdHandle result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropRxAdv, RF_PriorityNormal, &rxcallback, IRQ_RX_ENTRY_DONE);
     return result;
 }
 
@@ -434,15 +434,15 @@ void rf_preset_hb_recv(uint8_t b)
 
 UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeout)
 {
-    uint32_t sync_word=0;
+//    uint32_t sync_word=0;
  //   uint32_t tmp_timeout = 0;
     RF_EventMask rx_event;
     set_frequence(ch);
     cc2592Cfg(CC2592_RX_HG_MODE);
-    sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+//    sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
 //    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);
-    rx_event = Rf_rx_package(rfHandle, &dataQueue, sync_word, len, TRUE , timeout/Clock_tickPeriod);
-    if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout/Clock_tickPeriod))){
+    rx_event = Rf_rx_package(rfHandle, &dataQueue, id, len, TRUE , timeout/Clock_tickPeriod);
+    if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout+100/Clock_tickPeriod))){
         currentDataEntry = RFQueue_getDataEntry();
         memcpy(data, (uint8_t*)(&currentDataEntry->data), len+2);
         RFQueue_nextEntry();
@@ -525,6 +525,32 @@ void RF_setMeasureRSSI(uint8_t b)
     }
 }
 
+
+void set_rx_para(UINT8 *id, UINT16 datarate, UINT8 ch, UINT8 fifosize, UINT32 timeout)
+{
+    set_power_rate(RF_DEFAULT_POWER, datarate);
+    set_frequence(ch);
+    Rf_rx_package(rfHandle, &dataQueue, id, fifosize, TRUE , timeout/Clock_tickPeriod);
+}
+
+int8_t check_rx_status(UINT16 timeout) //unit ms
+{
+    timeout = timeout * 1000;
+
+    if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout/Clock_tickPeriod))){
+        return 0;
+    }else{
+        return 1;
+    }
+}
+INT32 get_rx_data(UINT8 *dst, UINT8 dstsize)
+{
+    currentDataEntry = RFQueue_getDataEntry();
+    memcpy(dst, (uint8_t*)(&currentDataEntry->data), dstsize+2);
+    RFQueue_nextEntry();
+    _hb_rssi = dst[dstsize];
+    return 1;
+}
 
 static void RF_MapIO(void)
 {

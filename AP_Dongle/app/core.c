@@ -269,7 +269,7 @@ void Core_Mainloop(void)
             pinfo("core enter handle rc req\r\n");
             rcreq_table = Core_Malloc(sizeof(rcreq_table_t));
 
-            //BSP_Delay1MS(100);
+            BSP_Delay1MS(100);
 
             if(rcreq_table == NULL)
             {
@@ -285,7 +285,7 @@ void Core_Mainloop(void)
                 }
                 else
                 {
-//                    RcReq_Mainloop(rcreq_table, Core_SendData);
+                    RcReq_Mainloop(rcreq_table, Core_SendData);
                 }
             }
 

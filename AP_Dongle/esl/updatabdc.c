@@ -21,7 +21,7 @@ static void _bdc_transmit_mode0(updata_table_t *table, UINT8 timer)
 
 	i = j = 0;
 	k = table->tx_interval*1000/table->tx_duration+1;
-	
+	k = 3;		//todo:
 	while(1)
 	{
 		if(Core_GetQuitStatus() == 1)
