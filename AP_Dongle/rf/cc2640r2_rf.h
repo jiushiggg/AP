@@ -55,7 +55,7 @@ extern List_Elem *write2buf;
 #define  RF_TX_POWER_3DB    ((uint8_t)3)
 #define  RF_TX_POWER_4DB    ((uint8_t)4)
 #define  RF_TX_POWER_5DB    ((uint8_t)5)
-#define  RF_FREQUENCY_UNKNOW   254
+#define  RF_FREQUENCY_UNKNOW   -128
 
 
 
@@ -87,7 +87,7 @@ extern uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeo
 extern uint8_t recv_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout);
 
 extern void set_frequence(uint8_t  Frequency);
-extern void set_power_rate(uint8_t Tx_power, uint16_t Data_rate);
+extern void set_power_rate(int8_t Tx_power, uint16_t Data_rate);
 extern RF_EventMask send_without_wait(uint8_t *id, uint8_t *data, uint8_t len, uint8_t ch, uint32_t timeout);
 
 extern void enter_txrx(void);

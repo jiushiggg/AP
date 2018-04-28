@@ -678,12 +678,13 @@ INT32 rft_ber(UINT8 *ack_buf, INT32 size)
 }
 
 UINT8 gFTRummanTestChannel = 128;
-UINT8 gFTRummanTestPower = 2;
+INT8 gFTRummanTestPower = -9;
 
 void rft_tx_null(void)
 {
-    set_frequence(gFTRummanTestChannel);
+
     set_power_rate(gFTRummanTestPower,DATA_RATE_500K);
+    set_frequence(gFTRummanTestChannel);
 	RF_carrierWave();
 }
 

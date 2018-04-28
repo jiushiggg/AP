@@ -153,8 +153,13 @@ void rf_init(void)
     cc2592Init();
 }
 
-#define POWER_LEVEL  6
-const uint16_t rf_tx_power[POWER_LEVEL]={0x3161, 0x4214,0x4e18,0x5a1c, 0x9324, 0x9330};
+#define POWER_LEVEL  11
+#define MIN_POWER_LEVE -15
+#define MAX_POWER_LEVE 5
+#define POWER_ZERO_POSITION (POWER_LEVEL - MAX_POWER_LEVE - 1)
+#define POWER_DECREASE_VALUE    3
+//power greater than 0,  increase by 1. power less than 0, decrease by -3. 0x3161 is 0dbm.0x0ccb is -15dbm
+const uint16_t rf_tx_power[POWER_LEVEL]={0x0ccb,0x144b, 0x194e,0x1d52, 0x2558, 0x3161, 0x4214,0x4e18,0x5a1c, 0x9324, 0x9330};
 void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequency)
 {
     //if use RF_runCmd set rate, rate must be set firstly.
@@ -200,7 +205,7 @@ void set_frequence(uint8_t  Frequency)
     RF_runCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
 }
 
-void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
+void set_power_rate(int8_t Tx_power, uint16_t Data_rate)
 {
     switch(Data_rate)
     {
@@ -230,8 +235,12 @@ void set_power_rate(uint8_t Tx_power, uint16_t Data_rate)
             RF_cmdPropRadioSetup.rxBw = 10;
         break;
     }
-    if (Tx_power < POWER_LEVEL){
-        RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power];
+    if (Tx_power<MAX_POWER_LEVE && Tx_power>=0){
+        RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power+POWER_ZERO_POSITION];
+    } else{
+        if (Tx_power<0 && Tx_power>MIN_POWER_LEVE){
+            RF_cmdPropRadioSetup.txPower = rf_tx_power[POWER_ZERO_POSITION - ((~Tx_power+1)+POWER_DECREASE_VALUE-1)/POWER_DECREASE_VALUE];
+        }
     }
 #if 0
     RF_control(rfHandle, RF_CTRL_UPDATE_SETUP_CMD, NULL); //Signal update Rf core
