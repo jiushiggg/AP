@@ -500,12 +500,19 @@ uint8_t RF_readRegRSSI(void)
     return convertRSSI(n);
 }
 
-void RF_carrierWave(void)
+void RF_carrierWave(Bool flg)
 {
-    /* Send CMD_TX_TEST which sends forever */
-    cc2592Cfg(CC2592_TX);
-    RF_postCmd(rfHandle, (RF_Op*)&RF_cmdTxTest, RF_PriorityNormal, NULL, 0);
-    rf_status = RF_Status_carrierWave;
+    static RF_CmdHandle cw_ret = RF_Status_idle;
+    if (true == flg){
+        /* Send CMD_TX_TEST which sends forever */
+        cc2592Cfg(CC2592_TX);
+        cw_ret = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdTxTest, RF_PriorityNormal, NULL, 0);
+        rf_status = RF_Status_carrierWave;
+    }else{
+        RF_cancle(cw_ret);
+        rf_status = RF_Status_idle;
+    }
+
 
 }
 void RF_measureRSSI(Bool flg)
@@ -517,6 +524,7 @@ void RF_measureRSSI(Bool flg)
         rf_status = RF_Status_measureRSSI;
     }else {
         RF_cancle(rssi_ret);
+        rf_status = RF_Status_idle;
     }
 }
 

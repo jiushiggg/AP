@@ -166,12 +166,14 @@ void Core_Mainloop(void)
 {
     volatile uint32_t event = 0;
     while (1) {
-
         event = Event_PendCore();
 
-        if (RF_Status_idle != rf_status){
-            RF_measureRSSI(false);
-            rf_status = RF_Status_idle;
+        if (RF_Status_carrierWave == rf_status){
+            RF_carrierWave(false);
+        }else {
+            if (RF_Status_measureRSSI == rf_status){
+                RF_measureRSSI(false);
+            }
         }
         UART_recDisable();
         pinfo("uartdis%d\r\n", event);

@@ -685,7 +685,7 @@ void rft_tx_null(void)
 
     set_power_rate(gFTRummanTestPower,DATA_RATE_500K);
     set_frequence(gFTRummanTestChannel);
-	RF_carrierWave();
+	RF_carrierWave(true);
 }
 
 #define SCAN_BG_DEBUG
