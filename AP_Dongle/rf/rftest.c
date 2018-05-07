@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <ti/sysbios/knl/Clock.h>
 
 #include "rftest.h"
 #include "timer.h"
@@ -12,6 +11,7 @@
 #include "corefunc.h"
 
 //#define BER_DEBUG
+#define RF_BER_TIMOUT_20MS   (20000)
 
 static UINT8 actor = 0;
 static UINT8 ber_enable = 1;
@@ -40,11 +40,9 @@ UINT8 tx_buf[TEST_DATA_LEN] = {0};
 
 UINT8 RFC_CalcBgRssi(UINT8 ch, UINT8 initrssi, UINT8 rssithreshold, UINT8 noiserssi, float factor, int times, UINT8 *dutycycle);
 
-//--------------------zhaoyang-add-----------------------------
 
 static INT32 ber_rx(void)
 {
-#if 1
     INT32 ret = 0;
     UINT8 timer = 0;
     INT8   len = 0;
@@ -55,17 +53,16 @@ static INT32 ber_rx(void)
     }
     while(!TIM_CheckTimeout(timer))
     {
-        set_frequence(tx_channel);
         set_power_rate(tx_power,tx_datarate);
-        if(0 == send_data(tx_id,tx_buf,TEST_DATA_LEN, 10000000/Clock_tickPeriod))
+        set_frequence(tx_channel);
+        if(0 == send_data(tx_id,tx_buf,TEST_DATA_LEN, RF_BER_TIMOUT_20MS))
         {
             continue;
         }
 
         memset(rx_buf,0xff,TEST_DATA_LEN);
         set_power_rate(tx_power,rx_datarate);
-
-        len = recv_data_for_hb(rx_id, rx_buf, TEST_DATA_LEN, rx_channel, 10000000/Clock_tickPeriod);
+        len = recv_data_for_hb(rx_id, rx_buf, TEST_DATA_LEN, rx_channel, RF_BER_TIMOUT_20MS);
         if(len <= 0)
         {
             continue;
@@ -74,81 +71,6 @@ static INT32 ber_rx(void)
     }
 done:
     TIM_Close(timer);
-#else
-    INT32 ret = 0;
-    //	UINT8 timer = 0;
-    //
-    //	if((timer=TIM_Open(100, 100, 0)) == 0)
-    //	{
-    //		ret = -1;
-    //		goto done;
-    //	}
-    //
-    //	RFC_SetPower(rx_power);
-    //
-    //	while(!TIM_CheckTimeout(timer))
-    //	{
-    //		RFC_SetChannel(tx_channel);
-    //		RFC_SetDataRate(tx_datarate);
-    //		RFC_WriteID(rx_id);
-    //		RFC_SetFifoLen(TEST_DATA_LEN);
-    //		memset(rx_buf, 0, TEST_DATA_LEN);
-    //
-    //		RFC_Cmd(RFC_CMD_RX);
-    //		while(RFC_CheckTXOrRX())
-    //		{
-    //			if(TIM_CheckTimeout(timer))
-    //			{
-    //				break;
-    //			}
-    //		}
-    //		if(TIM_CheckTimeout(timer))
-    //		{
-    //			break;
-    //		}
-    //		RFC_Cmd(RFC_CMD_PLL);
-    //
-    //		if(!RFC_CheckCRC())
-    //		{
-    //#ifdef BER_DEBUG
-    //			printf("crc err\r\n");
-    //#endif
-    //			continue;
-    //		}
-    //
-    //#ifdef BER_DEBUG
-    //		printf("recvd\r\n");
-    //#else
-    //		BSP_Delay1MS(1);
-    //#endif
-    //		RFC_ReadFifo(rx_buf, TEST_DATA_LEN);
-    //
-    //		RFC_SetChannel(rx_channel);
-    //		RFC_SetDataRate(rx_datarate);
-    //		RFC_WriteID(tx_id);
-    //		RFC_SetFifoLen(TEST_DATA_LEN);
-    //		RFC_WriteFifo(rx_buf, TEST_DATA_LEN);
-    //
-    //		RFC_Cmd(RFC_CMD_TX);
-    //		while(RFC_CheckTXOrRX())
-    //		{
-    //			if(TIM_CheckTimeout(timer))
-    //			{
-    //				break;
-    //			}
-    //		}
-    //		if(TIM_CheckTimeout(timer))
-    //		{
-    //			break;
-    //		}
-    //
-    //		RFC_Cmd(RFC_CMD_PLL);
-    //	}
-    //
-    //done:
-    //	TIM_Close(timer);
-    //	RFC_Cmd(RFC_CMD_STBY);
-#endif
     return ret;
 }
 
@@ -340,7 +262,6 @@ done:
 
 static INT32 ber_tx_result(void)
 {
-#if 1
     UINT8 result_buf[TEST_DATA_LEN] = {0};
     UINT8 ack_buf[TEST_DATA_LEN] = {0};
     INT32 retry = 5;
@@ -349,16 +270,16 @@ static INT32 ber_tx_result(void)
     ber_make_result(result_buf, sizeof(result_buf));
     while((retry--) >= 0)
     {
-        set_frequence(tx_channel);
         set_power_rate(tx_power,tx_datarate);
+        set_frequence(tx_channel);
 
-        if(TEST_DATA_LEN != send_data(rx_id,result_buf,sizeof(result_buf),500))
+        if(TEST_DATA_LEN != send_data(rx_id,result_buf,sizeof(result_buf),RF_BER_TIMOUT_20MS))
         {
             continue;
         }
 
         set_power_rate(tx_power,rx_datarate);
-        if(TEST_DATA_LEN != recv_data_for_hb(tx_id,ack_buf, sizeof(ack_buf),rx_channel, 30000))
+        if(TEST_DATA_LEN != recv_data_for_hb(tx_id,ack_buf, sizeof(ack_buf),rx_channel, RF_BER_TIMOUT_20MS))
         {
             continue;
         }
@@ -371,41 +292,6 @@ static INT32 ber_tx_result(void)
     }
     pprint("ber tx result ack: ");
     phex(ack_buf, sizeof(ack_buf));
-    RF_idle();
-#else
-    UINT8 result_buf[26] = {0};
-    UINT8 ack_buf[26] = {0};
-    INT32 retry = 5;
-    INT32 ret = 0;
-
-    ber_make_result(result_buf, sizeof(result_buf));
-    while((retry--) >= 0)
-    {
-        RFC_SetDataRate(tx_datarate);
-
-        if(send_data(rx_id, result_buf, sizeof(result_buf), tx_channel, 10000) != sizeof(result_buf))
-        {
-            continue;
-        }
-
-        RFC_SetDataRate(rx_datarate);
-        if(recv_data(tx_id, ack_buf, sizeof(ack_buf), rx_channel, 30000) != sizeof(ack_buf))
-        {
-            continue;
-        }
-
-        if(ber_check_result_ack(ack_buf, sizeof(ack_buf)) == 1)
-        {
-            ret = 1;
-            break;
-        }
-    }
-
-    pprint("ber tx result ack: ");
-    phex(ack_buf, sizeof(ack_buf));
-
-    set_cmd_stby();
-#endif
     return ret;
 }
 
@@ -413,11 +299,9 @@ uint8_t rx_time_cont = 0,tx_time_cont= 0;
 
 static INT32 ber_tx(void)
 {
-#if 1
     INT32 ret = 0;
     UINT8 crc_error = 0;
     INT32 left_rounds = test_rounds;
-    INT32 timeout = 10;
 
     /* reset para */
     rssi_f = 0;
@@ -431,11 +315,11 @@ static INT32 ber_tx(void)
     {
         crc_error = 0;
 
-        set_frequence(tx_channel);
         set_power_rate(tx_power,tx_datarate);
+        set_frequence(tx_channel);
 
         set_random_buf(tx_buf, TEST_DATA_LEN);
-        if(0 == send_data(rx_id,tx_buf,TEST_DATA_LEN,timeout))
+        if(0 == send_data(rx_id,tx_buf,TEST_DATA_LEN,RF_BER_TIMOUT_20MS))
         {
             crc_error = 1;
             goto cal_ber;
@@ -444,7 +328,7 @@ static INT32 ber_tx(void)
         set_random_buf(tx_buf, TEST_DATA_LEN);
         memset(rx_buf,0xff,TEST_DATA_LEN);
         set_power_rate(tx_power,rx_datarate);
-        if(0 == recv_data_for_hb(tx_id,rx_buf,TEST_DATA_LEN, rx_channel, timeout))
+        if(0 == recv_data_for_hb(tx_id,rx_buf,TEST_DATA_LEN, rx_channel, RF_BER_TIMOUT_20MS))
         {
             crc_error = 1;
             goto cal_ber;
@@ -465,120 +349,6 @@ cal_ber:
     }
     ber = (float)ber_err_bit/(float)(test_rounds*TEST_DATA_LEN*8);
 
-    RF_idle();
-
-#else
-
-    //	INT32 ret = 0;
-    //	UINT8 crc_error = 0;
-    //	INT32 left_rounds = test_rounds;
-    //	INT32 timeout = 10;
-    //
-    //	/* reset para */
-    //	rssi_f = 0;
-    //	fc_f = 0;
-    //	ber_err_bit = 0;
-    //	fc = 0; fc_max = 0; fc_avg = 0; fc_min = 0;
-    //	rssi = 0; rssi_max = 0; rssi_avg = 0; rssi_min = 0;
-    //
-    //	RFC_SetPower(tx_power);
-    //
-    //	while((left_rounds--) > 0)
-    //	{
-    //		crc_error = 0;
-    //
-    //		RFC_SetChannel(tx_channel);
-    //		RFC_SetDataRate(tx_datarate);
-    //		RFC_WriteID(rx_id);
-    //		RFC_SetFifoLen(TEST_DATA_LEN);
-    //		set_random_buf(tx_buf, TEST_DATA_LEN);
-    //		RFC_WriteFifo(tx_buf, TEST_DATA_LEN);
-    //
-    //		RFC_Cmd(RFC_CMD_TX);
-    //		timeout = 100;
-    //		while(RFC_CheckTXOrRX())
-    //		{
-    //			if(timeout <= 0)
-    //			{
-    //				break;
-    //			}
-    //			BSP_Delay100US(1);
-    //			timeout--;
-    //		}
-    //		if(timeout <= 0)
-    //		{
-    //#ifdef BER_DEBUG
-    //			printf("tx to\r\n");
-    //#endif
-    //			crc_error = 1;
-    //			goto cal_ber;
-    //		}
-    //
-    //		RFC_Cmd(RFC_CMD_PLL);
-    //
-    //		RFC_SetChannel(rx_channel);
-    //		RFC_SetDataRate(rx_datarate);
-    //		RFC_WriteID(tx_id);
-    //		RFC_SetFifoLen(TEST_DATA_LEN);
-    //		memset(rx_buf, 0, TEST_DATA_LEN);
-    //
-    //		RFC_Cmd(RFC_CMD_RX);
-    //		timeout = 200;
-    //		while(RFC_CheckTXOrRX())
-    //		{
-    //			if(timeout <= 0)
-    //			{
-    //				break;
-    //			}
-    //			BSP_Delay100US(1);
-    //			timeout--;
-    //		}
-    //		if(timeout <= 0)
-    //		{
-    //#ifdef BER_DEBUG
-    //			printf("rx to\r\n");
-    //#endif
-    //			crc_error = 1;
-    //			goto cal_ber;
-    //		}
-    //
-    //		/* get rssi and fc */
-    //		ber_get_rssi();
-    //		ber_get_fc();
-    //
-    //		if(!RFC_CheckCRC())
-    //		{
-    //#ifdef BER_DEBUG
-    //			printf("crc e\r\n");
-    //#endif
-    //			crc_error = 1;
-    //			goto cal_ber;
-    //		}
-    //		RFC_ReadFifo(rx_buf, TEST_DATA_LEN);
-    //#ifdef BER_DEBUG
-    //		printf("recved\r\n");
-    //#endif
-    //cal_ber:
-    //
-    //		RFC_Cmd(RFC_CMD_PLL);
-    //
-    //		if(crc_error == 0)
-    //		{
-    //			ber_err_bit += get_err_bit(rx_buf, tx_buf, TEST_DATA_LEN);
-    //		}
-    //		else
-    //		{
-    //			ber_err_bit += TEST_DATA_LEN * 8;
-    //		}
-    //#ifdef BER_DEBUG
-    //		printf("err_bit = %d\r\n", ber_err_bit);
-    //#endif
-    //	}
-    //
-    //	ber = (float)ber_err_bit/(float)(test_rounds*TEST_DATA_LEN*8);
-    //
-    //	RFC_Cmd(RFC_CMD_STBY);
-#endif
     return ret;
 }
 
