@@ -325,7 +325,7 @@ static INT32 send_sleep_round(updata_table_t *table, UINT8 timer)
 	UINT32 i;
 	INT32 ret = 0;
 	UINT8 channel = 0;
-	volatile UINT8 prev_channel=RF_FREQUENCY_UNKNOW;
+	volatile INT8 prev_channel=RF_FREQUENCY_UNKNOW;
 	mode0_esl_t *pESL = (mode0_esl_t *)table->data;
 	
 	pdebug("mode0_send_sleep_round(), timer is %d.\r\n", timer);
@@ -375,7 +375,7 @@ static INT32 send_sleep_all(updata_table_t *table)
 	UINT32 i;
 	INT32 ret = 0;
 	UINT8 channel = 0;
-	volatile UINT8 prev_channel=RF_FREQUENCY_UNKNOW;
+	volatile INT8 prev_channel=RF_FREQUENCY_UNKNOW;
 	mode0_esl_t *pESL = (mode0_esl_t *)table->data;
 	
 	pdebug("send_sleep_all\r\n");

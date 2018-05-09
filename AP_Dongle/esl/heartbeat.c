@@ -8,8 +8,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define NORMAL_DATA     0
+#define UPLINK_DATA     1
+#define SURVEY_DATA     2
+#define ERR_DATA        (-1)
+
 static UINT8 hb_timer = 0;
 static INT32 _esl_uplink_num = 0;
+
+typedef struct survey_esl{
+    uint8_t ctrl;
+    uint8_t reserved[4];
+    uint16_t ap_id;
+    uint8_t ap_rf_id[4];
+    uint16_t ap_data_rate;
+    uint8_t ap_power;
+    uint8_t ap_ch;
+    uint8_t esl_rf_id[4];
+    uint16_t esl_data_rate;
+    uint8_t esl_power;
+    uint8_t esl_ch;
+    uint8_t round;
+    uint16_t crc;
+}st_survey_esl;
+
+
+
 //timeout: µ¥Î»s
 UINT8 set_timer(INT32 timeout)
 {
@@ -80,7 +104,7 @@ static INT32 _check_hb_data(UINT8 *src, UINT8 len)
 			cal_crc = CRC16_CaculateStepByStep(cal_crc, src, len-2);
 			if(cal_crc == read_crc)
 			{
-				return 0;
+				return NORMAL_DATA;
 			}
 		}
 		else if((ctrl==0xF0)||(ctrl==0x50)||(ctrl==0xE0))
@@ -90,24 +114,25 @@ static INT32 _check_hb_data(UINT8 *src, UINT8 len)
 			cal_crc = CRC16_CaculateStepByStep(cal_crc, id, sizeof(id));
 			if(cal_crc == read_crc)
 			{
-				return 0;
+				return NORMAL_DATA;
 			}
 		}
 	}
 	else if(len == 26)
 	{
-		if(ctrl == 0x80)
-		{
+		if(ctrl == 0x80){
 			return 0;
-		}
-		
-		if(ctrl == 0x70)
-		{
-			return 1;
+		}else if (ctrl == 0x70){
+		    return UPLINK_DATA;
+		}else {
+	        if(ctrl == 0x05)
+	        {
+	            return SURVEY_DATA;
+	        }
 		}
 	}
 
-	return -1;
+	return ERR_DATA;
 }
 
 static INT32 _compare_esl_uplink_info_by_index(const void *info1, const void *info2)
@@ -222,7 +247,6 @@ static INT32 _ack_the_esl(UINT8 *uplink_data, INT32 len, UINT8 status)
 	set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
     set_frequence(eslch);
     send_data(eslid, ack_buf, sizeof(ack_buf), 2000);
-//	send_data(eslid, ack_buf, sizeof(ack_buf), eslch, 2000);
 	//pinfo("_ack_the_esl %02X-%02X-%02X-%02X, %d: ", eslid[0], eslid[1], eslid[2], eslid[3], eslch);
 	//phex(ack_buf, sizeof(ack_buf));
 	return 0;
@@ -298,7 +322,7 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 		len = (len == table->recv_len ? table->recv_len : 16);
 		ret = _check_hb_data(ptr, len);
 		GPIO_toggleDio(DEBUG_TEST);
-		if(ret == 0)
+		if(ret == NORMAL_DATA)
 		{
 			table->num += 1;
 			*(ptr+len) = get_recPkgRSSI();
@@ -308,7 +332,7 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 			table->data_len += len+1;
 			recv_len_total += len+1;
 		}
-		else if(ret == 1)
+		else if(ret == UPLINK_DATA)
 		{
 			if(table->apid > 0)
 			{
@@ -320,6 +344,11 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 				ret = 0;
 			}
 		}
+		else
+		{
+		    if(ret == SURVEY_DATA)
+		        break;
+		}
 		BSP_Delay1MS(table->interval);
 	}
 
@@ -327,7 +356,7 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 	exit_txrx();
 	rf_preset_hb_recv(false);
 	
-	if(ret == 1) //need ack the esl and uplink the data //todo
+	if(ret == UPLINK_DATA) //need ack the esl and uplink the data
 	{
 		pesluplinkinfo = _handle_esl_uplink_data(table->esl_uplink_info, &_esl_uplink_num, ptr, len);
 		_ack_birang(table->apid, pesluplinkinfo->modby);
@@ -339,8 +368,22 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 		memcpy(table->uplink_buf+sizeof(cmd)+sizeof(cmd_len), ptr, cmd_len);
 		uplink(table->uplink_buf, sizeof(cmd)+sizeof(cmd_len)+cmd_len);
 		pinfo("_hb_recv() send esl uplink\r\n");
-		BSP_Delay1MS(100);      //todo
+//		BSP_Delay1MS(100);      //todo:delay 100ms, why?
 	}
+	else if(ret == SURVEY_DATA)
+	{
+	    if (table->apid == ((st_survey_esl*)ptr)->ap_id)
+	    {
+	        _ack_the_esl(ptr, len, 0);
+	        cmd = 0x1021;
+	        cmd_len = len;
+	        memcpy(table->uplink_buf, &cmd, sizeof(cmd));
+	        memcpy(table->uplink_buf+sizeof(cmd), &cmd_len, sizeof(cmd_len));
+	        memcpy(table->uplink_buf+sizeof(cmd)+sizeof(cmd_len), ptr, cmd_len);
+	        uplink(table->uplink_buf, sizeof(cmd)+sizeof(cmd_len)+cmd_len);
+	    }
+	}
+
 	
 	if(recv_len_total >= 0)
 	{

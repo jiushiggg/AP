@@ -448,8 +448,7 @@ INT32 rft_ber(UINT8 *ack_buf, INT32 size)
 }
 
 UINT8 gFTRummanTestChannel = 128;
-INT8 gFTRummanTestPower = -9;
-
+INT8 gFTRummanTestPower = 1;
 void rft_tx_null(void)
 {
 

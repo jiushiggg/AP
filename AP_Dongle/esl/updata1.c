@@ -445,7 +445,7 @@ INT32 m1_send_sleep(updata_table_t *table, UINT8 timer)
 	UINT32 i;
 	INT32 ret = 0;
 	UINT8 channel = 0;
-	volatile UINT8 prev_channel=RF_FREQUENCY_UNKNOW;
+	volatile INT8 prev_channel=RF_FREQUENCY_UNKNOW;
 	mode1_esl_t *pESL = (mode1_esl_t *)table->data;
 	
 	pdebug("mode1_send_sleep(), timer: %d.\r\n", timer);
@@ -497,7 +497,7 @@ INT32 m1_sleep_all(updata_table_t *table)
 	UINT32 i;
 	INT32 ret = 0;
 	UINT8 channel = 0;
-	volatile UINT8 prev_channel=RF_FREQUENCY_UNKNOW;
+	volatile INT8 prev_channel=RF_FREQUENCY_UNKNOW;
 	mode1_esl_t *pESL = (mode1_esl_t *)table->data;
 	
 	pdebug("m1_sleep_all\r\n");

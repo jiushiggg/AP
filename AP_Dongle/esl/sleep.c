@@ -37,7 +37,7 @@ static INT32 sleep_mode0()
 	INT32 i, j;
 	UINT32 cur = 0;
 	INT32 read_len = 0;
-	volatile UINT8 prev_channel=RF_FREQUENCY_UNKNOW;
+	volatile INT8 prev_channel=RF_FREQUENCY_UNKNOW;
 
 	for(j = 0; j < sleep_times; j++)
 	{
