@@ -16,6 +16,7 @@
 static UINT8 hb_timer = 0;
 static INT32 _esl_uplink_num = 0;
 
+#pragma pack(1)
 typedef struct survey_esl{
     uint8_t ctrl;
     uint8_t reserved[4];
@@ -31,6 +32,7 @@ typedef struct survey_esl{
     uint8_t round;
     uint16_t crc;
 }st_survey_esl;
+#pragma pack()
 
 
 
@@ -89,12 +91,19 @@ len == 16
 len == 26
 0x80: new e31
 */
+#define SURVEY_CTRL 0X05
 static INT32 _check_hb_data(UINT8 *src, UINT8 len)
 {
-	UINT8 ctrl = src[0] & 0xF0;
+	UINT8 ctrl = 0;
 	UINT8 id[4] = {0};
 	UINT16 read_crc=0, cal_crc=0;
-	
+	if (SURVEY_CTRL == src[0])
+	{
+	    return SURVEY_DATA;
+	}
+	else{
+	    ctrl = src[0] & 0xF0;
+	}
 	if(len == 16) 
 	{
 		//need check crc
@@ -121,14 +130,11 @@ static INT32 _check_hb_data(UINT8 *src, UINT8 len)
 	else if(len == 26)
 	{
 		if(ctrl == 0x80){
-			return 0;
+			return NORMAL_DATA;
 		}else if (ctrl == 0x70){
 		    return UPLINK_DATA;
 		}else {
-	        if(ctrl == 0x05)
-	        {
-	            return SURVEY_DATA;
-	        }
+		    return ERR_DATA;
 		}
 	}
 
