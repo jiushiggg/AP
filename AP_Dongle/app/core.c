@@ -185,7 +185,7 @@ void Core_Mainloop(void)
 //            if(Core_MallocFlash(&local_task.flash_data_addr, local_task.flash_data_len) == 1)
 //            {
 //                BSP_GPIO_ToggleDebugPin();
-//                if(Core_SendCmd(0x10F0, 0, NULL) == 1)
+//                if(Core_SendCmd(CORE_CMD_ACK, 0, NULL) == 1)
 //                {
 //                    BSP_GPIO_ToggleDebugPin();
 //                    if(Core_RecvDataToFlash(local_task.flash_data_addr, local_task.flash_data_len) == 1)
@@ -318,7 +318,7 @@ void Core_Mainloop(void)
 //
 //            if(flag == 1)
 //            {
-//                if(Core_SendCmd(0x10F0, 0, NULL) == 1)
+//                if(Core_SendCmd(CORE_CMD_ACK, 0, NULL) == 1)
 //                {
 //                    Core_HandleSoftReboot();
 //                }
@@ -350,17 +350,17 @@ void Core_Mainloop(void)
             fret = rft_check_ber_data(local_task.cmd_buf, local_task.cmd_len);
             if(fret < 0)
             {
-                Core_SendCmd(0x10F5, 0, NULL);
+                Core_SendCmd(CORE_CMD_PARA_ERROR, 0, NULL);
             }
             else if(fret != 0) //test board
             {
-                Core_SendCmd(0x10F0, 0, NULL);
+                Core_SendCmd(CORE_CMD_ACK, 0, NULL);
                 rft_ber(local_task.ack_buf, sizeof(local_task.ack_buf));
             }
             else //gold board
             {
                 fret = rft_ber(local_task.ack_buf, sizeof(local_task.ack_buf));
-                Core_SendCmd(0x10F0, fret, local_task.ack_buf);
+                Core_SendCmd(CORE_CMD_ACK, fret, local_task.ack_buf);
             }
             Event_Clear(EVENT_FT_BER);
         }
@@ -377,7 +377,7 @@ void Core_Mainloop(void)
             }
             else
             {
-                Core_SendCmd(0x10F0, fret, local_task.ack_buf);
+                Core_SendCmd(CORE_CMD_ACK, fret, local_task.ack_buf);
             }
             Event_Clear(EVENT_SCAN_BG);
         }

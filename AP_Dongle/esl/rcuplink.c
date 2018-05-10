@@ -6,6 +6,7 @@
 #include <string.h>
 #include "crc16.h"
 #include <stdio.h>
+#include "core.h"
 
 #define CTRL_OF_RCREQ		0x03 //rc uplink
 #define CTRL_OF_STREQ		0x05 //signal test
@@ -211,7 +212,7 @@ static void _get_rc_id(rcreq_table_t *table, UINT8 *id, UINT8 idsize)
 
 static INT32 _uplink(rcreq_table_t *table)
 {
-	UINT16 cmd = 0x10F0;
+	UINT16 cmd = CORE_CMD_ACK;
 	INT32 cmd_len = table->data_num*(table->recv_len+1);
 	
 	memcpy(table->data_buf, &cmd, sizeof(cmd));

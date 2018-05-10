@@ -467,7 +467,7 @@ UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeo
 //    sync_word = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
 //    tmp_timeout = EasyLink_10us_To_RadioTime(timeout/10);
     rx_event = Rf_rx_package(rfHandle, &dataQueue, id, len, TRUE , timeout/Clock_tickPeriod);
-    if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout+100/Clock_tickPeriod))){
+    if (TRUE ==  Semaphore_pend (rxDoneSem, (timeout+100)/Clock_tickPeriod)){
         currentDataEntry = RFQueue_getDataEntry();
         memcpy(data, (uint8_t*)(&currentDataEntry->data), len+2);
         RFQueue_nextEntry();

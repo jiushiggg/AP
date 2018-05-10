@@ -9,6 +9,7 @@
 #include "debug.h"
 #include "crc16.h"
 #include "corefunc.h"
+#include "core.h"
 
 //#define BER_DEBUG
 #define RF_BER_TIMOUT_20MS   (20000)
@@ -325,7 +326,6 @@ static INT32 ber_tx(void)
             goto cal_ber;
         }
 
-        set_random_buf(tx_buf, TEST_DATA_LEN);
         memset(rx_buf,0xff,TEST_DATA_LEN);
         set_power_rate(tx_power,rx_datarate);
         if(0 == recv_data_for_hb(tx_id,rx_buf,TEST_DATA_LEN, rx_channel, RF_BER_TIMOUT_20MS))
@@ -513,11 +513,11 @@ INT32 rf_txrx(UINT8 *cmd_buf, INT32 cmd_len, UINT8 *ack_buf, INT32 ack_buf_size)
 		             cmd_buf+OFFSET_OF_DATA_IN_RFTXRX_CMD,
 		             data_len, timeout)== data_len)
 		{
-			ret = Core_MakeCmdBuf(0x10f0, NULL, 0, ack_buf, ack_buf_size);
+			ret = Core_MakeCmdBuf(CORE_CMD_ACK, NULL, 0, ack_buf, ack_buf_size);
 		}
 		else
 		{
-			ret = Core_MakeCmdBuf(0x10f5, NULL, 0, ack_buf, ack_buf_size);
+			ret = Core_MakeCmdBuf(CORE_CMD_PARA_ERROR, NULL, 0, ack_buf, ack_buf_size);
 		}
 	}
 	else //rx
@@ -534,7 +534,7 @@ INT32 rf_txrx(UINT8 *cmd_buf, INT32 cmd_len, UINT8 *ack_buf, INT32 ack_buf_size)
 		}
 		else
 		{
-			ret = Core_MakeCmdBuf(0x10f5, NULL, 0, ack_buf, ack_buf_size);
+			ret = Core_MakeCmdBuf(CORE_CMD_PARA_ERROR, NULL, 0, ack_buf, ack_buf_size);
 		}
 	}
 	

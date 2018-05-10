@@ -48,11 +48,11 @@ void Core_HandleRummanTest(core_task_t *task)
 		/* check para */
 		if(gFTRummanTestPower > 3)
 		{
-			task->ack = 0x10F5; // ack
+			task->ack = CORE_CMD_PARA_ERROR; // ack
 		}
 		else
 		{
-			task->ack = 0x10F0; // ack
+			task->ack = CORE_CMD_ACK; // ack
 			pinfo("Core cmd rumman test, channel: %d, power: %d\r\n", gFTRummanTestChannel, gFTRummanTestPower);
 			rft_tx_null();
 		}		
@@ -133,7 +133,7 @@ void Core_HandleEslUpdataReq(core_task_t *task)
 	}
 	else
 	{
-		task->ack = 0x10F0; // ack
+		task->ack = CORE_CMD_ACK; // ack
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
 
@@ -171,7 +171,7 @@ void Core_HandleG3Heartbeat(core_task_t *task)
 	}
 	else
 	{
-		task->ack = 0x10F0; // ack
+		task->ack = CORE_CMD_ACK; // ack
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
 		
@@ -192,7 +192,7 @@ void Core_HandleRcReqRequest(core_task_t *task)
 	}
 	else
 	{
-		task->ack = 0x10F0; // ack
+		task->ack = CORE_CMD_ACK; // ack
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
 		
@@ -210,7 +210,7 @@ void Core_HandleSoftReboot(void)
 extern const unsigned char APP_VERSION_STRING[];
 void Core_HandleQuerySoftVer(core_task_t *task)
 {
-	task->ack = 0x10F0; // ack
+	task->ack = CORE_CMD_ACK; // ack
 	task->ack_len = strlen((const char *)APP_VERSION_STRING)+1;
 	strcpy((char *)task->ack_buf, (const char *)APP_VERSION_STRING);
 	task->ack_buf[task->ack_len-1] = 0;
@@ -223,7 +223,7 @@ void Core_HandleQueryStatus(core_task_t *task)
 {
 	UINT32 status = Event_GetStatus();
 	
-	task->ack = 0x10F0; // ack
+	task->ack = CORE_CMD_ACK; // ack
 	task->ack_len = sizeof(status);
 	memcpy(task->ack_buf, &status, sizeof(status));
 	task->ack_ptr = task->ack_buf;

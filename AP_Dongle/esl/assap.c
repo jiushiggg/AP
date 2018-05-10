@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "common.h"
 #include "bsp.h"
+#include "core.h"
 
 #define TIMEOUT_OF_RF_RX			20000 //20ms
 #define MAX_COUNT_OF_RX_WKUP		3
@@ -164,7 +165,7 @@ INT32 assap_scan_wkup(UINT8 *dst, INT32 dsize)
 	
 	pinfo("scaned wkup %d count(s)\r\n", count);
 
-	p_assap_scanwkup_ret->cmd = 0x10F0;
+	p_assap_scanwkup_ret->cmd = CORE_CMD_ACK;
 	p_assap_scanwkup_ret->cmd_len = sizeof(UINT8)+sizeof(INT16);
 	if(count >= MAX_COUNT_OF_RX_WKUP)
 	{
@@ -303,7 +304,7 @@ INT32 assap_ack(assap_ack_table_t *table)
 	
 	if(recv_len_total >= 0)
 	{
-		UINT16 cmd = 0x10F0;
+		UINT16 cmd = CORE_CMD_ACK;
 		UINT32 cmd_len = recv_len_total + 2; //data len + sizeof(num)
 		memcpy(table->data_buf, (UINT8 *)&cmd, 2);//set cmd
 		memcpy(table->data_buf+2, (UINT8 *)&cmd_len, 4);//set len
