@@ -561,6 +561,7 @@ void RF_setMeasureRSSI(uint8_t b)
 
 int16_t set_rx_para(UINT8 *id, UINT16 datarate, UINT8 ch, UINT8 fifosize, UINT32 timeout)
 {
+    timeout *= 1000000;
     set_power_rate(RF_DEFAULT_POWER, datarate);
     set_frequence(ch);
     return Rf_rx_package(rfHandle, &dataQueue, id, fifosize, TRUE , timeout/Clock_tickPeriod);
