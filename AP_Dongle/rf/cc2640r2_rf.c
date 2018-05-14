@@ -155,8 +155,10 @@ void rf_init(void)
 #define ESLWORKING_SET
 #ifdef ESLWORKING_SET
 #define POWER_LEVEL  4
-//13dbm, 10dbm, 6dbm, 0dbm
-const uint16_t rf_tx_power[POWER_LEVEL]={0x194e, 0x144b, 0x0cc9, 0x0cc5};
+//baseboard 13dbm, 10dbm, 6dbm, 0dbm
+//const uint16_t rf_tx_power[POWER_LEVEL]={0x194e, 0x144b, 0x0cc9, 0x0cc5};
+//T3 board 13dbm, 10dbm, 6dbm, 0dbm
+const uint16_t rf_tx_power[POWER_LEVEL]={0x1d52, 0x194e, 0xCCB, 0x0cc9};
 #else
 #define POWER_LEVEL  15
 #define MIN_POWER_LEVE -25
