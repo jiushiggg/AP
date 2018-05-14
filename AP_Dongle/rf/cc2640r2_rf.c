@@ -155,8 +155,8 @@ void rf_init(void)
 #define ESLWORKING_SET
 #ifdef ESLWORKING_SET
 #define POWER_LEVEL  4
-//0dbm, 6dbm ,10dbm, 13dbm
-const uint16_t rf_tx_power[POWER_LEVEL]={0x0cc5, 0x0cc9,0x144b,0x194e};
+//13dbm, 10dbm, 6dbm, 0dbm
+const uint16_t rf_tx_power[POWER_LEVEL]={0x194e, 0x144b, 0x0cc9, 0x0cc5};
 #else
 #define POWER_LEVEL  15
 #define MIN_POWER_LEVE -25
@@ -183,7 +183,7 @@ void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequenc
             RF_cmdPropRadioSetup.symbolRate.preScale = 15;
             RF_cmdPropRadioSetup.symbolRate.rateWord = 327680;
             RF_cmdPropRadioSetup.modulation.modType = 0x0;
-            RF_cmdPropRadioSetup.modulation.deviation = 744;
+            RF_cmdPropRadioSetup.modulation.deviation = 920;
             RF_cmdPropRadioSetup.rxBw = 10;
         break;
         case  DATA_RATE_1M:
@@ -194,7 +194,7 @@ void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequenc
             RF_cmdPropRadioSetup.symbolRate.preScale = 15;
             RF_cmdPropRadioSetup.symbolRate.rateWord = 327680;
             RF_cmdPropRadioSetup.modulation.modType = 0x0;
-            RF_cmdPropRadioSetup.modulation.deviation = 744;
+            RF_cmdPropRadioSetup.modulation.deviation = 920;
             RF_cmdPropRadioSetup.rxBw = 10;
         break;
     }
