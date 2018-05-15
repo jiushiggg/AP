@@ -135,7 +135,6 @@ void readHandleFnx(void)
 void readCallback(UART_Handle handle, void *rxBuf, size_t size)
 {
     if (recCmdAckFlg == true && XMODEM_LEN_CMD==size){
-        recCmdAckFlg = false;
         Device_Recv_post();
     }else if((XMODEM_LEN_CMD==size || XMODEM_LEN_ALL==size) && writeFlashFlg == true){
         Device_Recv_post();

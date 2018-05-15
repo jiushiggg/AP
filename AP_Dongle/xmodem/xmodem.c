@@ -112,6 +112,7 @@ INT32 Xmodem_SendCmd(INT32 dev, UINT8 cmd, UINT8 recv_ack_flag, INT32 timeout)
 		}else {
 		    read_len = 0;
 		}
+		recCmdAckFlg = false;
 
 		if(read_len != sizeof(recv_ack))
 		{
@@ -391,6 +392,7 @@ INT32 Xmodem_SendOnce(xmodem_t *x, INT32 dev, UINT8 *src, INT32 len, INT32 timeo
         }else {
             recv_ack = XMODEM_CMD_NAK;
         }
+        recCmdAckFlg = false;
 
 		X_DEBUG(("ack: 0x%02X.", recv_ack));
 		if(recv_ack == XMODEM_CMD_ACK)
