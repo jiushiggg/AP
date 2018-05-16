@@ -169,6 +169,7 @@ const uint16_t rf_tx_power[POWER_LEVEL]={0x1d52, 0x194e, 0xCCB, 0x0cc9};
 const uint16_t rf_tx_power[POWER_LEVEL]={0x0cc5,0x0cc6, 0x0cc7, 0x0cc9,0x0ccb,0x144b, 0x194e,0x1d52, 0x2558, 0x3161, 0x4214,0x4e18,0x5a1c, 0x9324, 0x9330};
 
 #endif
+#if 0
 void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequency)
 {
     //if use RF_runCmd set rate, rate must be set firstly.
@@ -220,6 +221,7 @@ void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequenc
     RF_cmdFs.fractFreq = (Frequency%2 ? 32768 : 0);
     RF_postCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
 }
+#endif
 void set_frequence(uint8_t  Frequency)
 {
     RF_cmdFs.frequency = 2400+Frequency/2;
@@ -237,6 +239,7 @@ void set_power_rate(int8_t Tx_power, uint16_t Data_rate)
             RF_cmdPropRadioSetup.modulation.modType = 0x0;
             RF_cmdPropRadioSetup.modulation.deviation = 744;
             RF_cmdPropRadioSetup.rxBw = 9;
+			RF_cmdPropRadioSetup.pRegOverride = (uint32_t*)pOverrides100;
         break;
         case  DATA_RATE_500K:
             RF_cmdPropRadioSetup.symbolRate.preScale = 15;
@@ -244,6 +247,7 @@ void set_power_rate(int8_t Tx_power, uint16_t Data_rate)
             RF_cmdPropRadioSetup.modulation.modType = 0x0;
             RF_cmdPropRadioSetup.modulation.deviation = 744;
             RF_cmdPropRadioSetup.rxBw = 10;
+			RF_cmdPropRadioSetup.pRegOverride = (uint32_t*)pOverrides500;
         break;
         case  DATA_RATE_1M:
         break;
@@ -255,6 +259,7 @@ void set_power_rate(int8_t Tx_power, uint16_t Data_rate)
             RF_cmdPropRadioSetup.modulation.modType = 0x0;
             RF_cmdPropRadioSetup.modulation.deviation = 744;
             RF_cmdPropRadioSetup.rxBw = 10;
+			RF_cmdPropRadioSetup.pRegOverride = (uint32_t*)pOverrides500;
         break;
     }
 #ifdef ESLWORKING_SET
