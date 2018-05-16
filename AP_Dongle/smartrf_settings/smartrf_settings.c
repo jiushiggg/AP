@@ -11,26 +11,33 @@
 #include <ti/devices/DeviceFamily.h>
 #include DeviceFamily_constructPath(driverlib/rf_mailbox.h)
 #include DeviceFamily_constructPath(driverlib/rf_common_cmd.h)
+#include DeviceFamily_constructPath(driverlib/rf_ble_cmd.h)
 #include DeviceFamily_constructPath(driverlib/rf_prop_cmd.h)
+#include <ti/devices/cc26x0r2\inc\hw_rfc_dbell.h>
 #include <ti/drivers/rf/RF.h>
 #include "smartrf_settings.h"
+#include "apply_genfsk_mce_patch.h"
+#include "apply_genfsk_rfe_patch.h"
 #include "rf_patch_cpe_prop.h"
-#include <ti/devices/cc26x0r2\inc\hw_rfc_dbell.h>
+
+
 
 // TI-RTOS RF Mode Object
 RF_Mode RF_prop =
 {
     .rfMode = RF_MODE_PROPRIETARY_2_4,
-    .cpePatchFxn = &rf_patch_cpe_prop,  // Shape 2FSK => GFSK with BT 2,
-    .mcePatchFxn = 0,
-    .rfePatchFxn = 0,
+    .cpePatchFxn = &rf_patch_cpe_prop,///////////////////////////////////////////////////////////////////////////////////////
+    .mcePatchFxn = &enterGenfskMcePatch,
+    .rfePatchFxn = &enterGenfskRfePatch,
 };
 
 // Overrides for CMD_PROP_RADIO_SETUP
 static uint32_t pOverrides[] =
 {
+    MCE_RFE_OVERRIDE(1,0,0,1,0,0), 
      HW_REG_OVERRIDE(0x6088,0x3F1F),          //PA trim ramping and AGC ref
-     HW_REG_OVERRIDE(0x608C,0x8213),          //PA IB ramping and AGC rssicount/wait, 50kbps-0x8213, 150kbps-0x0213, 200kbps-0x0113
+     //HW_REG_OVERRIDE(0x608C,0x8213),          // PA IB ramping and AGC rssicount/wait, 50kbps-0x8213, 150kbps-0x0213, 200kbps-0x0113
+     HW_REG_OVERRIDE(0x608C,0x0A13),          
      (uint32_t)0x000484A3,                    // Synth: Set FREF = 6 MHz (24 MHz / 4)
      (uint32_t)0x02010403,                    //Fixes phase error discard
      HW32_ARRAY_OVERRIDE(0x2004, 1),          // Configure new CRC16 polynom
@@ -39,6 +46,7 @@ static uint32_t pOverrides[] =
      (uint32_t) 0x1D0F0000,                   // Change CRC init value to 0x1D0F
 
      (uint32_t) 0x00018063,                   //cache used GPRAM,add
+     HW_REG_OVERRIDE(0x51F8, 0x0570),
 
      (uint32_t) 0x008F88B3,
      HW_REG_OVERRIDE(0x1110,  RFC_DBELL_SYSGPOCTL_GPOCTL0_CPEGPO0 | RFC_DBELL_SYSGPOCTL_GPOCTL1_RATGPO0 | RFC_DBELL_SYSGPOCTL_GPOCTL2_MCEGPO1 | RFC_DBELL_SYSGPOCTL_GPOCTL3_RATGPO1),
@@ -58,12 +66,12 @@ rfc_CMD_PROP_RADIO_SETUP_t RF_cmdPropRadioSetup =
     .startTrigger.pastTrig = 0x0,
     .condition.rule = 0x1,
     .condition.nSkip = 0x0,
-    .modulation.modType = 1,    //0: FSK  1: GFSK
-    .modulation.deviation = 744,
+    .modulation.modType = 0x0,//////////////////////////////////////////////////
+    .modulation.deviation = 744,////////////////////////////////////////////////
     .symbolRate.preScale = 15,
     .symbolRate.rateWord = 327680,
     .rxBw = 10,
-    .preamConf.nPreamBytes = 0x08,
+    .preamConf.nPreamBytes = 0x4,///////////////////////////////////////////////
     .preamConf.preamMode = 0x0,
     .formatConf.nSwBits = 32,
     .formatConf.bBitReversal = 0x0,
@@ -74,7 +82,7 @@ rfc_CMD_PROP_RADIO_SETUP_t RF_cmdPropRadioSetup =
     .config.biasMode = 0x0,
     .config.analogCfgMode = 0x0,
     .config.bNoFsPowerUp = 0x0,
-    .txPower = 0x3161, //0x3161 = 0dB
+    .txPower = 0x0CC9, //0x3161 = 0dB
     .pRegOverride = pOverrides,
 };
 
@@ -91,7 +99,7 @@ rfc_CMD_FS_t RF_cmdFs =
     .startTrigger.pastTrig = 0x0,
     .condition.rule = 0x1,
     .condition.nSkip = 0x0,
-    .frequency = 2408,
+    .frequency = 2440,
     .fractFreq = 0x0000,
     .synthConf.bTxMode = 0x0,
     .synthConf.refFreq = 0x0,
