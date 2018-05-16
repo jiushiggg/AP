@@ -18,6 +18,8 @@
 
 // TI-RTOS RF Mode Object
 extern RF_Mode RF_prop;
+extern uint32_t pOverrides500[];
+extern uint32_t pOverrides100[];
 
 
 // RF Core API commands

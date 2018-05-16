@@ -180,13 +180,15 @@ void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequenc
             RF_cmdPropRadioSetup.modulation.modType = 0x0;
             RF_cmdPropRadioSetup.modulation.deviation = 744;
             RF_cmdPropRadioSetup.rxBw = 9;
+            RF_cmdPropRadioSetup.pRegOverride = (uint32_t*)pOverrides100;
         break;
         case  DATA_RATE_500K:
             RF_cmdPropRadioSetup.symbolRate.preScale = 15;
             RF_cmdPropRadioSetup.symbolRate.rateWord = 327680;
             RF_cmdPropRadioSetup.modulation.modType = 0x0;
-            RF_cmdPropRadioSetup.modulation.deviation = 920;
+            RF_cmdPropRadioSetup.modulation.deviation = 744;
             RF_cmdPropRadioSetup.rxBw = 10;
+            RF_cmdPropRadioSetup.pRegOverride = (uint32_t*)pOverrides500;
         break;
         case  DATA_RATE_1M:
         break;
@@ -196,8 +198,9 @@ void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequenc
             RF_cmdPropRadioSetup.symbolRate.preScale = 15;
             RF_cmdPropRadioSetup.symbolRate.rateWord = 327680;
             RF_cmdPropRadioSetup.modulation.modType = 0x0;
-            RF_cmdPropRadioSetup.modulation.deviation = 920;
+            RF_cmdPropRadioSetup.modulation.deviation = 744;
             RF_cmdPropRadioSetup.rxBw = 10;
+            RF_cmdPropRadioSetup.pRegOverride = (uint32_t*)pOverrides500;
         break;
     }
 #ifdef ESLWORKING_SET
