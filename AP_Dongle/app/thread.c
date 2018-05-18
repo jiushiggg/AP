@@ -46,7 +46,7 @@
 #ifdef GOLD_BOARD
 const unsigned char APP_VERSION_STRING[] = "rfd-5.0.1"; //must < 32
 #else
-const unsigned char APP_VERSION_STRING[24] = "rfd-5.0.4"; //must < 32
+const unsigned char APP_VERSION_STRING[24] = "rfd-5.0.5"; //must < 32
 #endif
 
 
@@ -55,17 +55,15 @@ void *communicate2master(void *arg0);
 
 #pragma location = (GPRAM_BASE);
 Char task0_Stack[TASK0_STACKSIZE];
-
-#pragma location = (GPRAM_BASE+TASK0_STACKSIZE);
-Char task1_Stack[TASK1_STACKSIZE];
-
 Task_Struct task0_Struct;
-Task_Struct task1_Struct;
 
-
-#ifdef MY_SWI
+#if defined(MY_SWI)
     Swi_Handle swi0Handle;
     Swi_Struct swi0Struct;
+#elif defined(TASK1)
+    #pragma location = (TASK1_ADDR);
+    Char task1_Stack[TASK1_STACKSIZE];
+    Task_Struct task1_Struct;
 #else
 
 #endif
@@ -88,7 +86,7 @@ void app_init(void)
     Task_construct(&task0_Struct, (Task_FuncPtr)mainThread, &taskParams_0, NULL);
 
 
-#ifdef MY_SWI
+#if defined(MY_SWI)
     Swi_Params_init(&swiParams);
     swiParams.arg0 = 0;
     swiParams.arg1 = 0;
@@ -96,13 +94,15 @@ void app_init(void)
     swiParams.trigger = 0;
     Swi_construct(&swi0Struct, (Swi_FuncPtr)swi0Fxn, &swiParams, NULL);
     swi0Handle = Swi_handle(&swi0Struct);
-#else
+#elif defined(TASK1)
     Task_Params_init(&taskParams_0);
     taskParams_0.arg0 = 1000000 / Clock_tickPeriod;
     taskParams_0.stackSize = TASK1_STACKSIZE;
     taskParams_0.stack = &task1_Stack;
     taskParams_0.priority = 1;
     Task_construct(&task1_Struct, (Task_FuncPtr)communicate2master, &taskParams_0, NULL);
+#else
+
 #endif
 
     Event_init();
@@ -229,8 +229,10 @@ void *mainThread(void *arg0)
 
     return 0;
 }
+#if defined(TASK1)
 void *communicate2master(void *arg0)
 {
     communicate_main();
     return 0;
 }
+#endif

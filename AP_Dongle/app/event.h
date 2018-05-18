@@ -10,21 +10,14 @@
 #define EVENT_FW_UPDATA			((UINT32)1<<2) //4
 #define EVENT_G3_HEARTBEAT		((UINT32)1<<6) //64
 #define EVENT_RC_REQ			((UINT32)1<<7) //64
-#define EVENT_ALL   0xFFFFFFFF
-
 #define EVENT_SCAN_WKUP			(1<<11)
 #define EVENT_ASS_ACK			(1<<12)
-
 #define EVENT_RF_TXRX			(1<<17)
-#define EVENT_SCAN_BG			(1<<18) 
-#define EVENT_FT_BER			(1<<19) 
+#define EVENT_SCAN_BG			(1<<18)
+#define EVENT_FT_BER			(1<<19)
+#define EVENT_SYSTEM_REBOOT		(1<<20) //64
 
-#define EVENT_SYSTEM_REBOOT		(1<<21) //64
-
-#define EVENT_FLASH_ERR			(1<<29)
-#define EVENT_RF_ERR			(1<<30)
-
-
+#if defined(TASK1)
 #define EVENT_COMMUNICATE_ACK               ((UINT32)1<<1) //8
 #define EVENT_COMMUNICATE_RX_HANDLE         ((UINT32)1<<2) //8
 #define EVENT_COMMUNICATE_RX_TO_FLASH       ((UINT32)1<<3) //8
@@ -32,6 +25,19 @@
 #define EVENT_COMMUNICATE_TX_ESL_ACK        ((UINT32)1<<5) //
 #define EVENT_COMMUNICATE_SCAN_DEVICE        ((UINT32)1<<6) // new cmd
 #define EVENT_COMMUNICATE_ALL                              0xFFFFFFFF
+#else
+#define EVENT_COMMUNICATE_ACK               ((UINT32)1<<21) //8
+#define EVENT_COMMUNICATE_RX_HANDLE         ((UINT32)1<<22) //8
+#define EVENT_COMMUNICATE_RX_TO_FLASH       ((UINT32)1<<23) //8
+#define EVENT_COMMUNICATE_TX_FROM_FLASH     ((UINT32)1<<24) //A
+#define EVENT_COMMUNICATE_TX_ESL_ACK        ((UINT32)1<<25) //
+#define EVENT_COMMUNICATE_SCAN_DEVICE        ((UINT32)1<<26) // new cmd
+#endif
+
+#define EVENT_FLASH_ERR			(1<<29)
+#define EVENT_RF_ERR			(1<<30)
+#define EVENT_ALL   0xFFFFFFFF
+
 
 
 #define EVENT_WAIT_FOREVER   ti_sysbios_BIOS_WAIT_FOREVER

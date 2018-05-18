@@ -6,11 +6,6 @@
 
 /* Driver Header files */
 #include <ti/drivers/GPIO.h>
-// #include <ti/drivers/I2C.h>
-// #include <ti/drivers/SDSPI.h>
-// #include <ti/drivers/SPI.h>
-// #include <ti/drivers/UART.h>
-// #include <ti/drivers/Watchdog.h>
 #include <ti/drivers/Power.h>
 
 #include <ti/sysbios/knl/Clock.h>
@@ -42,11 +37,64 @@
 #include "cc2640r2_rf.h"
 #include "communicate.h"
 #include "event.h"
-
+#include "uart.h"
 
 #pragma location=(CORE_TASK_ADDR)
 core_task_t local_task;
 UINT32 core_idel_flag = 0;
+void (*tim_soft_callback)(void);
+static uint8_t writeFlashFlg = false;
+
+#pragma location = (CMD_BUF_ADDR);
+UINT8 cmd_buf[CMD_BUF] = {0};
+
+uint8_t Core_SendCmd(uint16_t cmd, uint32_t cmd_len, uint8_t *cmd_data)
+{
+    INT32 tx_ack_ret = 0;
+
+    UINT8 ret = 0;
+    xmodem_t x;
+
+    if((cmd_len+2+4) > sizeof(cmd_buf))
+    {
+        perr("Core_SendCmd() cmd len too big.\r\n");
+        goto done;
+    }
+
+    memcpy(cmd_buf, (void *)&cmd, sizeof(cmd));
+    memcpy(cmd_buf+2, (void *)&cmd_len, sizeof(cmd_len));
+    if((cmd_len!=0) && (cmd_data!=NULL))
+    {
+        memcpy(cmd_buf+6, cmd_data, cmd_len);
+    }
+    memset(&x, 0, sizeof(xmodem_t));
+//  USBD_SetRecvMode(0);
+    tx_ack_ret = Xmodem_Send(&x, 1, cmd_buf, cmd_len+2+4, 5000);
+//  USBD_SetRecvMode(1);
+    if(tx_ack_ret == (cmd_len+2+4))
+    {
+        pdebug("Core_SendCmd 0x%04X\r\n", cmd);
+        ret = 1;
+    }
+    else
+    {
+        perr("Core_SendCmd 0x%04X return %d\r\n", cmd, tx_ack_ret);
+        ret = 0;
+    }
+
+done:
+    return ret;
+}
+
+
+void TIM_SetSoftInterrupt(UINT8 enable, void (*p)(void))
+{
+    tim_soft_callback = p;
+    if (1 == enable){
+        Event_communicateSet(EVENT_COMMUNICATE_ACK);
+    }
+}
+
 
 UINT32 Core_GetQuitStatus()
 {
@@ -162,6 +210,25 @@ done:
 }
 extern INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type);
 
+void readHandleFnx(void)
+{
+    int8_t ret = 0;
+    ret = Xmodem_RecvCallBack();
+    if(ret > CORE_CMD_LEN){
+        perr("Xmodem_RecvCallBack recv too big data(%d) to handle.\r\n", ret);
+        Xmodem_InitCallback();
+    }else if((ret > 0)&&(ret <=XCB_RECV_BUF_SIZE)){
+        EP_DEBUG(("\r\n>>>EP1_OUT_Callback recv data len = %d.\r\n", ret));
+        Core_RxHandler();
+        Xmodem_InitCallback();
+    }else if(ret < 0){
+        EP_DEBUG(("\r\n>>>EP1_OUT_Callback recv error(%d)!\r\n", ret));
+        Xmodem_InitCallback();
+    }else{
+        EP_DEBUG(("\r\n>>>EP1_OUT_Callback.\r\n"));
+    }
+}
+
 void Core_Mainloop(void)
 {
     volatile uint32_t event = 0;
@@ -175,33 +242,47 @@ void Core_Mainloop(void)
                 RF_measureRSSI(false);
             }
         }
-        pinfo("core entry\r\n", event);
-//        if(event & EVENT_RX_TO_FLASH)
-//        {
-//            pinfo("core recv data to flash start.\r\n");
-//            memcpy((UINT8 *)&local_task.flash_data_len, local_task.cmd_buf, sizeof(local_task.flash_data_len));
-//            BSP_GPIO_ToggleDebugPin();
-//            if(Core_MallocFlash(&local_task.flash_data_addr, local_task.flash_data_len) == 1)
-//            {
-//                BSP_GPIO_ToggleDebugPin();
-//                if(Core_SendCmd(CORE_CMD_ACK, 0, NULL) == 1)
-//                {
-//                    BSP_GPIO_ToggleDebugPin();
-//                    if(Core_RecvDataToFlash(local_task.flash_data_addr, local_task.flash_data_len) == 1)
-//                    {
-//                        Event_Set(EVENT_PARSE_DATA);
-//                        BSP_GPIO_ToggleDebugPin();
-//                    }
-//                }
-//            }
-//            else
-//            {
-//                Core_SendCmd(CORE_CMD_FLASH_ERROR, 0, NULL);
-//            }
-//            pinfo("core recv data to flash exit.\r\n");
-//            Event_Clear(EVENT_RX_TO_FLASH);
-//        }
-
+        if(event & EVENT_COMMUNICATE_RX_HANDLE){
+            readHandleFnx();
+            Event_Clear(EVENT_COMMUNICATE_RX_HANDLE);
+        }
+        if (event & EVENT_COMMUNICATE_RX_TO_FLASH){
+            pinfo("cp2flash\r\n");
+            memcpy((UINT8 *)&local_task.flash_data_len, local_task.cmd_buf, sizeof(local_task.flash_data_len));
+            //BSP_lowGPIO(DEBUG_TEST);
+            if(Core_MallocFlash(&local_task.flash_data_addr, local_task.flash_data_len) == 1){
+                //BSP_highGPIO(DEBUG_TEST);
+                if(Core_SendCmd(0x10F0, 0, NULL) == 1){
+                    //BSP_lowGPIO(DEBUG_TEST);
+                    writeFlashFlg = true;
+                    if(Core_RecvDataToFlash(local_task.flash_data_addr, local_task.flash_data_len) == 1){
+                        pinfo(("EVENT_PARSE_DATA\r\n"));
+                        Event_Set(EVENT_PARSE_DATA);
+                        //BSP_GPIO_test(DEBUG_TEST);
+                    }
+                    writeFlashFlg = false;
+                }
+            } else {
+                Core_SendCmd(CORE_CMD_FLASH_ERROR, 0, NULL);
+            }
+            pinfo("cp2flash exit\r\n");
+            Event_Clear(EVENT_COMMUNICATE_RX_TO_FLASH);
+        }
+        if (event & EVENT_COMMUNICATE_TX_ESL_ACK){
+            pinfo("core tx esl ack.\r\n");
+            Event_Clear(EVENT_COMMUNICATE_TX_ESL_ACK);
+        }
+        if (event & EVENT_COMMUNICATE_ACK){
+            if (NULL != tim_soft_callback){
+                tim_soft_callback();
+            }
+            Event_Clear(EVENT_COMMUNICATE_ACK);
+        }
+        if(event & EVENT_COMMUNICATE_SCAN_DEVICE){
+            pinfo("core uart send ack.\r\n");
+            Core_SendCmd(CORE_CMD_ACK, 0, NULL);
+            Event_Clear(EVENT_COMMUNICATE_SCAN_DEVICE);
+        }
         if(event & EVENT_PARSE_DATA)
         {
             pinfo("core parse flash data.\r\n");
@@ -239,14 +320,13 @@ void Core_Mainloop(void)
             }
             Event_Clear(EVENT_ESL_UPDATA);
         }
-#if 1
+
         if(event & EVENT_G3_HEARTBEAT)
         {
             g3_hb_table_t *hb_table;
             pinfo("core g3 hb start.\r\n");
             hb_table = Core_Malloc(sizeof(g3_hb_table_t));
 
-            //BSP_Delay1MS(100);
             if(hb_table == NULL)
             {
                 perr("core malloc g3 hb table!\r\n");
@@ -449,8 +529,22 @@ void Core_Mainloop(void)
             pinfo("Core_ResetQuitStatus\r\n");
             Core_ResetQuitStatus();
         }
-        pinfo("core exit\r\n");
-#endif
+
     }
 }
 
+
+void readCallback(UART_Handle handle, void *rxBuf, size_t size)
+{
+    if (recCmdAckFlg == true && XMODEM_LEN_CMD==size){
+        Device_Recv_post();
+    }else if((XMODEM_LEN_CMD==size || XMODEM_LEN_ALL==size) && writeFlashFlg == true){
+        Device_Recv_post();
+    }else if (XMODEM_LEN_CMD==size || XMODEM_LEN_ALL==size){
+        Event_communicateSet(EVENT_COMMUNICATE_RX_HANDLE);
+    }else{
+        Xmodem_InitCallback();
+    }
+    xcb_recv_len_once = size;
+    UART_appRead(recv_once_buf, XMODEM_LEN_ALL);
+}

@@ -59,7 +59,11 @@ typedef struct
 #define TASK0_STACKSIZE   (2048- 512)
 #define TASK0_ADDR  (GPRAM_BASE)
 
+#if defined(TASK1)
 #define TASK1_STACKSIZE   (2048)
+#else
+#define TASK1_STACKSIZE   (0)
+#endif
 #define TASK1_ADDR              (GPRAM_BASE+TASK0_STACKSIZE)
 
 #define CMD_BUF     256
