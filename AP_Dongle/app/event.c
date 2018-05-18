@@ -5,12 +5,13 @@
 #include <ti/sysbios/knl/Swi.h>
 #include "event.h"
 
+
 Event_Handle protocol_eventHandle;
 Event_Struct protocol_eventStruct;
-
+#if defined(TASK1)
 Event_Handle communicateEventHandle;
 Event_Struct communicateEventStruct;
-
+#endif
 
 Semaphore_Struct  recSemStruct;
 Semaphore_Handle  recSemHandle;
@@ -43,9 +44,10 @@ void Event_init(void)
     Event_construct(&protocol_eventStruct, &eventParams);
     protocol_eventHandle = Event_handle(&protocol_eventStruct);
 
-
+#if defined(TASK1)
     Event_construct(&communicateEventStruct, &eventParams);
     communicateEventHandle = Event_handle(&communicateEventStruct);
+#endif
 }
 
 UINT32 Event_Get(void)
@@ -53,22 +55,29 @@ UINT32 Event_Get(void)
     return Event_getPostedEvents(protocol_eventHandle);
 }
 
-
+#if defined(TASK1)
 UINT32 Event_communicateGet(void)
 {
     return Event_getPostedEvents(communicateEventHandle);
 }
+#endif
 
 void Event_Set(UINT32 event)
 {
     Event_post(protocol_eventHandle, event);
 }
+
+#if defined(TASK1)
 void Event_communicateSet(UINT32 event)
 {
     Event_post(communicateEventHandle, event);
 }
-
-
+#else
+void Event_communicateSet(UINT32 event)
+{
+    Event_post(protocol_eventHandle, event);
+}
+#endif
 
 void Event_Clear(UINT32 event)
 {
@@ -83,10 +92,18 @@ UINT32 Event_GetStatus(void)
 {
     return Event_getPostedEvents(protocol_eventHandle);
 }
+
+#if defined(TASK1)
 UINT32 Event_communicateGetStatus(void)
 {
     return Event_getPostedEvents(communicateEventHandle);
 }
+#else
+UINT32 Event_communicateGetStatus(void)
+{
+    return Event_getPostedEvents(protocol_eventHandle);
+}
+#endif
 
 UINT32 Event_PendCore(void)
 {
@@ -94,11 +111,12 @@ UINT32 Event_PendCore(void)
 
 }
 
+#if defined(TASK1)
 UINT32 Event_Pendcommunicate(void)
 {
     return Event_pend(communicateEventHandle, 0, EVENT_ALL, BIOS_WAIT_FOREVER);
 }
-
+#endif
 
 uint32_t taskDisable(void)
 {

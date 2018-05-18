@@ -58,7 +58,7 @@ typedef struct {
 assack_cmd_t assack_cmd;
 extern UINT32 core_idel_flag;
 
-                                                                                                                                                                                                                                                                                                                                                                                          INT32 assap_scanwkup_parse_cmd(UINT8 *cmd, INT32 cmd_len)
+INT32 assap_scanwkup_parse_cmd(UINT8 *cmd, INT32 cmd_len)
 {
 	if(cmd_len > sizeof(assack_cmd))
 	{

@@ -31,8 +31,8 @@
 #define XMODEM_OFFSET_CRC		(XMODEM_OFFSET_BAS+XMODEM_LEN_CMD+XMODEM_LEN_SN+XMODEM_LEN_DAT)	
 
 //#define TIMEOUT_RECV				10
-#define RETRYTIME_TX				10
-#define RETRYTIME_NAK				10
+#define RETRYTIME_TX			    3
+#define RETRYTIME_NAK				3
 
 uint8_t recCmdAckFlg    =   0;
 /*
