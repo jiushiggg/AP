@@ -74,10 +74,10 @@ void dummy_chaining_mode(updata_table_t *table, INT32 nus)
             //result = send_without_wait(id, data, data_len, channel, 6000);
 
             *dummy_offset += sizeof(id)+sizeof(channel)+sizeof(data_len)+data_len;
-            tx_num++;
         } else {
             RF_wait_send_finish(id);        //null frame
         }
+        tx_num++;
     }
 }
 
