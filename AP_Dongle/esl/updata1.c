@@ -146,7 +146,7 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 	UINT16 tsn = 0;
 	UINT32 taddr = 0;
 	UINT8 f = 0;
-    uint64_t result;
+    uint16_t result=0;
     UINT8 rf_flg = RF_IDLE;
 #ifdef RF_CHANING_MODE
     write2buf = listInit(data0, data1);

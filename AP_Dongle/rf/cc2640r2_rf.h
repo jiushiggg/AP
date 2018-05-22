@@ -98,7 +98,7 @@ extern uint8_t RF_readRegRSSI(void);
 extern UINT8 get_recPkgRSSI(void);
 extern UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeout);
 
-extern uint64_t send_chaningmode(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout);
+extern uint16_t send_chaningmode(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout);
 extern void RF_wait_cmd_finish(void);
 
 extern void RF_wait_send_finish(UINT8 *id);

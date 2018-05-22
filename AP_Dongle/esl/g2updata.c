@@ -22,147 +22,7 @@
 
 //UINT8 search_first_pkg[32] = {0};
 //UINT16 search_pkg_history_o[40] = {0};
-#if 1
-static void g2_transmit(updata_table_t *table, UINT8 timer)
-{
-	INT32 i = 0, j = 0, k = 0, t = 0;
-	UINT8 id[4] = {0};
-	UINT8 ch = 0;
-	UINT8 len = 0;
-	UINT8 data[SIZE_ESL_DATA_BUF] = {0};
-	INT32 left_pkg_num = 0;
-	INT32 dummy_us = 0;
-	mode1_esl_t *pESL = (mode1_esl_t *)table->data;
-	UINT16 tsn = 0;
-	UINT32 taddr = 0;
-	UINT8 f = 0;
-    RF_EventMask result;
-    uint8_t pend_flg = PEND_STOP;
-	
-	pdebug("g2_transmit\r\n");
-	
-	set_power_rate(table->tx_power, table->tx_datarate);
-	
-	for(i = 0; i < table->esl_num; i++)
-	{
-		left_pkg_num += pESL[i].failed_pkg_num;
-	}
-	pdebug("pkg_num %d, timer %d\r\n", left_pkg_num, timer);
-	i = 0;
-	j = 0;
-	while(left_pkg_num > 0)
-	{
-		if(Core_GetQuitStatus() == 1)
-		{
-			pdebug("quit\r\n");
-			break;		
-		}
-		
-		if(TIM_CheckTimeout(timer) == TIME_OUT)
-		{
-			pdebug("timeout.\r\n");
-			break;
-		}
-				
-		if((pESL[i].failed_pkg_num != 0) && (j < pESL[i].failed_pkg_num))
-		{
-			if(pESL[i].failed_pkg_num == pESL[i].total_pkg_num)
-			{
-				taddr = pESL[i].first_pkg_addr + j*SIZE_ESL_DATA_SINGLE;
-				pdebug("send addr 0x%08X\r\n", taddr);
-			}
-			else
-			{
-				tsn = get_missed_sn_r(pESL[i].failed_pkg, j);
-				
-				//for debug
-//				search_pkg_sn_times = 0;
-//				memset(search_pkg_history, 0, sizeof(search_pkg_history));
-//				memset(search_addr_history, 0, sizeof(search_addr_history));
-//				search_end_pkg = 0;
-//				memset(search_pkg_history_o, 0, sizeof(search_pkg_history_o));
-//				memset(search_first_pkg, 0, sizeof(search_first_pkg));
-				
-				taddr = get_pkg_addr_bsearch(pESL[i].first_pkg_addr, pESL[i].total_pkg_num, tsn, 8);
-				if(taddr == 0)
-				{
-					perr("g2t can't find %02X-%02X-%02X-%02X pkg %d 0x%08X, 0x%08X, %d\r\n", 
-						pESL[i].esl_id[0],pESL[i].esl_id[1],pESL[i].esl_id[2],pESL[i].esl_id[3],
-						tsn, taddr, pESL[i].first_pkg_addr, pESL[i].total_pkg_num);
-					//for debug
-//					perr("search end pkg: %d\r\n", search_end_pkg);
-//					perrhex((UINT8 *)search_pkg_history, search_pkg_sn_times*2);
-//					perrhex((UINT8 *)search_addr_history, search_pkg_sn_times*4);
-//					perrhex((UINT8 *)search_pkg_history_o, search_pkg_sn_times*2);
-//					perrhex((UINT8 *)search_first_pkg, 32);
-					
-					left_pkg_num -= pESL[i].failed_pkg_num-j-1;
-					pESL[i].failed_pkg_num = 0;
-					pESL[i].ack = 0x5F;
 
-					goto user_continue;
-				}
-//				pESL[i].failed_pkg_offset = (taddr-pESL[i].first_pkg_addr)/SIZE_ESL_DATA_SINGLE + 1;
-				pdebug("send miss addr 0x%08X, sn = %d\r\n", taddr, tsn);
-			}
-
- 			if(get_one_data(taddr, id, &ch, &len, data, sizeof(data)) == 0)
-			{
-				perr("g2_transmit get data!\r\n");
-				goto user_continue;
-			}
-			
-			pdebug("0x%02X-0x%02X-0x%02X-0x%02X, ch=%d, len=%d\r\n", id[0], id[1], id[2], id[3], ch, len);
-			pdebughex(data, len);
-
-	        if (PEND_START == pend_flg){
-	            send_pend(result);
-	        }
-	        result = send_without_wait(id, data, len, ch, 6000);
-	        pend_flg = PEND_START;
-					
-		user_continue:
-			left_pkg_num--;
-			k++;
-			t++;
-		}
-		
-		f = 0;
-		i++;
-		if(i == table->esl_num)
-		{
-			i = 0;
-			j++;
-			
-			if((dummy_us=(table->tx_interval*1000-k*table->tx_duration)) >= 0)
-			{
-				dummy(table, dummy_us);
-				f = 1;
-			}
-			k = 0;
-		}	
-		if((t%50==0) && (f==0))
-		{
-			dummy(table, table->tx_duration);
-		}
-	}
-	
-	if((i != table->esl_num) && (f == 0))
-	{
-		if((dummy_us=(table->tx_interval*1000-k*table->tx_duration)) >= 0)
-		{
-			dummy(table, dummy_us);
-			f = 1;
-		}
-		else
-		{
-			dummy(table, table->tx_duration);
-		}
-	}
-	
-	wait(2000);
-}
-#else
 #define G2_RF_CHANING_MODE
 static void g2_transmit(updata_table_t *table, UINT8 timer)
 {
@@ -181,7 +41,7 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
     UINT16 tsn = 0;
     UINT32 taddr = 0;
     UINT8 f = 0;
-    uint64_t result;
+    uint16_t result;
     UINT8 rf_flg = RF_IDLE;
 #ifdef G2_RF_CHANING_MODE
     write2buf = listInit(data0, data1);
@@ -252,7 +112,7 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
                 pdebug("send miss addr 0x%08X, sn = %d\r\n", taddr, tsn);
             }
 
-            if(get_one_data(taddr, id, &ch, &len, data, sizeof(data)) == 0)
+            if(get_one_data(taddr, id, &ch, &len, data, SIZE_ESL_DATA_BUF) == 0)
             {
                 perr("g2_transmit get data!\r\n");
                 goto user_continue;
@@ -291,7 +151,11 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
         {
             if((dummy_us=((uint16_t)table->tx_interval*1000-k*table->tx_duration)) >= 0)
             {
+#ifdef G2_RF_CHANING_MODE
                 dummy_chaining_mode(table, dummy_us);
+#else
+                dummy(table, dummy_us);
+#endif
                 f = 1;
             }
             i = k = 0;
@@ -299,7 +163,11 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
         }
         if((t%50==0) && (t<ESL_REC_FRAME1_TIMEOUT) && (f==0))
         {
+#ifdef G2_RF_CHANING_MODE
             dummy_chaining_mode(table, table->tx_duration);
+#else
+            dummy(table, table->tx_duration);
+#endif
         }
     }
 #ifdef G2_RF_CHANING_MODE
@@ -310,18 +178,26 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
     {
         if((dummy_us=(table->tx_interval*1000-k*table->tx_duration)) >= 0)
         {
-            dummy(table, dummy_us);
+#ifdef G2_RF_CHANING_MODE
+                dummy_chaining_mode(table, dummy_us);
+#else
+                dummy(table, dummy_us);
+#endif
             f = 1;
         }
         else
         {
+#ifdef G2_RF_CHANING_MODE
+            dummy_chaining_mode(table, table->tx_duration);
+#else
             dummy(table, table->tx_duration);
+#endif
         }
     }
 
     wait(2000);
 }
-#endif
+
 static UINT8 query_miss_slot = 0;
 static UINT8 first_pkg_data[SIZE_ESL_DATA_BUF] = {0};
 
