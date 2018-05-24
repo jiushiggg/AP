@@ -50,6 +50,8 @@ uint32_t pOverrides500[] =
 
      (uint32_t) 0x008F88B3,
      HW_REG_OVERRIDE(0x1110,  RFC_DBELL_SYSGPOCTL_GPOCTL0_CPEGPO0 | RFC_DBELL_SYSGPOCTL_GPOCTL1_RATGPO0 | RFC_DBELL_SYSGPOCTL_GPOCTL2_MCEGPO1 | RFC_DBELL_SYSGPOCTL_GPOCTL3_RATGPO1),
+
+     HW_REG_OVERRIDE(0x6084, 0x35F1),         //This should make sure that the RSSI is not beeing updated after sync is found.
      (uint32_t)0xFFFFFFFF,
 };
 
