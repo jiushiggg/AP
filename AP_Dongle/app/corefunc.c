@@ -46,18 +46,15 @@ UINT8 Core_RecvDataToFlash(UINT32 addr, UINT32 len)
 	xmodem_t x;
 	memset(&x, 0, sizeof(xmodem_t));
 	
-//	USBD_SetRecvMode(0);
 	if(Xmodem_RecvToFlash(&x, 1, addr, len, 5000) >= len)
 	{
 	    GGGDEBUG(("Core_RecvDataToFlashOK\r\n"));
 		pdebug("Core_RecvDataToFlash() ok.\r\n");
-//		USBD_SetRecvMode(1);
 		return 1;		
 	}
 	else
 	{   GGGDEBUG(("Core_RecvDataToFlashERR\r\n"));
 		perr("Core_RecvDataToFlash() fail!\r\n");
-//		USBD_SetRecvMode(1);
 		return 0;
 	}
 }
@@ -68,17 +65,14 @@ UINT8 Core_SendDataFromFlash(UINT32 addr, UINT32 len)
 	
 	memset(&x, 0, sizeof(xmodem_t));
 	
-//	USBD_SetRecvMode(0);
 	if(Xmodem_SendFromFlash(&x, 1, addr, len, 5000) >= len)
 	{
 		pdebug("Core_SendDataFromFlash() ok.\r\n");
-//		USBD_SetRecvMode(1);
 		return 1;		
 	}
 	else
 	{
 		perr("Core_SendDataFromFlash() fail!\r\n");
-//		USBD_SetRecvMode(1);
 		return 0;
 	}
 }
@@ -89,17 +83,14 @@ UINT8 Core_SendData(UINT8 *src, UINT32 len)
 	
 	memset(&x, 0, sizeof(xmodem_t));
 	
-//	USBD_SetRecvMode(0);
 	if(Xmodem_Send(&x, 1, src, len, 5000) >= len)
 	{
 		pdebug("Core_SendData() ok.\r\n");
-//		USBD_SetRecvMode(1);
 		return 1;		
 	}
 	else
 	{
 		perr("Core_SendData() fail!\r\n");
-//		USBD_SetRecvMode(1);
 		return 0;
 	}
 }

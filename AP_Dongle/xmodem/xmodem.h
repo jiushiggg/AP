@@ -5,7 +5,7 @@
 
 #define XMODEM_LEN_CMD          1
 #define XMODEM_LEN_SN           1
-#define XMODEM_LEN_DAT          60
+#define XMODEM_LEN_DAT          128
 #define XMODEM_LEN_CRC          2
 #define XMODEM_LEN_ALL          (XMODEM_LEN_CMD+XMODEM_LEN_SN+XMODEM_LEN_DAT+XMODEM_LEN_CRC)
 
@@ -27,11 +27,8 @@ UINT8 *Xmodem_GetCallbackData(UINT32 *len);
 INT32 Xmodem_RecvToFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 dst_len, INT32 timeout);
 INT32 Xmodem_SendFromFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 len, INT32 timeout);
 
-#define XCB_RECV_BUF_SIZE   300
-extern xmodem_t xcb;
-extern UINT8 xcb_recv_buf[XCB_RECV_BUF_SIZE];
+#define XCB_BUF_SIZE   XMODEM_LEN_ALL
+extern UINT8 xcb_buf[XCB_BUF_SIZE];
 extern INT32 xcb_recv_len;
-extern INT32 xcb_recv_len_once;
-extern UINT8 recCmdAckFlg;
 extern UINT8 recv_once_buf[XMODEM_LEN_ALL];
 #endif
