@@ -28,10 +28,7 @@ INT32 Xmodem_RecvToFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 dst_len, INT
 INT32 Xmodem_SendFromFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 len, INT32 timeout);
 
 #define XCB_RECV_BUF_SIZE   300
-extern xmodem_t xcb;
 extern UINT8 xcb_recv_buf[XCB_RECV_BUF_SIZE];
 extern INT32 xcb_recv_len;
-extern INT32 xcb_recv_len_once;
-extern UINT8 recCmdAckFlg;
 extern UINT8 recv_once_buf[XMODEM_LEN_ALL];
 #endif

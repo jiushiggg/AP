@@ -77,7 +77,7 @@ void communicate_main(void)
             //BSP_lowGPIO(DEBUG_TEST);
             if(Core_MallocFlash(&local_task.flash_data_addr, local_task.flash_data_len) == 1){
                 //BSP_highGPIO(DEBUG_TEST);
-                if(Core_SendCmd(0x10F0, 0, NULL) == 1){
+                if(Core_SendCmd(CORE_CMD_ACK, 0, NULL) == 1){
                     //BSP_lowGPIO(DEBUG_TEST);
                     writeFlashFlg = true;
                     if(Core_RecvDataToFlash(local_task.flash_data_addr, local_task.flash_data_len) == 1){

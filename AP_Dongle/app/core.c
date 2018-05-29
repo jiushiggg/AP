@@ -43,7 +43,6 @@
 core_task_t local_task;
 UINT32 core_idel_flag = 0;
 void (*tim_soft_callback)(void);
-static uint8_t writeFlashFlg = false;
 
 #pragma location = (CMD_BUF_ADDR);
 UINT8 cmd_buf[CMD_BUF] = {0};
@@ -212,7 +211,7 @@ extern INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type);
 
 void readHandleFnx(void)
 {
-    int8_t ret = 0;
+    int16_t ret = 0;
     ret = Xmodem_RecvCallBack();
     if(ret > CORE_CMD_LEN){
         perr("Xmodem_RecvCallBack recv too big data(%d) to handle.\r\n", ret);
@@ -252,15 +251,15 @@ void Core_Mainloop(void)
             //BSP_lowGPIO(DEBUG_TEST);
             if(Core_MallocFlash(&local_task.flash_data_addr, local_task.flash_data_len) == 1){
                 //BSP_highGPIO(DEBUG_TEST);
-                if(Core_SendCmd(0x10F0, 0, NULL) == 1){
+                if(Core_SendCmd(CORE_CMD_ACK, 0, NULL) == 1){
                     //BSP_lowGPIO(DEBUG_TEST);
-                    writeFlashFlg = true;
+
                     if(Core_RecvDataToFlash(local_task.flash_data_addr, local_task.flash_data_len) == 1){
                         pinfo(("EVENT_PARSE_DATA\r\n"));
                         Event_Set(EVENT_PARSE_DATA);
                         //BSP_GPIO_test(DEBUG_TEST);
                     }
-                    writeFlashFlg = false;
+
                 }
             } else {
                 Core_SendCmd(CORE_CMD_FLASH_ERROR, 0, NULL);
@@ -531,20 +530,4 @@ void Core_Mainloop(void)
         }
 
     }
-}
-
-
-void readCallback(UART_Handle handle, void *rxBuf, size_t size)
-{
-    if (recCmdAckFlg == true && XMODEM_LEN_CMD==size){
-        Device_Recv_post();
-    }else if((XMODEM_LEN_CMD==size || XMODEM_LEN_ALL==size) && writeFlashFlg == true){
-        Device_Recv_post();
-    }else if (XMODEM_LEN_CMD==size || XMODEM_LEN_ALL==size){
-        Event_communicateSet(EVENT_COMMUNICATE_RX_HANDLE);
-    }else{
-        Xmodem_InitCallback();
-    }
-    xcb_recv_len_once = size;
-    UART_appRead(recv_once_buf, XMODEM_LEN_ALL);
 }

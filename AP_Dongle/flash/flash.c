@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "flash.h"
 #include "../peripheral/extern_flash.h"
+#include "bsp.h"
 
 #define FLASH_SECTOR_NUM  	1024
 #define FLASH_SECTOR_SIZE	4096
@@ -177,7 +178,7 @@ find_loop:
 			goto find_loop;
 		}
 	}
-
+	BSP_Delay1MS(15);
 	return ret;
 }
 
