@@ -135,8 +135,8 @@ INT32 parse_cmd_data(UINT32 cmd_data_addr, UINT32 cmd_data_len)
 				ret += 1;
 				break;
 			default:				
-				addr += sizeof(cmd)+sizeof(cmd_len);
-				left_data_len -= sizeof(cmd)+sizeof(cmd_len);
+				left_data_len = 0;
+				ret = -1;
 				break;
 		}
 

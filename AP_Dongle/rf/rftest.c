@@ -311,7 +311,6 @@ static INT32 ber_tx(void)
     fc = 0; fc_max = 0; fc_avg = 0; fc_min = 0;
     rssi = 0; rssi_max = 0; rssi_avg = 0; rssi_min = 0;
     memset(tx_buf,0x55,TEST_DATA_LEN);
-
     while((left_rounds--) > 0)
     {
         crc_error = 0;

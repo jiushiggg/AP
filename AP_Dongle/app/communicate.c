@@ -120,7 +120,7 @@ void readHandleFnx(void)
     if(ret > CORE_CMD_LEN){
         perr("Xmodem_RecvCallBack recv too big data(%d) to handle.\r\n", ret);
         Xmodem_InitCallback();
-    }else if((ret > 0)&&(ret <=XCB_RECV_BUF_SIZE)){
+    }else if((ret > 0)&&(ret <=XCB_BUF_SIZE)){
         EP_DEBUG(("\r\n>>>EP1_OUT_Callback recv data len = %d.\r\n", ret));
         Core_RxHandler();
         Xmodem_InitCallback();

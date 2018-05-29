@@ -44,32 +44,28 @@ core_task_t local_task;
 UINT32 core_idel_flag = 0;
 void (*tim_soft_callback)(void);
 
-#pragma location = (CMD_BUF_ADDR);
-UINT8 cmd_buf[CMD_BUF] = {0};
 
 uint8_t Core_SendCmd(uint16_t cmd, uint32_t cmd_len, uint8_t *cmd_data)
 {
     INT32 tx_ack_ret = 0;
-
     UINT8 ret = 0;
     xmodem_t x;
 
-    if((cmd_len+2+4) > sizeof(cmd_buf))
+    if((cmd_len+2+4) > sizeof(xcb_buf))
     {
         perr("Core_SendCmd() cmd len too big.\r\n");
         goto done;
     }
 
-    memcpy(cmd_buf, (void *)&cmd, sizeof(cmd));
-    memcpy(cmd_buf+2, (void *)&cmd_len, sizeof(cmd_len));
+    memcpy(xcb_buf, (void *)&cmd, sizeof(cmd));
+    memcpy(xcb_buf+2, (void *)&cmd_len, sizeof(cmd_len));
     if((cmd_len!=0) && (cmd_data!=NULL))
     {
-        memcpy(cmd_buf+6, cmd_data, cmd_len);
+        memcpy(xcb_buf+6, cmd_data, cmd_len);
     }
     memset(&x, 0, sizeof(xmodem_t));
-//  USBD_SetRecvMode(0);
-    tx_ack_ret = Xmodem_Send(&x, 1, cmd_buf, cmd_len+2+4, 5000);
-//  USBD_SetRecvMode(1);
+
+    tx_ack_ret = Xmodem_Send(&x, 1, xcb_buf, cmd_len+2+4, 5000);
     if(tx_ack_ret == (cmd_len+2+4))
     {
         pdebug("Core_SendCmd 0x%04X\r\n", cmd);
@@ -114,8 +110,6 @@ void Core_Init(void)
 	memset(&local_task, 0 , sizeof(core_task_t));
 	
 	Xmodem_InitCallback();
-	
-//	USBD_SetRecvMode(1); //call back mode
 }
 
 void Core_TxHandler(void)
@@ -146,7 +140,7 @@ void Core_RxHandler(void)
 		goto done;
 	}	
 	memcpy(local_task.cmd_buf, local_task.data_ptr+6, local_task.cmd_len);
-	/* !!!! do not use xmodem_send() function in below fucntions */
+
 	switch(local_task.cmd)
 	{
 		case CORE_CMD_ESL_UPDATA_REQUEST:
@@ -216,7 +210,7 @@ void readHandleFnx(void)
     if(ret > CORE_CMD_LEN){
         perr("Xmodem_RecvCallBack recv too big data(%d) to handle.\r\n", ret);
         Xmodem_InitCallback();
-    }else if((ret > 0)&&(ret <=XCB_RECV_BUF_SIZE)){
+    }else if((ret > 0)&&(ret <=XCB_BUF_SIZE)){
         EP_DEBUG(("\r\n>>>EP1_OUT_Callback recv data len = %d.\r\n", ret));
         Core_RxHandler();
         Xmodem_InitCallback();
