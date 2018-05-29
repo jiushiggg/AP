@@ -324,7 +324,7 @@ void RF_wait_cmd_finish(void)
 //    send_one_finish = false;
 }
 
-uint64_t send_chaningmode(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
+uint16_t send_chaningmode(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
 {
     RF_EventMask result;
     cc2592Cfg(CC2592_TX);
@@ -341,7 +341,7 @@ uint64_t send_chaningmode(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
     send_one_finish = false;
     result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, txcallback,
                         (RF_EventCmdDone | RF_EventLastCmdDone| RF_EventCmdAborted));
-    return (uint64_t)result;
+    return (uint16_t)result;
 }
 
 void send_pend(RF_EventMask result)
@@ -499,7 +499,7 @@ UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT32 timeo
 }
 
 //convert CC2640's RSSI to A7106's RSSI. history question ,reference the page 76 of A7106 manual
-#define RSSI_FACTOR     31    //(105, 170),(55, 15) => (rssi-15)/(dBm-55) = (170-15)/(105-55) =>rssi = 3.1dBm-155.5
+#define RSSI_FACTOR     31    //(105, 170),(55, 15) => (rssi-15)/(dBm-55) = (170-15)/(105-55) =>rssi = 3.1*dBm-155.5
 #define RSSI_CONSTANT   1555
 
 static uint8_t convertRSSI(INT8 n)
