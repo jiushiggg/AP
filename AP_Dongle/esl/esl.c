@@ -134,9 +134,15 @@ INT32 parse_cmd_data(UINT32 cmd_data_addr, UINT32 cmd_data_len)
 				left_data_len -= sizeof(cmd)+sizeof(cmd_len)+cmd_len;
 				ret += 1;
 				break;
+			case CMD_SET_WKUP:
+			case CMD_GROUP1:
+			case CMD_GROUPN:
+                addr += sizeof(cmd)+sizeof(cmd_len);
+                left_data_len -= sizeof(cmd)+sizeof(cmd_len);
+                break;
 			default:				
-				left_data_len = 0;
-				ret = -1;
+			    ret = -1;
+			    left_data_len = 0;
 				break;
 		}
 
