@@ -607,7 +607,7 @@ UINT8 RFC_CalcBgRssi(UINT8 ch, UINT8 initrssi, UINT8 rssithreshold, UINT8 noiser
         BSP_Delay10US(5);
     }
 
-    RF_idle();
+//    RF_idle();
 
     if(dutycycle != NULL)
     {
