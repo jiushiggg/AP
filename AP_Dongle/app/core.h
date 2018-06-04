@@ -2,6 +2,7 @@
 #define _CORE_H_
 
 #include "datatype.h"
+#include "xmodem.h"
 
 #define CORE_CMD_SCAN_DEVICE            0x1006          //use uart 1step
 #define CORE_CMD_ESL_UPDATA_REQUEST		0x1041
@@ -35,23 +36,6 @@
 #define CORE_CMD_PARA_ERROR				0x10F5
 #define CORE_CMD_ERROR					0x10FF
 
-#define CORE_CMD_LEN					256
-typedef struct
-{
-    UINT16 cmd;
-    UINT32 cmd_len;
-    UINT8 cmd_buf[CORE_CMD_LEN];
-    UINT8 *data_ptr;
-    UINT32 data_len;
-    UINT32 flash_data_addr;
-    UINT32 flash_data_len;
-    UINT32 flash_ack_addr;
-    UINT32 flash_ack_len;
-    UINT16 ack;
-    UINT8 ack_len;
-    UINT8 *ack_ptr;
-    UINT8 ack_buf[CORE_CMD_LEN];
-}core_task_t;
 
 
 /* Stack size in bytes */
@@ -75,6 +59,26 @@ typedef struct
 
 #define CORE_TASK_SIZE          (sizeof(core_task_t))
 #define CORE_TASK_ADDR          (GPRAM_BASE+TASK0_STACKSIZE+TASK1_STACKSIZE+XCB_BUF_SIZE+XMODEM_LEN_ALL_SIZE)
+
+
+
+#define CORE_CMD_LEN            XMODEM_LEN_ALL
+typedef struct
+{
+    UINT16 cmd;
+    UINT32 cmd_len;
+    UINT8 cmd_buf[CORE_CMD_LEN];
+    UINT8 *data_ptr;
+    UINT32 data_len;
+    UINT32 flash_data_addr;
+    UINT32 flash_data_len;
+    UINT32 flash_ack_addr;
+    UINT32 flash_ack_len;
+    UINT16 ack;
+    UINT8 ack_len;
+    UINT8 *ack_ptr;
+    UINT8 ack_buf[CORE_CMD_LEN];
+}core_task_t;
 
 extern void Core_Init(void);
 extern void Core_RxHandler(void);
