@@ -290,7 +290,7 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 	wait(2000);
 }
 
-uint8_t mydebug = 0;
+
 static UINT8 query_miss_slot = 0;
 static 	UINT8 first_pkg_data[SIZE_ESL_DATA_BUF] = {0};
 
@@ -359,32 +359,11 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 		set_power_rate(RF_DEFAULT_POWER,table->rx_datarate);
 		set_frequence(channel);
 		memset(rxbuf, 0, sizeof(rxbuf));
-#if 0
-		if (1 == mydebug){
-		    while(1){
-	            if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), deal_timeout) == 0){
-	                pdebug("recv timeout.\r\n");
-	                continue;
-	            }
-                if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), 20000000) == 0){
-                    pdebug("recv timeout.\r\n");
-                    continue;
-                }
-		    }
-		}else {
-	        if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), deal_timeout) == 0)
-	        {
-	            pdebug("recv timeout.\r\n");
-	            continue;
-	        }
-		}
-#else
         if(recv_data(table->master_id, rxbuf, sizeof(rxbuf), deal_timeout) == 0)
         {
             pdebug("recv timeout.\r\n");
             continue;
         }
-#endif
 		pdebug("recv:");
 		pdebughex(rxbuf, sizeof(rxbuf));
 		ret++;
@@ -529,7 +508,6 @@ INT32 m1_sleep_all(updata_table_t *table)
 	
 	return ret;
 }
-extern uint8_t mydebug;
 UINT8 m1_updata_loop(updata_table_t *table)
 {
 	UINT8 ret = 0;
@@ -569,7 +547,6 @@ UINT8 m1_updata_loop(updata_table_t *table)
 			pdebug("m1_updata_loop quit1\r\n");
 			break;
 		}
-		mydebug = 1;
 		m1_send_sleep(table, timer);
 		//if(table->ok_esl_num==table->esl_num ||  table->esl_num==(table->ok_esl_num/SLEEP_FRAME_CNT))
 		if(table->ok_esl_num==table->esl_num)
