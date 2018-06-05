@@ -201,12 +201,9 @@ INT32 frame1_start(UINT16 cmd, UINT32 addr, UINT32 len)
 		dur = frame1_para.duration;
 	}
 	
-//	pdebug("frame1:datarate=%d,power=%d,duration=%dms,mode=%d,num=%d\r\n",
-//			frame1_para.datarate, frame1_para.power, dur,
-//			frame1_para.mode, frame1_para.num);
-	pinfo(":d=%d,p=%d,d=%dms,m=%d,n=%d\r\n",
-	          frame1_para.datarate, frame1_para.power, dur,
-	          frame1_para.mode, frame1_para.num);
+	pdebug("frame1:datarate=%d,power=%d,duration=%dms,mode=%d,num=%d\r\n",
+			frame1_para.datarate, frame1_para.power, dur,
+			frame1_para.mode, frame1_para.num);
 	
 	if(frame1_para.duration == 0)
 	{

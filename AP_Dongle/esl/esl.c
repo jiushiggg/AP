@@ -54,9 +54,9 @@ void reset_local_cmd(void)
 void debug_local_cmd(void)
 {
 	pdebug("+++++++++++++++++++++++++++++++++++++++++++++\r\n");
-	pinfoEsl("set cmd = 0x%04X, addr = 0x%08X, len = %d\r\n", set_cmd, set_addr, set_len);
-	pinfoEsl("wkup addr = 0x%08X, len = %d\r\n", wkup_addr, wkup_len);
-	pinfoEsl("frame1 addr = 0x%08X, len = %d\r\n", frame1_addr, frame1_len);
+	pdebug("set cmd = 0x%04X, addr = 0x%08X, len = %d\r\n", set_cmd, set_addr, set_len);
+	pdebug("wkup addr = 0x%08X, len = %d\r\n", wkup_addr, wkup_len);
+	pdebug("frame1 addr = 0x%08X, len = %d\r\n", frame1_addr, frame1_len);
 	pdebug("sleep addr = 0x%08X, len = %d\r\n", sleep_addr, sleep_len);
 	pdebug("updata cmd = 0x%04X, addr = 0x%08X, len = %d\r\n", updata_cmd, updata_addr, updata_len);
 	pdebug("+++++++++++++++++++++++++++++++++++++++++++++\r\n");
@@ -75,7 +75,7 @@ INT32 parse_cmd_data(UINT32 cmd_data_addr, UINT32 cmd_data_len)
 	while(left_data_len > 0)
 	{
 		cmd = g3_get_cmd(addr, &cmd_len);
-		pinfoEsl("get cmd=0x%04X, cmd_len=%d, cmd_addr=0x%08X, left len=%d.\r\n",
+		pdebug("get cmd=0x%04X, cmd_len=%d, cmd_addr=0x%08X, left len=%d.\r\n",
 				cmd, cmd_len, addr, left_data_len);
 	
 		switch(cmd)
