@@ -59,7 +59,7 @@ void dummy_chaining_mode(updata_table_t *table, INT32 nus)
                 *dummy_offset = addr+LEN_OF_FRAME1_PARA;
             }
 
-            if(get_one_data(*dummy_offset, id, &channel, &data_len, data, sizeof(data)) == 0)
+            if(get_one_data(*dummy_offset, id, &channel, &data_len, data, PAYLOAD_LENGTH) == 0)
             {
                 perr("frame1 dummy get data\r\n");
                 break;

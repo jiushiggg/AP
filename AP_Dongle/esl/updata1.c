@@ -411,7 +411,7 @@ static INT32 m1_query_miss(updata_table_t *table, UINT8 timer)
 		pdebug("failed pkg num = %d\r\n", pESL[i].failed_pkg_num);
 	}
 
-	dummy(table, table->tx_duration);
+//	dummy(table, table->tx_duration);
 	exit_txrx();
 	wait(2000);
 		
