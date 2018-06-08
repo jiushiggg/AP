@@ -514,7 +514,7 @@ const NVSSPI25X_HWAttrs nvsSPI25XHWAttrs[1] = {
         .verifyBufSize = 64,
         .spiHandle = NULL,
         .spiIndex = 0,
-        .spiBitRate = 4000000,
+        .spiBitRate = 12000000,
         .spiCsnGpioIndex = CC2640R2_LAUNCHXL_GPIO_SPI_FLASH_CS,
     },
 };
