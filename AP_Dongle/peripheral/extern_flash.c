@@ -48,7 +48,8 @@ ReturnMsg CMD_PP(WORD addr, WORD data, WORD len)
             tmp_len = len;
             len = 0;
         }
-        NVS_write(nvsHandle, addr, (void *)data, tmp_len, NVS_WRITE_POST_VERIFY);
+        //NVS_write(nvsHandle, addr, (void *)data, tmp_len, NVS_WRITE_POST_VERIFY);
+        NVS_write(nvsHandle, addr, (void *)data, tmp_len, 0);
         data += tmp_len;
         addr += tmp_len;
     }
