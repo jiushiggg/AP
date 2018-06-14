@@ -209,7 +209,6 @@ static void ISR_Handle(volatile timer_t* n)
 //		    BSP_GPIO_test(DEBUG_TEST);
 			if((++n->count) >= n->direction)
 			{
-			    BSP_GPIO_test(DEBUG_TEST);
 				n->timeout = TIME_OUT;
 			}
 		}
