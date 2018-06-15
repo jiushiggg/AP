@@ -23,7 +23,7 @@ typedef enum
 
 typedef struct MyStruct {
     List_Elem elem;
-    uint8_t* pbuf;
+    uint8_t pbuf[26];
 } MyStruct;
 
 extern List_List list;

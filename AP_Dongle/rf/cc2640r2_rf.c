@@ -72,8 +72,8 @@ UINT8 data1[PAYLOAD_LENGTH] = {0};
 
 List_Elem* listInit(uint8_t* pack0, uint8_t* pack1)
 {
-    foo[0].pbuf = pack0;
-    foo[1].pbuf = pack1;
+//    foo[0].pbuf = pack0;
+//    foo[1].pbuf = pack1;
     List_clearList(&list);
     List_put(&list, (List_Elem *)&foo[0]);
     List_put(&list, (List_Elem *)&foo[1]);
@@ -92,7 +92,7 @@ void txcallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
     {
         /* Successful TX */
         memcpy(txPacket, ((MyStruct*)write2buf)->pbuf, PAYLOAD_LENGTH);
-        write2buf = List_next(write2buf);
+//        write2buf = List_next(write2buf);
         Semaphore_post(txDoneSem);
         //send_one_finish = true;
     }else {
