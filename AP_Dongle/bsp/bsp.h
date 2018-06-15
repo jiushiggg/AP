@@ -12,7 +12,7 @@
 #define DEBUG_IO3   IOID_19
 #define DEBUG_TEST  IOID_15
 
-#ifdef 0
+#if 0
 #define LED_ON(n)       GPIO_setDio(n)
 #define LED_OFF(n)      GPIO_clearDio(n)
 #define LED_TOGGLE(n)   GPIO_toggleDio(n)

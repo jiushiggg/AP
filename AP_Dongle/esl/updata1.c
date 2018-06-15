@@ -259,11 +259,11 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 		i++;
 		if(i == table->esl_num)
 		{
-//			if((dummy_us=((uint16_t)table->tx_interval*1000-k*table->tx_duration)) >= 0)
-//			{
-//			    dummy_chaining_mode(table, dummy_us);
-//				f = 1;
-//			}
+			if((dummy_us=((uint16_t)table->tx_interval*1000-k*table->tx_duration)) >= 0)
+			{
+			    dummy_chaining_mode(table, dummy_us);
+				f = 1;
+			}
             i = k = 0;
             j++;
 		}
