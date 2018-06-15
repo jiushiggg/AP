@@ -111,7 +111,7 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
 //              pESL[i].failed_pkg_offset = (taddr-pESL[i].first_pkg_addr)/SIZE_ESL_DATA_SINGLE + 1;
                 pdebug("send miss addr 0x%08X, sn = %d\r\n", taddr, tsn);
             }
-
+            data = ((MyStruct*)write2buf)->pbuf;
             if(get_one_data(taddr, id, &ch, &len, data, SIZE_ESL_DATA_BUF) == 0)
             {
                 perr("g2_transmit get data!\r\n");
@@ -129,8 +129,9 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
                 write2buf = List_next(write2buf);
             }else{
                 RF_wait_send_finish(id);
+                write2buf = List_next(write2buf);
             }
-            data = ((MyStruct*)write2buf)->pbuf;
+
 
 #else
             if (PEND_START == rf_flg){
