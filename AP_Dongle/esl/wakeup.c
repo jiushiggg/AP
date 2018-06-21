@@ -7,6 +7,8 @@
 #include "bsp.h"
 #include "core.h"
 
+
+#define RF_CHANING_MODE
 INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 {
 	INT32 ret = 0;
@@ -15,7 +17,11 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 	UINT16 timer_count = 0;
 	
 	UINT8 id[4] = {0};
-	UINT8 data[26] = {0};
+#ifdef RF_CHANING_MODE
+    UINT8 *data = NULL;
+#else
+    UINT8 data[SIZE_ESL_DATA_BUF] = {0};
+#endif
 	UINT8 data_len = 0;
 	UINT8 power = 0;
 	UINT8 channel = 0;
@@ -28,7 +34,10 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 	uint32_t rf_time = 0;
 	RF_EventMask result;
 	uint8_t  pend_flg = PEND_STOP;
-
+#ifdef RF_CHANING_MODE
+    write2buf = listInit(data0, data1);
+    data = ((MyStruct*)write2buf)->pbuf;
+#endif
 	pdebug("wkup addr=0x%08X, len=%d\r\n", addr, len);
 
 	if((addr==0) || (len==0))
@@ -58,8 +67,10 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 		pdebug("warning: wkup duration is 0\r\n");
 		goto done;
 	}
-
-	if(get_one_data(addr+OFFSET_WKUP_DATA, id, &channel, &data_len, data, sizeof(data)) == 0)
+#ifdef RF_CHANING_MODE
+    data = ((MyStruct*)write2buf)->pbuf;
+#endif
+	if(get_one_data(addr+OFFSET_WKUP_DATA, id, &channel, &data_len, data, SIZE_ESL_DATA_BUF) == 0)
 	{
 		perr("g3_wkup() get data from flash.\r\n");
 		ret = -3;
@@ -84,9 +95,13 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
     data_len = 26;
 #endif
 
+
     set_power_rate(power, datarate);
     set_frequence(channel);
+#ifdef RF_CHANING_MODE
+#else
     send_data_init(id, data, data_len, 5000);
+#endif
     rf_time = RF_getCurrentTime();
 	if(mode == 1)
 	{
@@ -112,7 +127,9 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 			pdebug("g3_wkup quit\r\n");
 			break;
 		}
-		
+#ifdef RF_CHANING_MODE
+		data = ((MyStruct*)write2buf)->pbuf;
+#endif
 		if(type == 0) // 0 is default
 		{
 			timer_count = TIM_GetCount(timer);
@@ -130,11 +147,25 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 		}
 		LED_ON(DEBUG_IO1);
 		rf_time += interval;
-		if (PEND_START == pend_flg){
-		    send_pend(result);
-		}
-		result = send_async(rf_time);
-		pend_flg = PEND_START;
+
+#ifdef RF_CHANING_MODE
+        if (PEND_STOP == pend_flg){
+            pend_flg = PEND_START;
+            memcpy(txPacket, data, data_len);
+            result = send_chaningmode(id, data, data_len, 6000);
+            write2buf = List_next(write2buf);
+            memcpy(((MyStruct*)write2buf)->pbuf, data, data_len);
+        }else{
+            RF_wait_cmd_finish();
+            write2buf = List_next(write2buf);
+        }
+#else
+        if (PEND_START == pend_flg){
+            send_pend(result);
+        }
+        result = send_async(rf_time);
+        pend_flg = PEND_START;
+#endif
 //		if(send_data(id, data, data_len, channel, 5000) != data_len)
 //		{
 //			perr("g3_wkup() send data.\r\n");
@@ -145,6 +176,10 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 		LED_OFF(DEBUG_IO1);
 //		BSP_Delay10US(interval);
 	}
+#ifdef RF_CHANING_MODE
+    RF_wait_cmd_finish(); //Wait for the last packet to be sent
+    RF_cancle(result);
+#endif
 	LED_TOGGLE(DEBUG_IO0);
 	TIM_Close(timer);
 	

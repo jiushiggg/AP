@@ -222,7 +222,9 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 //				pESL[i].failed_pkg_offset = (taddr-pESL[i].first_pkg_addr)/SIZE_ESL_DATA_SINGLE + 1;
 				pdebug("send miss 0x%02X-0x%02X-0x%02X-0x%02X pkg %d, ch=%d, len=%d\r\n", id[0], id[1], id[2], id[3], tsn, ch, len);
 			}
+#ifdef RF_CHANING_MODE
 			data = ((MyStruct*)write2buf)->pbuf;
+#endif
  			if(get_one_data(taddr, id, &ch, &len, data, SIZE_ESL_DATA_BUF) == 0)
 			{
 				perr("m1_transmit() get data!\r\n");
@@ -235,10 +237,10 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 			    set_frequence(ch);
 			    memcpy(txPacket, data, PAYLOAD_LENGTH);
 			    result = send_chaningmode(id, data, len, 6000);
-			    write2buf = List_next(write2buf);
+//			    write2buf = List_next(write2buf);
 			}else{
 			    RF_wait_send_finish(id);
-			    write2buf = List_next(write2buf);
+//              write2buf = List_next(write2buf);
 			}
 //			data = ((MyStruct*)write2buf)->pbuf;
 
@@ -250,6 +252,7 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
             rf_flg = PEND_START;
 #endif
 		user_continue:
+		    write2buf = List_next(write2buf);
 			left_pkg_num--;
 			k++;
 			t++;
@@ -259,7 +262,7 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 		i++;
 		if(i == table->esl_num)
 		{
-			if((dummy_us=((uint16_t)table->tx_interval*1000-k*table->tx_duration)) >= 0)
+			if((dummy_us=((uint16_t)table->tx_interval*1000-k*table->tx_duration))>=0 && rf_flg==RF_WORKING)
 			{
 			    dummy_chaining_mode(table, dummy_us);
 				f = 1;
@@ -267,32 +270,32 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
             i = k = 0;
             j++;
 		}
-		if((t%50==0) && (t<ESL_REC_FRAME1_TIMEOUT) && (f==0))
-		{
+//		if((t%50==0) && (t<ESL_REC_FRAME1_TIMEOUT) && (f==0))
+//		{
 //		    dummy_chaining_mode(table, table->tx_duration);
-		}
+//		}
 	}
 #ifdef RF_CHANING_MODE
 	RF_wait_cmd_finish(); //Wait for the last packet to be sent
 	RF_cancle(result);
 #endif
-	if((i != table->esl_num) && (f == 0))
-	{
-		if((dummy_us=(table->tx_interval*1000-k*table->tx_duration)) >= 0)
-		{
-			dummy(table, dummy_us);
-			f = 1;
-		}
-		else
-		{
-			dummy(table, table->tx_duration);
-		}
-	}
+//	if((i != table->esl_num) && (f == 0))           //简化移植的程序。没有必要再发空帧。正常发送有足够的时间开启接收查询。
+//	{
+//		if((dummy_us=(table->tx_interval*1000-k*table->tx_duration)) >= 0)
+//		{
+//			dummy(table, dummy_us);
+//			f = 1;
+//		}
+//		else
+//		{
+//			dummy(table, table->tx_duration);
+//		}
+//	}
 	
 	wait(2000);
 }
 
-#undef RF_CHANING_MODE
+//#undef RF_CHANING_MODE
 static void m1_transmit_filling_packet(updata_table_t *table, UINT8 timer)
 {
     INT32 i = 0, j = 0, k = 0, t = 0;
@@ -309,6 +312,7 @@ static void m1_transmit_filling_packet(updata_table_t *table, UINT8 timer)
     mode1_esl_t *pESL = (mode1_esl_t *)table->data;
     UINT16 tsn = 0;
     UINT32 taddr = 0;
+    UINT8 f = 0;
     uint16_t result=0;
     UINT8 rf_flg = RF_IDLE;
 #ifdef RF_CHANING_MODE
@@ -385,6 +389,9 @@ static void m1_transmit_filling_packet(updata_table_t *table, UINT8 timer)
 //              pESL[i].failed_pkg_offset = (taddr-pESL[i].first_pkg_addr)/SIZE_ESL_DATA_SINGLE + 1;
                 pdebug("send miss 0x%02X-0x%02X-0x%02X-0x%02X pkg %d, ch=%d, len=%d\r\n", id[0], id[1], id[2], id[3], tsn, ch, len);
             }
+#ifdef RF_CHANING_MODE
+            data = ((MyStruct*)write2buf)->pbuf;
+#endif
             if(get_one_data(taddr, id, &ch, &len, data, SIZE_ESL_DATA_BUF) == 0)
             {
                 perr("m1_transmit() get data!\r\n");
@@ -397,11 +404,12 @@ static void m1_transmit_filling_packet(updata_table_t *table, UINT8 timer)
                 set_frequence(ch);
                 memcpy(txPacket, data, PAYLOAD_LENGTH);
                 result = send_chaningmode(id, data, len, 6000);
-                write2buf = List_next(write2buf);
+//              write2buf = List_next(write2buf);
             }else{
                 RF_wait_send_finish(id);
+//              write2buf = List_next(write2buf);
             }
-            data = ((MyStruct*)write2buf)->pbuf;
+//          data = ((MyStruct*)write2buf)->pbuf;
 
 #else
             if (PEND_START == rf_flg){
@@ -411,33 +419,45 @@ static void m1_transmit_filling_packet(updata_table_t *table, UINT8 timer)
             rf_flg = PEND_START;
 #endif
         user_continue:
+            write2buf = List_next(write2buf);
             left_pkg_num--;
             k++;
+            t++;
         }
 
+        f = 0;
         i++;
         if(i == table->esl_num)
         {
-            uint8_t dummy_num = 0;
-            dummy_us=((uint16_t)table->tx_interval*1000-k*table->tx_duration);
-            dummy_num = dummy_us/table->tx_duration;
-            for (t=0; t<dummy_num; t++){
-                if (PEND_START == rf_flg){
-                    send_pend(result);
-                }
-                result = send_without_wait(id, data, len, ch, 6000);
-                rf_flg = PEND_START;
+            if((dummy_us=((uint16_t)table->tx_interval*1000-k*table->tx_duration))>=0 && rf_flg==RF_WORKING)
+            {
+//                dummy_chaining_mode(table, dummy_us);
+                f = 1;
             }
             i = k = 0;
             j++;
         }
+//      if((t%50==0) && (t<ESL_REC_FRAME1_TIMEOUT) && (f==0))
+//      {
+//          dummy_chaining_mode(table, table->tx_duration);
+//      }
     }
 #ifdef RF_CHANING_MODE
     RF_wait_cmd_finish(); //Wait for the last packet to be sent
     RF_cancle(result);
 #endif
-
-    wait(2000);
+//  if((i != table->esl_num) && (f == 0))           //简化移植的程序。没有必要再发空帧。正常发送有足够的时间开启接收查询。
+//  {
+//      if((dummy_us=(table->tx_interval*1000-k*table->tx_duration)) >= 0)
+//      {
+//          dummy(table, dummy_us);
+//          f = 1;
+//      }
+//      else
+//      {
+//          dummy(table, table->tx_duration);
+//      }
+//  }
 }
 
 static UINT8 query_miss_slot = 0;
