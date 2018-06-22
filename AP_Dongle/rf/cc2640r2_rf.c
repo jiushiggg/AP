@@ -125,10 +125,10 @@ void semaphore_RFInit(void)
     /* Init params */
     Semaphore_Params_init(&params);
     Error_init(&eb);
-
     /* Create semaphore instance */
-    txDoneSem = Semaphore_create(0, &params, &eb);
     rxDoneSem = Semaphore_create(0, &params, &eb);
+    params.mode = ti_sysbios_knl_Semaphore_Mode_BINARY;
+    txDoneSem = Semaphore_create(0, &params, &eb);
 }
 
 
