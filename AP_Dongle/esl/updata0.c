@@ -70,7 +70,7 @@ void dummy_chaining_mode(updata_table_t *table, INT32 nus)
             pdebughex(data, data_len);
 
             ((MyStruct*)write2buf)->tx->syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
-            RF_wait_send_finish(id);
+            RF_wait_cmd_finish();
             write2buf = List_next(write2buf);
 
             //result = send_without_wait(id, data, data_len, channel, 6000);
