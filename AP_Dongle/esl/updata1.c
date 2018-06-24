@@ -271,7 +271,7 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
             i = k = 0;
             j++;
 		}
-		if((t%50==0) && (t<ESL_REC_FRAME1_TIMEOUT) && (f==0))
+		if((t%100==0) && (t<ESL_REC_FRAME1_TIMEOUT) && (f==0)&& rf_flg==RF_WORKING)
 		{
 		    dummy_chaining_mode(table, table->tx_duration);
 		}

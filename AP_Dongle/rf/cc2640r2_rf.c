@@ -46,7 +46,6 @@
 #else
     #error This compiler is not supported.
 #endif
-uint8_t txPacket[PAYLOAD_LENGTH];
 
 static void RF_MapIO(void);
 void clear_queue_buf(void);
@@ -92,8 +91,6 @@ void txcallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
     if (e & RF_EventCmdDone)
     {
         /* Successful TX */
-//        memcpy(txPacket, ((MyStruct*)write2buf)->pbuf, PAYLOAD_LENGTH);
-//        write2buf = List_next(write2buf);
         Semaphore_post(txDoneSem);
     }else {
 

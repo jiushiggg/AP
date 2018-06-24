@@ -67,7 +67,6 @@ extern List_Elem *write2buf;
 #define EasyLink_us_To_RadioTime(us) (us*(4000000/1000000))
 
 #define PAYLOAD_LENGTH  26
-extern uint8_t txPacket[PAYLOAD_LENGTH];
 extern dataQueue_t dataQueue;
 extern rfc_dataEntryGeneral_t* currentDataEntry;
 extern uint8_t packetLength;
