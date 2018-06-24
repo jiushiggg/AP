@@ -23,6 +23,7 @@ typedef enum
 
 typedef struct MyStruct {
     List_Elem elem;
+    rfc_CMD_PROP_TX_ADV_t *tx;
     uint8_t pbuf[26];
 } MyStruct;
 

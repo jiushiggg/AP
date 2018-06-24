@@ -134,7 +134,7 @@ rfc_CMD_FS_t RF_cmdFs =
 };
 
 // CMD_PROP_TX_ADV
-rfc_CMD_PROP_TX_ADV_t RF_cmdPropTxAdv =
+rfc_CMD_PROP_TX_ADV_t RF_cmdPropTxAdv[2] ={
 {
     .commandNo = CMD_PROP_TX_ADV,
     .status = 0x0000,
@@ -153,6 +153,26 @@ rfc_CMD_PROP_TX_ADV_t RF_cmdPropTxAdv =
     .pktLen = 26, // SET APPLICATION PAYLOAD LENGTH
     .syncWord = 0x52567853,
     .pPkt = 0, // INSERT APPLICABLE POINTER: (uint8_t*)&xxx
+},
+{
+    .commandNo = CMD_PROP_TX_ADV,
+    .status = 0x0000,
+    .pNextOp = 0, // INSERT APPLICABLE POINTER: (uint8_t*)&xxx
+    .startTime = 0x00000000,
+    .startTrigger.triggerType = 0x0,
+    .startTrigger.bEnaCmd = 0x0,
+    .startTrigger.triggerNo = 0x0,
+    .startTrigger.pastTrig = 0x0,
+    .condition.rule = 0x1,
+    .condition.nSkip = 0x0,
+    .pktConf.bFsOff = 0x0,
+    .pktConf.bUseCrc = 0x1,
+    .pktConf.bCrcIncSw = 0x0,
+    .pktConf.bCrcIncHdr = 0x0,
+    .pktLen = 26, // SET APPLICATION PAYLOAD LENGTH
+    .syncWord = 0x52567853,
+    .pPkt = 0, // INSERT APPLICABLE POINTER: (uint8_t*)&xxx
+}
 };
 
 // CMD_PROP_RX_ADV

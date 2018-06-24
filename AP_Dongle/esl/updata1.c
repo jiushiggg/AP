@@ -148,9 +148,11 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 	UINT8 f = 0;
     uint16_t result=0;
     UINT8 rf_flg = RF_IDLE;
+
+    send_chaningmode_init();
 #ifdef RF_CHANING_MODE
     write2buf = listInit(data0, data1);
-    data = ((MyStruct*)write2buf)->pbuf;
+    data = ((MyStruct*)write2buf)->tx->pPkt;
 #endif
 	set_power_rate(table->tx_power, table->tx_datarate);
 	
@@ -223,19 +225,21 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 				pdebug("send miss 0x%02X-0x%02X-0x%02X-0x%02X pkg %d, ch=%d, len=%d\r\n", id[0], id[1], id[2], id[3], tsn, ch, len);
 			}
 #ifdef RF_CHANING_MODE
-			data = ((MyStruct*)write2buf)->pbuf;
+			data = ((MyStruct*)write2buf)->tx->pPkt;
 #endif
  			if(get_one_data(taddr, id, &ch, &len, data, SIZE_ESL_DATA_BUF) == 0)
 			{
 				perr("m1_transmit() get data!\r\n");
 				goto user_continue;
 			}
+ 			((MyStruct*)write2buf)->tx->syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+
  			pdebughex(data, len);
 #ifdef RF_CHANING_MODE
 			if (RF_IDLE == rf_flg){
 			    rf_flg = RF_WORKING;
 			    set_frequence(ch);
-			    memcpy(txPacket, data, PAYLOAD_LENGTH);
+			    //memcpy(txPacket, data, PAYLOAD_LENGTH);
 			    result = send_chaningmode(id, data, len, 6000);
 //			    write2buf = List_next(write2buf);
 			}else{
@@ -732,7 +736,8 @@ UINT8 m1_updata_loop(updata_table_t *table)
 			break;
 		}	
 		
-		m1_transmit_filling_packet(table, timer);
+		//m1_transmit_filling_packet(table, timer);
+		m1_transmit(table, timer);
 		if(TIM_CheckTimeout(timer) == TIME_OUT)
 		{
 			break;

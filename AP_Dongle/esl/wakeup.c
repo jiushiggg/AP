@@ -8,7 +8,7 @@
 #include "core.h"
 
 
-#define RF_CHANING_MODE
+//#define RF_CHANING_MODE
 INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 {
 	INT32 ret = 0;
