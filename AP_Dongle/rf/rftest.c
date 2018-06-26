@@ -446,14 +446,27 @@ INT32 rft_ber(UINT8 *ack_buf, INT32 size)
     return ret;
 }
 
-UINT8 gFTRummanTestChannel = 128;
-INT8 gFTRummanTestPower = 1;
-void rft_tx_null(void)
+
+void rft_tx_null(uint8_t channel, int8_t power)
 {
 
-    set_power_rate(gFTRummanTestPower,DATA_RATE_500K);
-    set_frequence(gFTRummanTestChannel);
+    set_power_rate(power,DATA_RATE_500K);
+    set_frequence(channel);
 	RF_carrierWave(true);
+}
+
+INT32 calibrate_freq(core_task_t *task)
+{
+//    set_power_rate(gFTRummanTestPower,DATA_RATE_500K);
+//    set_frequence(gFTRummanTestChannel);
+    RF_carrierWave(true);
+}
+
+INT32 calibrate_power(core_task_t *task)
+{
+//    set_power_rate(gFTRummanTestPower,DATA_RATE_500K);
+//    set_frequence(gFTRummanTestChannel);
+    RF_carrierWave(true);
 }
 
 #define SCAN_BG_DEBUG

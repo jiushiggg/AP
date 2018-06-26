@@ -134,12 +134,12 @@ void Core_RxHandler(void)
 	memcpy((void *)&local_task.cmd_len, local_task.data_ptr+2, 4);
 	pinfo("Core_RxHandler cmd=0x%04X, cmd len=%d\r\n", local_task.cmd, local_task.cmd_len);
 //	pdebughex(local_task.data_ptr, local_task.data_len);
-	if(local_task.cmd_len > sizeof(local_task.cmd_buf))
+	if(local_task.cmd_len > sizeof(local_task.cmd_buf.buf))
 	{
 		perr("Core_RxHandler() cmd len too big!\r\n");
 		goto done;
 	}	
-	memcpy(local_task.cmd_buf, local_task.data_ptr+6, local_task.cmd_len);
+	memcpy(local_task.cmd_buf.buf, local_task.data_ptr+6, local_task.cmd_len);
 
 	switch(local_task.cmd)
 	{
@@ -193,6 +193,12 @@ void Core_RxHandler(void)
 		case CORE_CMD_SCAN_DEVICE:   //0x1006
 		    Core_HandleScanAck(&local_task);
 		    break;
+		case CORE_CMD_CALIBRATE_POWER:
+		    Core_HandleCalibratePower(&local_task);
+		    break;
+        case CORE_CMD_CALIBRATE_FREQ:
+            Core_HandleCalibrateFreq(&local_task);
+            break;
 		default:
 			perr("Core_RxHandler() invalid cmd: 0x%04X\r\n", local_task.cmd);
 			break;
@@ -241,7 +247,7 @@ void Core_Mainloop(void)
         }
         if (event & EVENT_COMMUNICATE_RX_TO_FLASH){
             pinfo("cp2flash\r\n");
-            memcpy((UINT8 *)&local_task.flash_data_len, local_task.cmd_buf, sizeof(local_task.flash_data_len));
+            memcpy((UINT8 *)&local_task.flash_data_len, local_task.cmd_buf.buf, sizeof(local_task.flash_data_len));
             //BSP_lowGPIO(DEBUG_TEST);
             if(Core_MallocFlash(&local_task.flash_data_addr, local_task.flash_data_len) == 1){
                 //BSP_highGPIO(DEBUG_TEST);
@@ -329,7 +335,7 @@ void Core_Mainloop(void)
             {
                 if(Core_SendCmd(0x10f0, 0, NULL) == 1)
                 {
-                    heartbeat_mainloop(local_task.cmd_buf, local_task.cmd_len, hb_table, Core_SendData);
+                    heartbeat_mainloop(local_task.cmd_buf.buf, local_task.cmd_len, hb_table, Core_SendData);
                 }
             }
             pinfo("core g3 hb exit.\r\n");
@@ -352,7 +358,7 @@ void Core_Mainloop(void)
             }
             else
             {
-                if(RcReq_ParseCmd(local_task.cmd_buf, local_task.cmd_len, rcreq_table) < 0)
+                if(RcReq_ParseCmd(local_task.cmd_buf.buf, local_task.cmd_len, rcreq_table) < 0)
                 {
                     perr("RcReq_ParseCmd\r\n");
                     Core_SendCmd(0x10FF, 0, NULL);
@@ -406,7 +412,20 @@ void Core_Mainloop(void)
 //            pinfo("core tx esl ack.\r\n");
 //            Event_Clear(EVENT_TX_ESL_ACK);
 //        }
-
+        if (event & EVENT_CALIBRATE_FREQ)
+        {
+            pinfo("calibrate frequency\r\n");
+            calibrate_freq(&local_task);
+            Core_SendCmd(CORE_CMD_ACK, 0, NULL);
+            Event_Clear(EVENT_CALIBRATE_FREQ);
+        }
+        if (event & EVENT_CALIBRATE_POWER)
+        {
+            pinfo("calibrate power\r\n");
+            calibrate_power(&local_task);
+            Core_SendCmd(CORE_CMD_ACK, 0, NULL);
+            Event_Clear(EVENT_CALIBRATE_POWER);
+        }
         if(event & EVENT_SYSTEM_REBOOT)
         {
             pinfo("core system reboot.\r\n");
@@ -419,7 +438,7 @@ void Core_Mainloop(void)
         {
             INT32 fret = 0;
             pinfo("core ft ber.\r\n");
-            fret = rft_check_ber_data(local_task.cmd_buf, local_task.cmd_len);
+            fret = rft_check_ber_data(local_task.cmd_buf.buf, local_task.cmd_len);
             if(fret < 0)
             {
                 Core_SendCmd(CORE_CMD_PARA_ERROR, 0, NULL);
@@ -442,7 +461,7 @@ void Core_Mainloop(void)
         {
             INT32 fret = 0;
             pinfo("core scan bg\r\n");
-            fret = rft_scan_bg(local_task.cmd_buf, local_task.cmd_len, local_task.ack_buf, sizeof(local_task.ack_buf));
+            fret = rft_scan_bg(local_task.cmd_buf.buf, local_task.cmd_len, local_task.ack_buf, sizeof(local_task.ack_buf));
             if(fret <= 0)
             {
                 Core_SendCmd(CORE_CMD_ERROR, 0, NULL);
@@ -465,7 +484,7 @@ void Core_Mainloop(void)
             }
             else
             {
-                if(assap_ack_parse_cmd(local_task.cmd_buf, local_task.cmd_len, p_assap_ack_table) < 0)
+                if(assap_ack_parse_cmd(local_task.cmd_buf.buf, local_task.cmd_len, p_assap_ack_table) < 0)
                 {
                     Core_SendCmd(0x10FF, 0, NULL);
                 }
@@ -491,7 +510,7 @@ void Core_Mainloop(void)
             UINT8 *dst = Core_Malloc(ds);
             INT32 len = 0;
 
-            if(assap_scanwkup_parse_cmd(local_task.cmd_buf, local_task.cmd_len) < 0)
+            if(assap_scanwkup_parse_cmd(local_task.cmd_buf.buf, local_task.cmd_len) < 0)
             {
                 Core_SendCmd(0x10FF, 0, NULL);
             }
@@ -512,7 +531,7 @@ void Core_Mainloop(void)
 
         if(event & EVENT_RF_TXRX)
         {
-            local_task.ack_len = rf_txrx(local_task.cmd_buf, local_task.cmd_len, local_task.ack_buf, CORE_CMD_LEN);
+            local_task.ack_len = rf_txrx(local_task.cmd_buf.buf, local_task.cmd_len, local_task.ack_buf, CORE_CMD_LEN);
             Core_SendData(local_task.ack_buf, local_task.ack_len);
             Event_Clear(EVENT_RF_TXRX);
         }

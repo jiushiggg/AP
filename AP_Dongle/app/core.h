@@ -1,6 +1,7 @@
 #ifndef _CORE_H_
 #define _CORE_H_
 
+#include <stdint.h>
 #include "datatype.h"
 #include "xmodem.h"
 
@@ -22,6 +23,8 @@
 #define CORE_CMD_FT_RF_BER				0x10A1
 #define CORE_CMD_SCAN_BG				0x10A2
 #define CORE_CMD_RF_TXRX				0x10A3
+#define CORE_CMD_CALIBRATE_FREQ         0x10A4
+#define CORE_CMD_CALIBRATE_POWER        0x10A5
 
 #define CORE_CMD_SCAN_WKUP				0x10B1
 #define CORE_CMD_ASS_ACK				0x10B2
@@ -60,14 +63,55 @@
 #define CORE_TASK_SIZE          (sizeof(core_task_t))
 #define CORE_TASK_ADDR          (GPRAM_BASE+TASK0_STACKSIZE+TASK1_STACKSIZE+XCB_BUF_SIZE+XMODEM_LEN_ALL_SIZE)
 
-
-
 #define CORE_CMD_LEN            XMODEM_LEN_ALL
+
+#pragma pack(1)
+typedef enum{
+    TEST_FAILED     = 0,
+    TEST_CONTINUE   = 1,
+    TEST_PASS       = 255
+}EM_RESULT;
+
+typedef enum{
+    EM_UP   = 0,
+    EM_DOWN = 1
+}EM_DIRECTION;
+
+typedef struct{
+    uint16_t cmd;
+    uint32_t cmdlen;
+    EM_RESULT result;
+    uint8_t reserve;
+    uint8_t channel;
+    uint32_t channel_data;
+    EM_DIRECTION flg;
+    uint16_t fract_freq;
+}st_calibration_freq;
+
+typedef struct{
+    uint16_t cmd;
+    uint32_t cmdlen;
+    EM_RESULT result;
+    uint8_t reserve;
+    uint8_t power;
+    uint32_t power_data;
+    EM_DIRECTION flg;
+    uint16_t power_set;
+}st_calibration_power;
+
+
+typedef union {
+    UINT8                   buf[CORE_CMD_LEN];
+    st_calibration_freq     calib_freq;
+    st_calibration_power    calib_power;
+}un_cmd_buf;
+
+
 typedef struct
 {
     UINT16 cmd;
     UINT32 cmd_len;
-    UINT8 cmd_buf[CORE_CMD_LEN];
+    un_cmd_buf cmd_buf;
     UINT8 *data_ptr;
     UINT32 data_len;
     UINT32 flash_data_addr;
@@ -80,6 +124,8 @@ typedef struct
     UINT8 ack_buf[CORE_CMD_LEN];
 }core_task_t;
 
+
+#pragma pack()
 extern void Core_Init(void);
 extern void Core_RxHandler(void);
 extern void Core_TxHandler(void);

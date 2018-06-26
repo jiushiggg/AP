@@ -56,6 +56,7 @@ extern List_Elem *write2buf;
 #define  RF_TX_POWER_4DB    ((uint8_t)4)
 #define  RF_TX_POWER_5DB    ((uint8_t)5)
 #define  RF_FREQUENCY_UNKNOW   -128
+#define POWER_LEVEL  4
 
 
 

@@ -31,11 +31,11 @@ eventStatus Core_CheckBusy(void)
 	}
 }
 
-extern UINT8 gFTRummanTestChannel;
-extern UINT8 gFTRummanTestPower;
 
 void Core_HandleRummanTest(core_task_t *task)
 {
+    uint8_t channel;
+    int8_t power;
 	/* handle cmd */
 	if(EVENT_BUSY == Core_CheckBusy())
 	{
@@ -43,18 +43,18 @@ void Core_HandleRummanTest(core_task_t *task)
 	}
 	else
 	{
-		gFTRummanTestChannel = task->cmd_buf[0];
-		gFTRummanTestPower = task->cmd_buf[1];
+	    channel = task->cmd_buf.buf[0];
+	    power = task->cmd_buf.buf[1];
 		/* check para */
-		if(gFTRummanTestPower > 3)
+		if(power < POWER_LEVEL)
 		{
-			task->ack = CORE_CMD_PARA_ERROR; // ack
+            task->ack = CORE_CMD_ACK; // ack
+            pinfo("Core cmd rumman test, channel: %d, power: %d\r\n", channel, power);
+            rft_tx_null(channel, power);
 		}
 		else
 		{
-			task->ack = CORE_CMD_ACK; // ack
-			pinfo("Core cmd rumman test, channel: %d, power: %d\r\n", gFTRummanTestChannel, gFTRummanTestPower);
-			rft_tx_null();
+		    task->ack = CORE_CMD_PARA_ERROR; // ack
 		}		
 	}
 	
@@ -234,7 +234,7 @@ void Core_HandleQueryStatus(core_task_t *task)
 extern volatile UINT32 s_debug_level;
 void Core_SetDebugLevel(core_task_t *task)
 {
-	memcpy((void *)&s_debug_level, task->cmd_buf, sizeof(s_debug_level));
+	memcpy((void *)&s_debug_level, task->cmd_buf.buf, sizeof(s_debug_level));
 	pinfo("core set debug level = %d.\r\n", s_debug_level);
 	if(s_debug_level > DEBUG_LEVEL_DEBUG)
 	{
@@ -246,7 +246,7 @@ void Core_SetDebugLevel(core_task_t *task)
 extern UINT32 g3_print_ctrl;
 void Core_SetRfLog(core_task_t *task)
 {
-	memcpy((void *)&g3_print_ctrl, task->cmd_buf, sizeof(g3_print_ctrl));
+	memcpy((void *)&g3_print_ctrl, task->cmd_buf.buf, sizeof(g3_print_ctrl));
 	pinfo("core set rf log print = %d.\r\n", g3_print_ctrl);
 }
 
@@ -288,7 +288,36 @@ void Core_HandleAssAck(core_task_t *task)
 		Event_Set(EVENT_ASS_ACK);
 	}
 }
+void Core_HandleCalibrateFreq(core_task_t *task)
+{
+    if(EVENT_BUSY == Core_CheckBusy())
+    {
+        task->ack = 0x10F1; // busy
+        task->ack_len = 0;
+        task->ack_ptr = NULL;
 
+        TIM_SetSoftInterrupt(1, Core_TxHandler);
+    }
+    else
+    {
+        Event_Set(EVENT_CALIBRATE_FREQ);
+    }
+}
+void Core_HandleCalibratePower(core_task_t *task)
+{
+    if(EVENT_BUSY == Core_CheckBusy())
+    {
+        task->ack = 0x10F1; // busy
+        task->ack_len = 0;
+        task->ack_ptr = NULL;
+
+        TIM_SetSoftInterrupt(1, Core_TxHandler);
+    }
+    else
+    {
+        Event_Set(EVENT_CALIBRATE_POWER);
+    }
+}
 void core_handle_rf_txrx(core_task_t *task)
 {
 	if(EVENT_BUSY == Core_CheckBusy())

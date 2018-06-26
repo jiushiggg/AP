@@ -12,6 +12,8 @@
 #define EVENT_RC_REQ			((UINT32)1<<7) //64
 #define EVENT_SCAN_WKUP			(1<<11)
 #define EVENT_ASS_ACK			(1<<12)
+#define EVENT_CALIBRATE_POWER   (1<<15)
+#define EVENT_CALIBRATE_FREQ    (1<<16)
 #define EVENT_RF_TXRX			(1<<17)
 #define EVENT_SCAN_BG			(1<<18)
 #define EVENT_FT_BER			(1<<19)

@@ -69,6 +69,8 @@ MyStruct foo[2];
 List_Elem *write2buf;
 UINT8 data0[PAYLOAD_LENGTH] = {0};
 UINT8 data1[PAYLOAD_LENGTH] = {0};
+int16_t frequency_offset = 0;
+int8_t power_offset = 0;
 
 List_Elem* listInit(uint8_t* pack0, uint8_t* pack1)
 {
@@ -154,11 +156,12 @@ void rf_init(void)
 }
 #define ESLWORKING_SET
 #ifdef ESLWORKING_SET
-#define POWER_LEVEL  4
+#define ALL_POWER_LEVEL 15
 //baseboard 13dbm, 10dbm, 6dbm, 0dbm
 //const uint16_t rf_tx_power[POWER_LEVEL]={0x194e, 0x144b, 0x0cc9, 0x0cc5};
 //T3 board 13dbm, 10dbm, 6dbm, 0dbm
-const uint16_t rf_tx_power[POWER_LEVEL]={0x1d52, 0x194e, 0xCCB, 0x0cc7};
+const uint16_t rf_all_tx_power[ALL_POWER_LEVEL]={0x0cc5,0x0cc6, 0x0cc7, 0x0cc9,0x0ccb,0x144b, 0x194e,0x1d52, 0x2558, 0x3161, 0x4214,0x4e18,0x5a1c, 0x9324, 0x9330};
+uint16_t rf_tx_power[POWER_LEVEL]={0x1d52, 0x194e, 0xCCB, 0x0cc7};
 #else
 #define POWER_LEVEL  15
 #define MIN_POWER_LEVE -25
@@ -169,64 +172,40 @@ const uint16_t rf_tx_power[POWER_LEVEL]={0x1d52, 0x194e, 0xCCB, 0x0cc7};
 const uint16_t rf_tx_power[POWER_LEVEL]={0x0cc5,0x0cc6, 0x0cc7, 0x0cc9,0x0ccb,0x144b, 0x194e,0x1d52, 0x2558, 0x3161, 0x4214,0x4e18,0x5a1c, 0x9324, 0x9330};
 
 #endif
-#if 0
-void set_rf_parameters(uint16_t Data_rate, uint16_t Tx_power, uint16_t  Frequency)
-{
-    //if use RF_runCmd set rate, rate must be set firstly.
-    switch(Data_rate)
-    {
-        case DATA_RATE_100K:
-            RF_cmdPropRadioSetup.symbolRate.preScale = 15;
-            RF_cmdPropRadioSetup.symbolRate.rateWord = 65536;
-            RF_cmdPropRadioSetup.modulation.modType = 0x0;
-            RF_cmdPropRadioSetup.modulation.deviation = 744;
-            RF_cmdPropRadioSetup.rxBw = 9;
-            RF_cmdPropRadioSetup.pRegOverride = (uint32_t*)pOverrides100;
-        break;
-        case  DATA_RATE_500K:
-            RF_cmdPropRadioSetup.symbolRate.preScale = 15;
-            RF_cmdPropRadioSetup.symbolRate.rateWord = 327680;
-            RF_cmdPropRadioSetup.modulation.modType = 0x0;
-            RF_cmdPropRadioSetup.modulation.deviation = 744;
-            RF_cmdPropRadioSetup.rxBw = 10;
-            RF_cmdPropRadioSetup.pRegOverride = (uint32_t*)pOverrides500;
-        break;
-        case  DATA_RATE_1M:
-        break;
-        case  DATA_RATE_2M:
-        break;
-        default:
-            RF_cmdPropRadioSetup.symbolRate.preScale = 15;
-            RF_cmdPropRadioSetup.symbolRate.rateWord = 327680;
-            RF_cmdPropRadioSetup.modulation.modType = 0x0;
-            RF_cmdPropRadioSetup.modulation.deviation = 744;
-            RF_cmdPropRadioSetup.rxBw = 10;
-            RF_cmdPropRadioSetup.pRegOverride = (uint32_t*)pOverrides500;
-        break;
-    }
-#ifdef ESLWORKING_SET
-    RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power];
-#else
-    if (Tx_power<=MAX_POWER_LEVE && Tx_power>=0){
-        RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power+POWER_ZERO_POSITION];
-    } else{
-        if (Tx_power<0 && Tx_power>=MIN_POWER_LEVE){
-            RF_cmdPropRadioSetup.txPower = rf_tx_power[POWER_ZERO_POSITION - ((~Tx_power+1)+POWER_DECREASE_VALUE-1)/POWER_DECREASE_VALUE];
-        }
-    }
-#endif
-    RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropRadioSetup, RF_PriorityNormal, NULL, 0);
 
-    RF_cmdFs.frequency = 2400+Frequency/2;
-    RF_cmdFs.fractFreq = (Frequency%2 ? 32768 : 0);
-    RF_postCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
+#define DBM0_OFFSET      2
+#define DBM6_OFFSET      4
+#define DBM10_OFFSET     6
+#define DBM13_OFFSET     7
+
+static void config_power(void)
+{
+    rf_tx_power[0] = rf_all_tx_power[DBM13_OFFSET+power_offset];
+    rf_tx_power[1] = rf_all_tx_power[DBM10_OFFSET+power_offset];
+    rf_tx_power[2] = rf_all_tx_power[DBM6_OFFSET+power_offset];
+    rf_tx_power[3] = rf_all_tx_power[DBM0_OFFSET+power_offset];
 }
-#endif
+
 void set_frequence(uint8_t  Frequency)
 {
     RF_cmdFs.frequency = 2400+Frequency/2;
     RF_cmdFs.fractFreq = (Frequency%2 ? 32768 : 0);
     RF_runCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
+}
+void set_power(int8_t Tx_power)
+{
+    #ifdef ESLWORKING_SET
+        RF_cmdPropRadioSetup.txPower = rf_all_tx_power[Tx_power];
+    #else
+        if (Tx_power<=MAX_POWER_LEVE && Tx_power>=0){
+            RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power+POWER_ZERO_POSITION];
+        } else{
+            if (Tx_power<0 && Tx_power>=MIN_POWER_LEVE){
+                RF_cmdPropRadioSetup.txPower = rf_tx_power[POWER_ZERO_POSITION - ((~Tx_power+1)+POWER_DECREASE_VALUE-1)/POWER_DECREASE_VALUE];
+            }
+        }
+    #endif
+       RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropRadioSetup, RF_PriorityNormal, NULL, 0);
 }
 
 void set_power_rate(int8_t Tx_power, uint16_t Data_rate)
