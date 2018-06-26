@@ -43,21 +43,26 @@ extern List_Elem *write2buf;
 #define PEND_START  1
 #define PEND_STOP   0
 
-#define RF_DEFAULT_POWER    0XFF
+
 
 #define  DATA_RATE_100K     (100)
 #define  DATA_RATE_500K     (500)
 #define  DATA_RATE_1M       ((uint8_t)10)
 #define  DATA_RATE_2M       ((uint8_t)20)
-#define  RF_TX_POWER_0DB    ((uint8_t)0)
-#define  RF_TX_POWER_1DB    ((uint8_t)1)
-#define  RF_TX_POWER_2DB    ((uint8_t)2)
-#define  RF_TX_POWER_3DB    ((uint8_t)3)
-#define  RF_TX_POWER_4DB    ((uint8_t)4)
-#define  RF_TX_POWER_5DB    ((uint8_t)5)
-#define  RF_FREQUENCY_UNKNOW   -128
-#define POWER_LEVEL  4
 
+#define  RF_FREQUENCY_UNKNOW   -128
+#define RF_DEFAULT_POWER    0XFF
+
+#define  ALL_POWER_LEVEL 15
+#define  POWER_LEVEL        4
+#define  RF_TX_POWER_L0    ((uint8_t)13)
+#define  RF_TX_POWER_L1    ((uint8_t)10)
+#define  RF_TX_POWER_L2    ((uint8_t)6)
+#define  RF_TX_POWER_L3    ((uint8_t)0)
+#define DBM0_BASE      ((int8_t)2)
+#define DBM6_BASE      ((int8_t)4)
+#define DBM10_BASE     ((int8_t)6)
+#define DBM13_BASE     ((int8_t)7)
 
 
 /// \brief macro to convert from Radio Time Ticks to ms
@@ -75,6 +80,8 @@ extern uint8_t* packetDataPointer;
 extern RF_Status rf_status;
 extern UINT8 data0[PAYLOAD_LENGTH];
 extern UINT8 data1[PAYLOAD_LENGTH];
+extern int16_t frequency_offset;
+extern int8_t power_offset;
 
 extern void rf_init(void);
 extern void semaphore_RFInit(void);
@@ -113,6 +120,7 @@ extern List_Elem* listInit(uint8_t* pack0, uint8_t* pack1);
 extern int16_t set_rx_para(UINT8 *id, UINT16 datarate, UINT8 ch, UINT8 fifosize, UINT32 timeout);
 extern int8_t check_rx_status(UINT16 timeout);
 extern INT32 get_rx_data(UINT8 *dst, UINT8 dstsize);
+extern void set_power(int8_t Tx_power);
 
 
 #endif

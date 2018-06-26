@@ -34,8 +34,6 @@ eventStatus Core_CheckBusy(void)
 
 void Core_HandleRummanTest(core_task_t *task)
 {
-    uint8_t channel;
-    int8_t power;
 	/* handle cmd */
 	if(EVENT_BUSY == Core_CheckBusy())
 	{
@@ -43,14 +41,12 @@ void Core_HandleRummanTest(core_task_t *task)
 	}
 	else
 	{
-	    channel = task->cmd_buf.buf[0];
-	    power = task->cmd_buf.buf[1];
 		/* check para */
-		if(power < POWER_LEVEL)
+		if(task->cmd_buf.unmod_carrier.p < POWER_LEVEL)
 		{
             task->ack = CORE_CMD_ACK; // ack
-            pinfo("Core cmd rumman test, channel: %d, power: %d\r\n", channel, power);
-            rft_tx_null(channel, power);
+            pinfo("Core cmd rumman test, channel: %d, power: %d\r\n", task->cmd_buf.unmod_carrier.c, task->cmd_buf.unmod_carrier.p);
+            rft_tx_null(&task->cmd_buf.unmod_carrier);
 		}
 		else
 		{

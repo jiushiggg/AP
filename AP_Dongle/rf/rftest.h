@@ -11,7 +11,7 @@ extern INT32 rft_check_ber_data(UINT8 *src, INT32 len);
 extern INT32 rft_ber(UINT8 *ack_buf, INT32 size);
 extern INT32 rft_scan_bg(UINT8 *src, INT32 srclen, UINT8 *dst, INT32 dstsize);
 extern INT32 rf_txrx(UINT8 *cmd_buf, INT32 cmd_len, UINT8 *ack_buf, INT32 ack_buf_size);
-extern void rft_tx_null(uint8_t channel, int8_t power);
+extern void rft_tx_null(st_unmodulated_carrier *p);
 extern void RSSI_test(void);
 extern INT32 calibrate_freq(core_task_t *task);
 extern INT32 calibrate_power(core_task_t *task);

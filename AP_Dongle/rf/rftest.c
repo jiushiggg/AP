@@ -447,26 +447,70 @@ INT32 rft_ber(UINT8 *ack_buf, INT32 size)
 }
 
 
-void rft_tx_null(uint8_t channel, int8_t power)
+void rft_tx_null(st_unmodulated_carrier *p)
 {
-
-    set_power_rate(power,DATA_RATE_500K);
-    set_frequence(channel);
-	RF_carrierWave(true);
+    set_power_rate(p->p, DATA_RATE_500K);
+    set_frequence(p->c);
+    tx_channel = p->c;
+	RF_carrierWave(p->actor==EM_START);
 }
 
 INT32 calibrate_freq(core_task_t *task)
 {
-//    set_power_rate(gFTRummanTestPower,DATA_RATE_500K);
-//    set_frequence(gFTRummanTestChannel);
+    st_calibration_freq *tmp = &task->cmd_buf.calib_freq;
+    set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
+    
+    
+    
+    set_frequence(tmp);
     RF_carrierWave(true);
+    return 1;
 }
 
 INT32 calibrate_power(core_task_t *task)
 {
-//    set_power_rate(gFTRummanTestPower,DATA_RATE_500K);
-//    set_frequence(gFTRummanTestChannel);
+    st_calibration_power *tmp = &task->cmd_buf.calib_power;
+    int8_t n = 0;
+
+    switch(task->cmd_buf.calib_power.power){
+    case RF_TX_POWER_L0:
+        n = DBM13_BASE;
+        break;
+    case RF_TX_POWER_L1:
+        n = DBM10_BASE;
+        break;
+    case RF_TX_POWER_L2:
+        n = DBM6_BASE;
+        break;
+    case RF_TX_POWER_L3:
+        n = DBM0_BASE;
+        break;
+    default:
+        break;
+    }
+
+    if (EM_UP == task->cmd_buf.calib_power.flg){
+        power_offset++;
+    }else{
+        power_offset--;
+    }
+    n += power_offset;
+    if (n<0){
+        n = 0;
+    }else if(n >= ALL_POWER_LEVEL){
+        n=ALL_POWER_LEVEL-1;
+    }else{}
+
+    if (TEST_PASS_SAVE == EM_task->cmd_buf.calib_power.result){
+        config_power();
+        //todo:offset write into flash
+    }
+
+    set_power(n);
+    set_frequence(tx_channel);
     RF_carrierWave(true);
+
+    return CORE_CMD_ACK;
 }
 
 #define SCAN_BG_DEBUG
@@ -560,7 +604,7 @@ void RSSI_test(void)
     while(1)
     {
         RF_measureRSSI(false);
-        set_power_rate(RF_FREQUENCY_UNKNOW, DATA_RATE_500K);
+        set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
         set_frequence(151);
         RF_measureRSSI(true);
         for (i=0; i<200; i++){
@@ -581,7 +625,7 @@ UINT8 RFC_CalcBgRssi(UINT8 ch, UINT8 initrssi, UINT8 rssithreshold, UINT8 noiser
     float farssi = 0.0;
 
     RF_measureRSSI(false);
-    set_power_rate(RF_FREQUENCY_UNKNOW, DATA_RATE_500K);
+    set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
     set_frequence(ch);
     RF_measureRSSI(true);
 

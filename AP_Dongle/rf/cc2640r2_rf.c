@@ -156,11 +156,11 @@ void rf_init(void)
 }
 #define ESLWORKING_SET
 #ifdef ESLWORKING_SET
-#define ALL_POWER_LEVEL 15
+
 //baseboard 13dbm, 10dbm, 6dbm, 0dbm
 //const uint16_t rf_tx_power[POWER_LEVEL]={0x194e, 0x144b, 0x0cc9, 0x0cc5};
-//T3 board 13dbm, 10dbm, 6dbm, 0dbm
 const uint16_t rf_all_tx_power[ALL_POWER_LEVEL]={0x0cc5,0x0cc6, 0x0cc7, 0x0cc9,0x0ccb,0x144b, 0x194e,0x1d52, 0x2558, 0x3161, 0x4214,0x4e18,0x5a1c, 0x9324, 0x9330};
+//T3 board 13dbm, 10dbm, 6dbm, 0dbm
 uint16_t rf_tx_power[POWER_LEVEL]={0x1d52, 0x194e, 0xCCB, 0x0cc7};
 #else
 #define POWER_LEVEL  15
@@ -173,17 +173,17 @@ const uint16_t rf_tx_power[POWER_LEVEL]={0x0cc5,0x0cc6, 0x0cc7, 0x0cc9,0x0ccb,0x
 
 #endif
 
-#define DBM0_OFFSET      2
-#define DBM6_OFFSET      4
-#define DBM10_OFFSET     6
-#define DBM13_OFFSET     7
+#define DBM0_BASE      2
+#define DBM6_BASE      4
+#define DBM10_BASE     6
+#define DBM13_BASE     7
 
 static void config_power(void)
 {
-    rf_tx_power[0] = rf_all_tx_power[DBM13_OFFSET+power_offset];
-    rf_tx_power[1] = rf_all_tx_power[DBM10_OFFSET+power_offset];
-    rf_tx_power[2] = rf_all_tx_power[DBM6_OFFSET+power_offset];
-    rf_tx_power[3] = rf_all_tx_power[DBM0_OFFSET+power_offset];
+    rf_tx_power[0] = rf_all_tx_power[DBM13_BASE+power_offset];
+    rf_tx_power[1] = rf_all_tx_power[DBM10_BASE+power_offset];
+    rf_tx_power[2] = rf_all_tx_power[DBM6_BASE+power_offset];
+    rf_tx_power[3] = rf_all_tx_power[DBM0_BASE+power_offset];
 }
 
 void set_frequence(uint8_t  Frequency)
@@ -242,7 +242,10 @@ void set_power_rate(int8_t Tx_power, uint16_t Data_rate)
         break;
     }
 #ifdef ESLWORKING_SET
-    RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power];
+    if (RF_DEFAULT_POWER != RF_cmdPropRadioSetup.txPower){
+        RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power];
+    }
+
 #else
     if (Tx_power<=MAX_POWER_LEVE && Tx_power>=0){
         RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power+POWER_ZERO_POSITION];

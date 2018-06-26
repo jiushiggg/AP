@@ -67,15 +67,19 @@
 
 #pragma pack(1)
 typedef enum{
-    TEST_FAILED     = 0,
-    TEST_CONTINUE   = 1,
-    TEST_PASS       = 255
+    TEST_FAILED          = (uint8_t)0,
+    TEST_CONTINUE        = (uint8_t)1,
+    TEST_PASS_SAVE       = (uint8_t)255
 }EM_RESULT;
 
 typedef enum{
-    EM_UP   = 0,
-    EM_DOWN = 1
+    EM_UP   = (uint8_t)0,
+    EM_DOWN = (uint8_t)1
 }EM_DIRECTION;
+typedef enum{
+    EM_START   = (uint8_t)0,
+    EM_STOP    = (uint8_t)1
+}EM_FLG;
 
 typedef struct{
     uint16_t cmd;
@@ -99,11 +103,17 @@ typedef struct{
     uint16_t power_set;
 }st_calibration_power;
 
+typedef struct{
+    uint8_t c;
+    int8_t  p;
+    EM_FLG actor;
+}st_unmodulated_carrier;
 
 typedef union {
     UINT8                   buf[CORE_CMD_LEN];
     st_calibration_freq     calib_freq;
     st_calibration_power    calib_power;
+    st_unmodulated_carrier  unmod_carrier;
 }un_cmd_buf;
 
 
