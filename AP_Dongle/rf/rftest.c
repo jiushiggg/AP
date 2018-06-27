@@ -460,16 +460,23 @@ INT32 calibrate_freq(core_task_t *task)
     st_calibration_freq *tmp = &task->cmd_buf.calib_freq;
     set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
     
+    if (tmp->flg == EM_UP){
+        frequency_offset += tmp->fract_freq;
+    }else{
+        frequency_offset -= tmp->fract_freq;
+    }
+
+    if (TEST_PASS_SAVE == task->cmd_buf.calib_freq.result){
+        //todo:offset write into flash
+    }
     
-    
-    set_frequence(tmp);
+    set_frequence(tmp->channel);
     RF_carrierWave(true);
-    return 1;
+    return CORE_CMD_ACK;
 }
 
 INT32 calibrate_power(core_task_t *task)
 {
-    st_calibration_power *tmp = &task->cmd_buf.calib_power;
     int8_t n = 0;
 
     switch(task->cmd_buf.calib_power.power){
@@ -501,12 +508,12 @@ INT32 calibrate_power(core_task_t *task)
         n=ALL_POWER_LEVEL-1;
     }else{}
 
-    if (TEST_PASS_SAVE == EM_task->cmd_buf.calib_power.result){
+    if (TEST_PASS_SAVE == task->cmd_buf.calib_power.result){
         config_power();
         //todo:offset write into flash
     }
 
-    set_power(n);
+    RF_calib_power(n);
     set_frequence(tx_channel);
     RF_carrierWave(true);
 

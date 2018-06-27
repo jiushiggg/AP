@@ -80,7 +80,7 @@ extern uint8_t* packetDataPointer;
 extern RF_Status rf_status;
 extern UINT8 data0[PAYLOAD_LENGTH];
 extern UINT8 data1[PAYLOAD_LENGTH];
-extern int16_t frequency_offset;
+extern int32_t frequency_offset;
 extern int8_t power_offset;
 
 extern void rf_init(void);
@@ -120,7 +120,8 @@ extern List_Elem* listInit(uint8_t* pack0, uint8_t* pack1);
 extern int16_t set_rx_para(UINT8 *id, UINT16 datarate, UINT8 ch, UINT8 fifosize, UINT32 timeout);
 extern int8_t check_rx_status(UINT16 timeout);
 extern INT32 get_rx_data(UINT8 *dst, UINT8 dstsize);
-extern void set_power(int8_t Tx_power);
+extern void RF_calib_power(int8_t Tx_power);
+extern void config_power(void);
 
 
 #endif

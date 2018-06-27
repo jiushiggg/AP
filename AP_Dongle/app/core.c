@@ -414,17 +414,17 @@ void Core_Mainloop(void)
 //        }
         if (event & EVENT_CALIBRATE_FREQ)
         {
-            uint16 ack;
+            uint16_t ack;
             pinfo("calibrate frequency\r\n");
-            ack = calibrate_freq(&local_task)
+            ack = calibrate_freq(&local_task);
             Core_SendCmd(ack, 0, NULL);
             Event_Clear(EVENT_CALIBRATE_FREQ);
         }
         if (event & EVENT_CALIBRATE_POWER)
         {
-            uint16 ack;
+            uint16_t ack;
             pinfo("calibrate power\r\n");
-            ack = calibrate_power(&local_task)
+            ack = calibrate_power(&local_task);
             Core_SendCmd(ack, 0, NULL);
             Event_Clear(EVENT_CALIBRATE_POWER);
         }

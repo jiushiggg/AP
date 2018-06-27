@@ -69,7 +69,7 @@ MyStruct foo[2];
 List_Elem *write2buf;
 UINT8 data0[PAYLOAD_LENGTH] = {0};
 UINT8 data1[PAYLOAD_LENGTH] = {0};
-int16_t frequency_offset = 0;
+int32_t frequency_offset = 0;
 int8_t power_offset = 0;
 
 List_Elem* listInit(uint8_t* pack0, uint8_t* pack1)
@@ -173,12 +173,8 @@ const uint16_t rf_tx_power[POWER_LEVEL]={0x0cc5,0x0cc6, 0x0cc7, 0x0cc9,0x0ccb,0x
 
 #endif
 
-#define DBM0_BASE      2
-#define DBM6_BASE      4
-#define DBM10_BASE     6
-#define DBM13_BASE     7
 
-static void config_power(void)
+void config_power(void)
 {
     rf_tx_power[0] = rf_all_tx_power[DBM13_BASE+power_offset];
     rf_tx_power[1] = rf_all_tx_power[DBM10_BASE+power_offset];
@@ -190,9 +186,27 @@ void set_frequence(uint8_t  Frequency)
 {
     RF_cmdFs.frequency = 2400+Frequency/2;
     RF_cmdFs.fractFreq = (Frequency%2 ? 32768 : 0);
+
+    if (frequency_offset>=32768 && RF_cmdFs.fractFreq==32768){
+        RF_cmdFs.fractFreq = frequency_offset - 32768;
+        RF_cmdFs.frequency++;
+    }else if (frequency_offset>=32768 && RF_cmdFs.fractFreq==0){
+        RF_cmdFs.fractFreq = frequency_offset;
+    }else if (frequency_offset>=0){
+        RF_cmdFs.fractFreq += frequency_offset;
+    }else if (frequency_offset<0 && 0==RF_cmdFs.fractFreq){
+        RF_cmdFs.fractFreq = 65536+frequency_offset;
+        RF_cmdFs.frequency--;
+    }else if ((frequency_offset<0 && frequency_offset>=-32768) && 32768==RF_cmdFs.fractFreq){
+        RF_cmdFs.fractFreq = RF_cmdFs.fractFreq + frequency_offset;
+    }else {  //(frequency_offset>-32768 && (32768==RF_cmdFs.fractFreq || 0==RF_cmdFs.fractFreq){
+        RF_cmdFs.fractFreq = 65536+frequency_offset;
+        RF_cmdFs.frequency--;
+    }
     RF_runCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
 }
-void set_power(int8_t Tx_power)
+
+void RF_calib_power(int8_t Tx_power)
 {
     #ifdef ESLWORKING_SET
         RF_cmdPropRadioSetup.txPower = rf_all_tx_power[Tx_power];
