@@ -2,9 +2,8 @@
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Clock.h>
 #include <xdc/runtime/Error.h>
-#include "CC2592.h"
-#include "rftest.h"
 #include <ti/drivers/pin/PINCC26XX.h>
+#include "CC2592.h"
 #include "event.h"
 
 #define RF_TEST
@@ -69,8 +68,7 @@ MyStruct foo[2];
 List_Elem *write2buf;
 UINT8 data0[PAYLOAD_LENGTH] = {0};
 UINT8 data1[PAYLOAD_LENGTH] = {0};
-int32_t frequency_offset = 0;
-int8_t power_offset = 0;
+st_calib_value calib;
 
 List_Elem* listInit(uint8_t* pack0, uint8_t* pack1)
 {
@@ -176,33 +174,47 @@ const uint16_t rf_tx_power[POWER_LEVEL]={0x0cc5,0x0cc6, 0x0cc7, 0x0cc9,0x0ccb,0x
 
 void config_power(void)
 {
-    rf_tx_power[0] = rf_all_tx_power[DBM13_BASE+power_offset];
-    rf_tx_power[1] = rf_all_tx_power[DBM10_BASE+power_offset];
-    rf_tx_power[2] = rf_all_tx_power[DBM6_BASE+power_offset];
-    rf_tx_power[3] = rf_all_tx_power[DBM0_BASE+power_offset];
+    rf_tx_power[0] = rf_all_tx_power[DBM13_BASE+calib.power_offset];
+    rf_tx_power[1] = rf_all_tx_power[DBM10_BASE+calib.power_offset];
+    rf_tx_power[2] = rf_all_tx_power[DBM6_BASE+calib.power_offset];
+    rf_tx_power[3] = rf_all_tx_power[DBM0_BASE+calib.power_offset];
 }
 
 void set_frequence(uint8_t  Frequency)
 {
+    int8_t n;
     RF_cmdFs.frequency = 2400+Frequency/2;
     RF_cmdFs.fractFreq = (Frequency%2 ? 32768 : 0);
 
-    if (frequency_offset>=32768 && RF_cmdFs.fractFreq==32768){
-        RF_cmdFs.fractFreq = frequency_offset - 32768;
+    if (calib.frequency_offset == 0){
+        goto setfreq;
+    }else if (calib.frequency_offset > 0){
+        n = (calib.frequency_offset>>16);
+        calib.frequency_offset &= 0xffff;
+    }else{
+        calib.frequency_offset = ~calib.frequency_offset + 1;
+        n = 0-(calib.frequency_offset>>16);
+        calib.frequency_offset = 0-(calib.frequency_offset&0xffff);
+    }
+
+    if (calib.frequency_offset>=32768 && RF_cmdFs.fractFreq==32768){
+        RF_cmdFs.fractFreq += calib.frequency_offset - 32768;
         RF_cmdFs.frequency++;
-    }else if (frequency_offset>=32768 && RF_cmdFs.fractFreq==0){
-        RF_cmdFs.fractFreq = frequency_offset;
-    }else if (frequency_offset>=0){
-        RF_cmdFs.fractFreq += frequency_offset;
-    }else if (frequency_offset<0 && 0==RF_cmdFs.fractFreq){
-        RF_cmdFs.fractFreq = 65536+frequency_offset;
+    }else if (calib.frequency_offset>=32768 && RF_cmdFs.fractFreq==0){
+        RF_cmdFs.fractFreq = calib.frequency_offset;
+    }else if (calib.frequency_offset>=0){
+        RF_cmdFs.fractFreq += calib.frequency_offset;
+    }else if (calib.frequency_offset<0 && 0==RF_cmdFs.fractFreq){
+        RF_cmdFs.fractFreq += 65536+calib.frequency_offset;
         RF_cmdFs.frequency--;
-    }else if ((frequency_offset<0 && frequency_offset>=-32768) && 32768==RF_cmdFs.fractFreq){
-        RF_cmdFs.fractFreq = RF_cmdFs.fractFreq + frequency_offset;
-    }else {  //(frequency_offset>-32768 && (32768==RF_cmdFs.fractFreq || 0==RF_cmdFs.fractFreq){
-        RF_cmdFs.fractFreq = 65536+frequency_offset;
+    }else if ((calib.frequency_offset<0 && calib.frequency_offset>=-32768) && 32768==RF_cmdFs.fractFreq){
+        RF_cmdFs.fractFreq = RF_cmdFs.fractFreq + calib.frequency_offset;
+    }else {  //(calib.frequency_offset>-32768 && (32768==RF_cmdFs.fractFreq || 0==RF_cmdFs.fractFreq){
+        RF_cmdFs.fractFreq += 65536+calib.frequency_offset;
         RF_cmdFs.frequency--;
     }
+    RF_cmdFs.frequency += n;
+setfreq:
     RF_runCmd(rfHandle, (RF_Op*)&RF_cmdFs, RF_PriorityNormal, NULL, 0);
 }
 

@@ -21,14 +21,23 @@ typedef enum
     RF_Status_measureRSSI     = 2 ///measureRSSI
 } RF_Status;
 
+
+#pragma pack(1)
+typedef struct calib_value{
+    int32_t frequency_offset;
+    int8_t power_offset;
+}st_calib_value;
+
 typedef struct MyStruct {
     List_Elem elem;
     uint8_t pbuf[26];
 } MyStruct;
+#pragma pack()
 
 extern List_List list;
 extern MyStruct foo[2];
 extern List_Elem *write2buf;
+extern st_calib_value calib;
 
 
 #define TRUE  1

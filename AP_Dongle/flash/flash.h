@@ -29,6 +29,9 @@ extern BOOL Flash_Write(UINT32 addr, UINT8* src, UINT32 len);
 //在flash的addr地址读取长度为len的数据到dst，addr为任意地址
 extern BOOL Flash_Read(UINT32 addr, UINT8* dst, UINT32 len);
 
+extern BOOL Flash_writeInfo(UINT8* src, UINT32 len);
+extern BOOL Flash_readInfo(UINT8* src, UINT32 len);
+extern UINT8 Flash_calibInfoInit(void);
 #endif
 
 

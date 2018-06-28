@@ -2,6 +2,17 @@
 #include "flash.h"
 #include "../peripheral/extern_flash.h"
 #include "bsp.h"
+#include "rftest.h"
+#include "cc2640r2_rf.h"
+
+
+#pragma pack(1)
+typedef struct{
+    UINT8 flg;
+    UINT8 start_index;
+    UINT8 end_index;
+}st_info;
+#pragma pack()
 
 #define DATA_SECTER_CHECK  0
 #define DATA_SECTER_INFO   1
@@ -14,6 +25,16 @@
 #define FLASH_PAGE_SIZE  	256
 
 
+#define FLASH_INFO_BUF_LEN      256
+#define FLASH_INFO_INDEX_LEN    sizeof(st_info)
+#define FLASH_INFO_DATA_LEN     (FLASH_INFO_BUF_LEN - FLASH_INFO_INDEX_LEN)
+
+#define SECTER_INFO_ADDR        (FLASH_SECTOR_SIZE * DATA_SECTER_INFO)
+#define SECTER_INFO_DATA_ADDR    (SECTER_INFO_ADDR + FLASH_INFO_INDEX_LEN)
+
+
+
+st_info store_info;
 
 static UINT32 _sector = DATA_SECTER_START;
 
@@ -22,7 +43,7 @@ static UINT32 _sector = DATA_SECTER_START;
 BOOL Flash_SetErrorSector(UINT16 sector)
 {
 	UINT8 flag = SECTOR_ERR;
-	return CMD_PP(sector, (UINT32)&flag, sizeof(flag));
+	return CMD_PP(sector, (UINT32)&flag, sizeof(flag), VERIFY);
 }
 
 UINT8 Flash_GetSectorStatus(UINT16 sector)
@@ -47,12 +68,12 @@ UINT8 Flash_Check(void)
 	UINT8 flag = 0;
 	UINT8 _buf[FLASH_SECTOR_NUM] = {0};
 	UINT32 i, j;
-	if (CMD_FASTREAD(FLASH_BASE_ADDR, (UINT32)&flag, sizeof(flag)))
+	if (FlashOperationSuccess == CMD_FASTREAD(FLASH_BASE_ADDR, (UINT32)&flag, sizeof(flag)))
 	{
 		if (flag == FLASH_USE_FLAG)
 		{
 			//已经使用过的flash，检查坏sector的情况
-			if (CMD_FASTREAD(FLASH_BASE_ADDR, (UINT32)_buf, sizeof(_buf)))
+			if (FlashOperationSuccess == CMD_FASTREAD(FLASH_BASE_ADDR, (UINT32)_buf, sizeof(_buf)))
 			{
 				j = 0;
 				for (i = DATA_SECTER_START; i < DATA_SECTER_END + 1; i++)
@@ -76,7 +97,7 @@ UINT8 Flash_Check(void)
 			if (CMD_SE(FLASH_BASE_ADDR) == FlashOperationSuccess)
 			{
 				flag = FLASH_USE_FLAG;
-				if (CMD_PP(FLASH_BASE_ADDR, (UINT32)&flag, sizeof(flag)) == FlashOperationSuccess)
+				if (CMD_PP(FLASH_BASE_ADDR, (UINT32)&flag, sizeof(flag), VERIFY) == FlashOperationSuccess)
 				{
 					ret = FLASH_CHECK_NEW;
 				}
@@ -127,7 +148,9 @@ UINT8 Flash_Init(void)
 #ifdef	FLASH_DBG
 	log_print("FI OK.\r\n");
 #endif
-	
+
+    Flash_calibInfoInit();
+    config_power();
 	return FLASH_INIT_OK;
 }
 
@@ -204,7 +227,7 @@ BOOL Flash_Write(UINT32 addr, UINT8* src, UINT32 len)
 	    goto done;
 	}
 
-    if (CMD_PP(w_addr, (UINT32)ptr, left_len) == FlashOperationSuccess){
+    if (CMD_PP(w_addr, (UINT32)ptr, left_len, NOT_VERIFY) == FlashOperationSuccess){
         ret = TRUE;
     }
 
@@ -218,6 +241,88 @@ BOOL Flash_Read(UINT32 addr, UINT8* dst, UINT32 len)
 	return TRUE;
 }
 
+static ReturnMsg info_write(UINT8 flg)
+{
+    uint8_t buf[10];
+    store_info.flg = flg;
+    store_info.end_index = 0;
+    store_info.start_index = 0;
+    calib.frequency_offset=0;
+    calib.power_offset = 0;
+    memcpy(buf, (uint8_t*)&store_info, sizeof(store_info));
+    memcpy(buf+sizeof(store_info), (uint8_t*)&calib, sizeof(calib));
+    return CMD_PP(SECTER_INFO_ADDR, (WORD)buf, sizeof(store_info)+sizeof(calib), VERIFY);
+}
+
+
+BOOL Flash_writeInfo(UINT8* src, UINT32 len)
+{
+    UINT8 buf[FLASH_INFO_BUF_LEN], ret = FALSE, remain_buf_len=0;
+    UINT8* p = buf+FLASH_INFO_INDEX_LEN;
+
+    if (len > FLASH_INFO_DATA_LEN){
+        return ret;
+    }
+
+    CMD_FASTREAD(SECTER_INFO_ADDR, (UINT32)buf, FLASH_INFO_BUF_LEN);
+
+    store_info.start_index = store_info.end_index;
+    remain_buf_len=FLASH_INFO_DATA_LEN - store_info.end_index;
+    if (remain_buf_len >= len){
+        memcpy(p+store_info.end_index, src, len);
+        store_info.end_index += len;
+        memcpy(buf, (uint8_t*)&store_info, FLASH_INFO_INDEX_LEN);
+    }else{
+        CMD_SE(SECTER_INFO_ADDR);
+        memcpy(p+store_info.end_index, src, remain_buf_len);
+        memcpy(p, src+remain_buf_len , len-remain_buf_len);
+        store_info.end_index = len-remain_buf_len;
+        memcpy(buf, (uint8_t*)&store_info, FLASH_INFO_INDEX_LEN);
+    }
+
+    if (CMD_PP(SECTER_INFO_ADDR, (UINT32)buf, FLASH_INFO_BUF_LEN, VERIFY) == FlashOperationSuccess){
+        ret = TRUE;
+    }else {
+        info_write(0);
+    }
+
+    return ret;
+}
+BOOL Flash_readInfo(UINT8* src, UINT32 len)
+{
+    UINT8 ret = FALSE, read_len = len;
+    if (len > FLASH_INFO_DATA_LEN){
+        return ret;
+    }
+    if (store_info.start_index <= store_info.end_index){
+        CMD_FASTREAD(SECTER_INFO_DATA_ADDR+store_info.start_index, (UINT32)src, read_len);
+    }else {
+        read_len = FLASH_INFO_DATA_LEN-store_info.start_index;
+        CMD_FASTREAD(SECTER_INFO_DATA_ADDR+store_info.start_index, (UINT32)src, read_len);
+        CMD_FASTREAD(SECTER_INFO_DATA_ADDR, (UINT32)(src+read_len), len-read_len);
+    }
+
+    return ret = TRUE;
+}
+
+
+UINT8 Flash_calibInfoInit(void)
+{
+    UINT8 ret = FALSE;
+
+    CMD_FASTREAD(SECTER_INFO_ADDR, (UINT32)&store_info, sizeof(store_info));
+    if (FLASH_USE_FLAG != store_info.flg){
+        if (info_write(FLASH_USE_FLAG) == FlashOperationSuccess){
+            ret = TRUE;
+        }
+    }else {
+        Flash_readInfo((uint8_t*)&calib, sizeof(calib));
+        calib.power_offset = calib.power_offset<0 ? 0: calib.power_offset;
+        calib.power_offset = calib.power_offset>=ALL_POWER_LEVEL ? 0: calib.power_offset;
+        ret = TRUE;
+    }
+    return ret;
+}
 #ifdef FLASH_APP_TEST
 while(1){
     #define TEST_LEN    2048

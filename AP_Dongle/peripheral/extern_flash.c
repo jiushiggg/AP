@@ -41,7 +41,7 @@ ReturnMsg CMD_SE(WORD seg_addr)
     return FlashOperationSuccess;
 }
 
-ReturnMsg CMD_PP(WORD addr, WORD data, WORD len)
+ReturnMsg CMD_PP(WORD addr, WORD data, WORD len, UINT8 flg)
 {
     uint32_t tmp_len = 0;
     while(len > 0){
@@ -53,7 +53,7 @@ ReturnMsg CMD_PP(WORD addr, WORD data, WORD len)
             len = 0;
         }
         //NVS_write(nvsHandle, addr, (void *)data, tmp_len, NVS_WRITE_POST_VERIFY);
-        if (NVS_STATUS_SUCCESS == NVS_write(nvsHandle, addr, (void *)data, tmp_len, 0)){
+        if (NVS_STATUS_SUCCESS == NVS_write(nvsHandle, addr, (void *)data, tmp_len, flg)){
             data += tmp_len;
             addr += tmp_len;
         }else{

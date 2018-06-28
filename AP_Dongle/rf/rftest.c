@@ -10,6 +10,7 @@
 #include "crc16.h"
 #include "corefunc.h"
 #include "core.h"
+#include "flash.h"
 
 //#define BER_DEBUG
 #define RF_BER_TIMOUT_20MS   (20000)
@@ -32,6 +33,7 @@ static UINT16 rx_datarate = 100;
 static UINT8 rx_channel = 99;
 static UINT8 rx_power = 2;
 
+extern st_calib_value calib;
 /*
  ** local setting
  */
@@ -461,13 +463,14 @@ INT32 calibrate_freq(core_task_t *task)
     set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
     
     if (tmp->flg == EM_UP){
-        frequency_offset += tmp->fract_freq;
+        calib.frequency_offset += tmp->fract_freq;
     }else{
-        frequency_offset -= tmp->fract_freq;
+        calib.frequency_offset -= tmp->fract_freq;
     }
 
+
     if (TEST_PASS_SAVE == task->cmd_buf.calib_freq.result){
-        //todo:offset write into flash
+        Flash_writeInfo((uint8_t*)&calib, sizeof(calib));
     }
     
     set_frequence(tmp->channel);
@@ -497,20 +500,18 @@ INT32 calibrate_power(core_task_t *task)
     }
 
     if (EM_UP == task->cmd_buf.calib_power.flg){
-        power_offset++;
+        calib.power_offset++;
     }else{
-        power_offset--;
+        calib.power_offset--;
     }
-    n += power_offset;
-    if (n<0){
-        n = 0;
-    }else if(n >= ALL_POWER_LEVEL){
-        n=ALL_POWER_LEVEL-1;
-    }else{}
+    n += calib.power_offset;
+
+    n = n<0 ? 0: n;
+    n = n>=ALL_POWER_LEVEL ? ALL_POWER_LEVEL-1: n;
 
     if (TEST_PASS_SAVE == task->cmd_buf.calib_power.result){
+        Flash_writeInfo((uint8_t*)&calib, sizeof(calib));
         config_power();
-        //todo:offset write into flash
     }
 
     RF_calib_power(n);
