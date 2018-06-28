@@ -22,14 +22,14 @@ static UINT32 _sector = DATA_SECTER_START;
 BOOL Flash_SetErrorSector(UINT16 sector)
 {
 	UINT8 flag = SECTOR_ERR;
-	return Flash_Write(sector, &flag, sizeof(flag));
+	return CMD_PP(sector, (UINT32)&flag, sizeof(flag));
 }
 
 UINT8 Flash_GetSectorStatus(UINT16 sector)
 {
 	UINT8 status = 0;
 	
-	if(!Flash_Read(sector, &status, sizeof(status)))
+	if(!CMD_FASTREAD(sector, (UINT32)&status, sizeof(status)))
 	{
 		status = 0;
 	}
@@ -47,12 +47,12 @@ UINT8 Flash_Check(void)
 	UINT8 flag = 0;
 	UINT8 _buf[FLASH_SECTOR_NUM] = {0};
 	UINT32 i, j;
-	if (Flash_Read(FLASH_BASE_ADDR, &flag, sizeof(flag)))
+	if (CMD_FASTREAD(FLASH_BASE_ADDR, (UINT32)&flag, sizeof(flag)))
 	{
 		if (flag == FLASH_USE_FLAG)
 		{
 			//已经使用过的flash，检查坏sector的情况
-			if (Flash_Read(FLASH_BASE_ADDR, _buf, sizeof(_buf)))
+			if (CMD_FASTREAD(FLASH_BASE_ADDR, (UINT32)_buf, sizeof(_buf)))
 			{
 				j = 0;
 				for (i = DATA_SECTER_START; i < DATA_SECTER_END + 1; i++)
@@ -192,60 +192,21 @@ BOOL Flash_Write(UINT32 addr, UINT8* src, UINT32 len)
 	UINT32 left_len = len;
 	UINT32 w_addr = addr;
 	UINT8 *ptr = src;
-	UINT32 w_len = 0;
 
 	if((w_addr>= ((DATA_SECTER_END+1)*FLASH_SECTOR_SIZE)) || (w_addr < (DATA_SECTER_START*FLASH_SECTOR_SIZE)))
 	{
 		goto done;
 	}
-	
+
 	//判断addr是否在可写范围内
-	if (w_addr < (_sector*FLASH_SECTOR_SIZE))
+	if (w_addr > (_sector*FLASH_SECTOR_SIZE))
 	{
-		while(left_len > 0)
-		{
-			if (w_addr%FLASH_PAGE_SIZE != 0)
-			{
-				//处理目的地址没有page对齐的情况
-				w_len = FLASH_PAGE_SIZE - (w_addr%FLASH_PAGE_SIZE);
-
-				if (w_len > left_len)
-				{
-					w_len = left_len;				
-				}
-			} 
-			else
-			{
-				//目的地址page对齐
-				if (left_len > FLASH_PAGE_SIZE)
-				{
-					w_len = FLASH_PAGE_SIZE;
-				} 
-				else
-				{
-					w_len = left_len;
-				}
-			}
-
-			if (CMD_PP(w_addr, (UINT32)ptr, w_len) == FlashOperationSuccess)
-			{
-				w_addr += w_len;
-				addr += w_len;
-				ptr += w_len;
-				left_len -= w_len;
-				w_len = 0;
-			} 
-			else
-			{
-				break;
-			}
-		}
+	    goto done;
 	}
 
-	if (left_len == 0)
-	{
-		ret = TRUE;
-	}
+    if (CMD_PP(w_addr, (UINT32)ptr, left_len) == FlashOperationSuccess){
+        ret = TRUE;
+    }
 
 done:
 	return ret;
