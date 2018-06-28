@@ -3,12 +3,17 @@
 #include "../peripheral/extern_flash.h"
 #include "bsp.h"
 
-#define FLASH_SECTOR_NUM  	1024
+#define DATA_SECTER_CHECK  0
+#define DATA_SECTER_INFO   1
+#define DATA_SECTER_START  2
+#define DATA_SECTER_END    510
+#define DATA_SECTER_LOG    511
+
+#define FLASH_SECTOR_NUM  	(DATA_SECTER_LOG+1)
 #define FLASH_SECTOR_SIZE	4096
 #define FLASH_PAGE_SIZE  	256
 
-#define DATA_SECTER_START  50
-#define DATA_SECTER_END    499
+
 
 static UINT32 _sector = DATA_SECTER_START;
 
@@ -38,49 +43,48 @@ UINT8 Flash_GetSectorStatus(UINT16 sector)
 
 UINT8 Flash_Check(void)
 {
-    return FLASH_CHECK_NEW;
-//	UINT8 ret = FLASH_CHECK_ERR;
-//	UINT8 flag = 0;
-//	UINT8 _buf[FLASH_SECTOR_NUM] = {0};
-//	UINT32 i                                                                                 , j;
-//	if (Flash_Read(FLASH_BASE_ADDR, &flag, sizeof(flag)))
-//	{
-//		if (flag == FLASH_USE_FLAG)
-//		{
-//			//已经使用过的flash，检查坏sector的情况
-//			if (Flash_Read(FLASH_BASE_ADDR, _buf, sizeof(_buf)))
-//			{
-//				j = 0;
-//				for (i = DATA_SECTER_START; i < DATA_SECTER_END + 1; i++)
-//				{
-//					if (_buf[i] == SECTOR_ERR)
-//					{
-//						j++;
-//					}
-//				}
-//
-//				//坏的sector需小于sector总数的一半，如超过，则认为flash损坏
-//				if (j < ((DATA_SECTER_END-DATA_SECTER_START+1)/2))
-//				{
-//					ret = FLASH_CHECK_OK;
-//				}
-//			}
-//		}
-//		else
-//		{
-//			//新flash，写use标志，擦除第一个sector作为坏sector index
-//			if (CMD_SE(FLASH_BASE_ADDR) == FlashOperationSuccess)
-//			{
-//				flag = FLASH_USE_FLAG;
-//				if (CMD_PP(FLASH_BASE_ADDR, (UINT32)&flag, sizeof(flag)) == FlashOperationSuccess)
-//				{
-//					ret = FLASH_CHECK_NEW;
-//				}
-//			}
-//		}
-//	}
-//
-//	return ret;
+	UINT8 ret = FLASH_CHECK_ERR;
+	UINT8 flag = 0;
+	UINT8 _buf[FLASH_SECTOR_NUM] = {0};
+	UINT32 i, j;
+	if (Flash_Read(FLASH_BASE_ADDR, &flag, sizeof(flag)))
+	{
+		if (flag == FLASH_USE_FLAG)
+		{
+			//已经使用过的flash，检查坏sector的情况
+			if (Flash_Read(FLASH_BASE_ADDR, _buf, sizeof(_buf)))
+			{
+				j = 0;
+				for (i = DATA_SECTER_START; i < DATA_SECTER_END + 1; i++)
+				{
+                    if (_buf[i] == SECTOR_ERR)
+                    {
+						j++;
+					}
+				}
+
+				//坏的sector需小于sector总数的一半，如超过，则认为flash损坏
+				if (j < ((DATA_SECTER_END-DATA_SECTER_START+1)/2))
+				{
+					ret = FLASH_CHECK_OK;
+				}
+			}
+		}
+		else
+		{
+			//新flash，写use标志，擦除第一个sector作为坏sector index
+			if (CMD_SE(FLASH_BASE_ADDR) == FlashOperationSuccess)
+			{
+				flag = FLASH_USE_FLAG;
+				if (CMD_PP(FLASH_BASE_ADDR, (UINT32)&flag, sizeof(flag)) == FlashOperationSuccess)
+				{
+					ret = FLASH_CHECK_NEW;
+				}
+			}
+		}
+	}
+
+	return ret;
 }
 
 void Flash_SoftReset(void)

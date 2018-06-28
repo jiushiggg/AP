@@ -16,11 +16,9 @@ typedef enum {
     FlashAddressInvalid,
 }ReturnMsg;
 
-#define    FlashID          0xc22015
-#define     FlashID_GD      0xc84015
-#define    ElectronicID     0x14
-#define    RESID0           0xc214
-#define    RESID1           0x14c2
+#define    FlashID          0xc214
+#define    FlashID_GD       0xc814
+
 
 extern void init_nvs_spi_flash(void);
 extern void extern_flash_open(void);

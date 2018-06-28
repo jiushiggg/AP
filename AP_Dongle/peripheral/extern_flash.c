@@ -2,7 +2,11 @@
 #include "extern_flash.h"
 #include "datatype.h"
 #include "Board.h"
+#include <ti/drivers/nvs/NVSSPI25X.h>
+#include <ti/drivers/GPIO.h>
+//#include <ti/drivers/spi/SPICC26XXDMA.h>
 
+#define BLS_CODE_MDID             0x90 /**< Manufacturer Device ID */
 
 #define  EF_BLOCK_SIZE   ((UINT32)0x1000)   //4k
 #define  DMA_MAX_BUF    1024
@@ -75,33 +79,36 @@ ReturnMsg CMD_FASTREAD(WORD addr, WORD buf, WORD len)
     return FlashOperationSuccess;
 }
 
-UINT32 CMD_RDID(void)
+static void extFlashSelect(void)
 {
-//    const uint8_t wbuf[] = { BLS_CODE_MDID, 0xFF, 0xFF, 0x00 };
-//
-//    extFlashSelect();
-//
-//    int ret = Spi_write(wbuf, sizeof(wbuf));
-//    if (ret)
-//    {
-//        extFlashDeselect();
-//        return false;
-//    }
-//
-//    ret = Spi_read(infoBuf, sizeof(infoBuf));
-//    extFlashDeselect();
-//
-//    return ret == 0;
-    return FlashID;
+    GPIO_write(((NVSSPI25X_HWAttrs*)nvsHandle->hwAttrs)->spiCsnGpioIndex, 0);
+    //PIN_setOutputValue(hFlashPin,Board_SPI_FLASH_CS,Board_FLASH_CS_ON);
 }
 
-//while (1) {
-//    segment_erase(0);
-//    memset(buf, 1, sizeof(buf));
-//    segment_write(0, (WORD)buf, sizeof(buf));
-//    sleep(time);
-//    memset(buf, 0, sizeof(buf));
-//    segment_r(0, (WORD)buf, sizeof(buf));
-////        GPIO_toggle(Board_GPIO_LED0);
-//    while(1);
-//}
+static void extFlashDeselect(void)
+{
+    GPIO_write(((NVSSPI25X_HWAttrs*)nvsHandle->hwAttrs)->spiCsnGpioIndex, 0);
+}
+
+UINT32 CMD_RDID(void)
+{
+    uint8_t wbuf[] = { BLS_CODE_MDID, 0xFF, 0xFF, 0x00 };
+    uint8_t infoBuf[2]={0};
+    SPI_Transaction transaction;
+
+    extFlashSelect();
+    // Configure the transaction
+    transaction.count = sizeof(wbuf);
+    transaction.txBuf = (uint8_t*)wbuf;
+    transaction.rxBuf = NULL;
+    SPI_transfer(((NVSSPI25X_Object*)nvsHandle->object)->spiHandle, &transaction);
+
+    transaction.count = sizeof(infoBuf);
+    transaction.txBuf = NULL;
+    transaction.rxBuf = infoBuf;
+    SPI_transfer(((NVSSPI25X_Object*)nvsHandle->object)->spiHandle, &transaction);
+    extFlashDeselect();
+
+    return (uint16_t)infoBuf[0]<<8 | infoBuf[1];
+}
+
