@@ -31,6 +31,7 @@ typedef struct calib_value{
 
 typedef struct MyStruct {
     List_Elem elem;
+    rfc_CMD_PROP_TX_ADV_t *tx;
     uint8_t pbuf[26];
 } MyStruct;
 #pragma pack()
@@ -82,7 +83,6 @@ extern st_calib_value calib;
 #define EasyLink_us_To_RadioTime(us) (us*(4000000/1000000))
 
 #define PAYLOAD_LENGTH  26
-extern uint8_t txPacket[PAYLOAD_LENGTH];
 extern dataQueue_t dataQueue;
 extern rfc_dataEntryGeneral_t* currentDataEntry;
 extern uint8_t packetLength;
@@ -119,19 +119,21 @@ extern UINT8 recv_data_for_hb(UINT8 *id, UINT8 *data, UINT8 len, UINT8 ch, UINT3
 extern uint16_t send_chaningmode(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout);
 extern void RF_wait_cmd_finish(void);
 
-extern void RF_wait_send_finish(UINT8 *id);
+
 extern void RF_cancle(int16_t result);
 extern void RF_idle(void);
 extern void RF_carrierWave(Bool flg);
 extern void RF_measureRSSI(Bool flg);
 extern void RF_setMeasureRSSI(uint8_t);
-extern List_Elem* listInit(uint8_t* pack0, uint8_t* pack1);
+extern List_Elem* listInit(void);
 
 extern int16_t set_rx_para(UINT8 *id, UINT16 datarate, UINT8 ch, UINT8 fifosize, UINT32 timeout);
 extern int8_t check_rx_status(UINT16 timeout);
 extern INT32 get_rx_data(UINT8 *dst, UINT8 dstsize);
 extern void RF_calib_power(int8_t Tx_power);
 extern void config_power(void);
+extern void send_chaningmode_init(void);
+
 
 
 #endif

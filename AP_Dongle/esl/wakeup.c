@@ -35,8 +35,8 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 	RF_EventMask result;
 	uint8_t  pend_flg = PEND_STOP;
 #ifdef RF_CHANING_MODE
-    write2buf = listInit(data0, data1);
-    data = ((MyStruct*)write2buf)->pbuf;
+	send_chaningmode_init();
+    write2buf = listInit();
 #endif
 	pdebug("wkup addr=0x%08X, len=%d\r\n", addr, len);
 
@@ -68,7 +68,7 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 		goto done;
 	}
 #ifdef RF_CHANING_MODE
-    data = ((MyStruct*)write2buf)->pbuf;
+	data = ((MyStruct*)write2buf)->tx->pPkt;
 #endif
 	if(get_one_data(addr+OFFSET_WKUP_DATA, id, &channel, &data_len, data, SIZE_ESL_DATA_BUF) == 0)
 	{
@@ -128,7 +128,7 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 			break;
 		}
 #ifdef RF_CHANING_MODE
-		data = ((MyStruct*)write2buf)->pbuf;
+		data = ((MyStruct*)write2buf)->tx->pPkt;
 #endif
 		if(type == 0) // 0 is default
 		{
@@ -151,10 +151,10 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
 #ifdef RF_CHANING_MODE
         if (PEND_STOP == pend_flg){
             pend_flg = PEND_START;
-            memcpy(txPacket, data, data_len);
             result = send_chaningmode(id, data, data_len, 6000);
             write2buf = List_next(write2buf);
-            memcpy(((MyStruct*)write2buf)->pbuf, data, data_len);
+            memcpy(((MyStruct*)write2buf)->tx->pPkt, data, data_len);
+
         }else{
             RF_wait_cmd_finish();
             write2buf = List_next(write2buf);

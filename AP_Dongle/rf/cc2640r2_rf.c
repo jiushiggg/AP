@@ -45,7 +45,6 @@
 #else
     #error This compiler is not supported.
 #endif
-uint8_t txPacket[PAYLOAD_LENGTH];
 
 static void RF_MapIO(void);
 void clear_queue_buf(void);
@@ -58,7 +57,6 @@ dataQueue_t dataQueue;
 RF_Status rf_status = RF_Status_idle;
 
 static UINT8 _hb_rssi = 0;
-static volatile Bool send_one_finish = false;
 
 Semaphore_Handle txDoneSem;
 Semaphore_Handle rxDoneSem;
@@ -70,10 +68,11 @@ UINT8 data0[PAYLOAD_LENGTH] = {0};
 UINT8 data1[PAYLOAD_LENGTH] = {0};
 st_calib_value calib;
 
-List_Elem* listInit(uint8_t* pack0, uint8_t* pack1)
+List_Elem* listInit(void)
 {
-//    foo[0].pbuf = pack0;
-//    foo[1].pbuf = pack1;
+    foo[0].tx =&RF_cmdPropTxAdv[0];
+    foo[1].tx =&RF_cmdPropTxAdv[1];
+
     List_clearList(&list);
     List_put(&list, (List_Elem *)&foo[0]);
     List_put(&list, (List_Elem *)&foo[1]);
@@ -86,15 +85,12 @@ void txcallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
 {
     if (e & RF_EventCmdAborted)
     {
-        //send_one_finish = true;
+
     }
     if (e & RF_EventCmdDone)
     {
         /* Successful TX */
-        memcpy(txPacket, ((MyStruct*)write2buf)->pbuf, PAYLOAD_LENGTH);
-//        write2buf = List_next(write2buf);
         Semaphore_post(txDoneSem);
-        //send_one_finish = true;
     }else {
 
     }
@@ -125,10 +121,10 @@ void semaphore_RFInit(void)
     /* Init params */
     Semaphore_Params_init(&params);
     Error_init(&eb);
-
     /* Create semaphore instance */
-    txDoneSem = Semaphore_create(0, &params, &eb);
     rxDoneSem = Semaphore_create(0, &params, &eb);
+    params.mode = ti_sysbios_knl_Semaphore_Mode_BINARY;
+    txDoneSem = Semaphore_create(0, &params, &eb);
 }
 
 
@@ -286,15 +282,15 @@ void set_power_rate(int8_t Tx_power, uint16_t Data_rate)
 
 void send_data_init(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
 {
-    RF_cmdPropTxAdv.startTrigger.triggerType = TRIG_NOW;
-    RF_cmdPropTxAdv.startTrigger.pastTrig = 1;
-    RF_cmdPropTxAdv.startTime = 0;
-    RF_cmdPropTxAdv.pktLen = len;
-    RF_cmdPropTxAdv.pPkt = data;
-    RF_cmdPropTxAdv.syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
-    RF_cmdPropTxAdv.pNextOp = NULL;
+    RF_cmdPropTxAdv[0].startTrigger.triggerType = TRIG_NOW;
+    RF_cmdPropTxAdv[0].startTrigger.pastTrig = 1;
+    RF_cmdPropTxAdv[0].startTime = 0;
+    RF_cmdPropTxAdv[0].pktLen = len;
+    RF_cmdPropTxAdv[0].pPkt = data;
+    RF_cmdPropTxAdv[0].syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+    RF_cmdPropTxAdv[0].pNextOp = NULL;
     /* Only run the RX command if TX is successful */
-    RF_cmdPropTxAdv.condition.rule = COND_NEVER;
+    RF_cmdPropTxAdv[0].condition.rule = COND_NEVER;
     cc2592Cfg(CC2592_TX);
 }
 #define MY_TEST_RF
@@ -304,32 +300,21 @@ RF_EventMask send_async(uint32_t interal)
     RF_EventMask result;
    // RF_cmdPropTxAdv.startTime += interal + EasyLink_us_To_RadioTime(700);
     //result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
-    result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
+    result = RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv[0], RF_PriorityNormal, NULL, 0);
 //    RF_yield(rfHandle);
     return result;
 }
 
-#if 0
-void RF_wait_send_finish(UINT8 *id)
-{
-    RF_cmdPropTxAdv.syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
-    while(PROP_DONE_OK!=((volatile RF_Op*)&RF_cmdPropTxAdv)->status ||
-            send_one_finish == false);
-    send_one_finish = false;
-}
-#else
-void RF_wait_send_finish(UINT8 *id)
-{
-    RF_cmdPropTxAdv.syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
-    Semaphore_pend (txDoneSem, RF_SEND_TIME/Clock_tickPeriod);
-}
-#endif
+
 
 void RF_wait_cmd_finish(void)
 {
-//    while(PROP_DONE_OK!=((volatile RF_Op*)&RF_cmdPropTxAdv)->status);
     Semaphore_pend (txDoneSem, RF_SEND_TIME/Clock_tickPeriod);
-//    send_one_finish = false;
+}
+void send_chaningmode_init(void)
+{
+    RF_cmdPropTxAdv[0].pPkt = data0;
+    RF_cmdPropTxAdv[1].pPkt = data1;
 }
 
 uint16_t send_chaningmode(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
@@ -337,17 +322,28 @@ uint16_t send_chaningmode(UINT8 *id, UINT8 *data, UINT8 len, UINT32 timeout)
     RF_EventMask result;
     cc2592Cfg(CC2592_TX);
     /* Modify CMD_PROP_TX and CMD_PROP_RX commands for application needs */
-    RF_cmdPropTxAdv.startTrigger.triggerType = TRIG_NOW;
-    RF_cmdPropTxAdv.startTrigger.pastTrig = 1;
-    RF_cmdPropTxAdv.startTime = 0;
-    RF_cmdPropTxAdv.pktLen = len;
-    RF_cmdPropTxAdv.pPkt = txPacket;
-    RF_cmdPropTxAdv.syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
-    RF_cmdPropTxAdv.pNextOp = (rfc_radioOp_t *)&RF_cmdPropTxAdv;
+    RF_cmdPropTxAdv[0].startTrigger.triggerType = TRIG_NOW;
+    RF_cmdPropTxAdv[0].startTrigger.pastTrig = 1;
+    RF_cmdPropTxAdv[0].startTime = 0;
+    RF_cmdPropTxAdv[0].pktLen = len;
+    RF_cmdPropTxAdv[0].pPkt = data0;
+    RF_cmdPropTxAdv[0].syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+    RF_cmdPropTxAdv[0].pNextOp = (rfc_radioOp_t *)&RF_cmdPropTxAdv[1];
     /* Only run the RX command if TX is successful */
-    RF_cmdPropTxAdv.condition.rule = COND_STOP_ON_FALSE;
-    send_one_finish = false;
-    result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, txcallback,
+    RF_cmdPropTxAdv[0].condition.rule = COND_STOP_ON_FALSE;
+
+    /* Modify CMD_PROP_TX and CMD_PROP_RX commands for application needs */
+    RF_cmdPropTxAdv[1].startTrigger.triggerType = TRIG_NOW;
+    RF_cmdPropTxAdv[1].startTrigger.pastTrig = 1;
+    RF_cmdPropTxAdv[1].startTime = 0;
+    RF_cmdPropTxAdv[1].pktLen = len;
+    RF_cmdPropTxAdv[1].pPkt = data1;
+    RF_cmdPropTxAdv[1].syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+    RF_cmdPropTxAdv[1].pNextOp = (rfc_radioOp_t *)&RF_cmdPropTxAdv[0];
+    /* Only run the RX command if TX is successful */
+    RF_cmdPropTxAdv[1].condition.rule = COND_STOP_ON_FALSE;
+
+    result = RF_postCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv[0], RF_PriorityNormal, txcallback,
                         (RF_EventCmdDone | RF_EventLastCmdDone| RF_EventCmdAborted));
     return (uint16_t)result;
 }
@@ -377,7 +373,7 @@ void RF_cancle(int16_t result)
 uint8_t send_data(uint8_t *id, uint8_t *data, uint8_t len, uint32_t timeout)
 {
     send_data_init(id, data, len, timeout);
-    RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv, RF_PriorityNormal, NULL, 0);
+    RF_runCmd(rfHandle, (RF_Op*)&RF_cmdPropTxAdv[0], RF_PriorityNormal, NULL, 0);
     return len;
 }
 //uint8_t rf_test_buff[26]={0};

@@ -44,7 +44,7 @@ void dummy_chaining_mode(updata_table_t *table, INT32 nus)
 
     UINT8 id[4] = {0};
     UINT8 channel = 0;
-    UINT8 *data = ((MyStruct*)write2buf)->pbuf;
+    UINT8 *data = ((MyStruct*)write2buf)->tx->pPkt;
     UINT8 data_len = 0;
     UINT32 addr = table->frame1_addr;
     UINT32 len = table->frame1_len;
@@ -59,19 +59,20 @@ void dummy_chaining_mode(updata_table_t *table, INT32 nus)
                 *dummy_offset = addr+LEN_OF_FRAME1_PARA;
             }
 
+            data = ((MyStruct*)write2buf)->tx->pPkt;
             if(get_one_data(*dummy_offset, id, &channel, &data_len, data, PAYLOAD_LENGTH) == 0)
             {
                 perr("frame1 dummy get data\r\n");
                 break;
             }
-
             pdebug("frame1 dummy: id=0x%02X-0x%02X-0x%02X-0x%02X, channel=%d, len=%d, data=", \
                     id[0], id[1], id[2], id[3], channel, data_len);
             pdebughex(data, data_len);
 
-            RF_wait_send_finish(id);
+            ((MyStruct*)write2buf)->tx->syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+            RF_wait_cmd_finish();
             write2buf = List_next(write2buf);
-            data = ((MyStruct*)write2buf)->pbuf;
+
             //result = send_without_wait(id, data, data_len, channel, 6000);
 
             *dummy_offset += sizeof(id)+sizeof(channel)+sizeof(data_len)+data_len;
