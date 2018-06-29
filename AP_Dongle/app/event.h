@@ -28,7 +28,6 @@
 #define EVENT_COMMUNICATE_SCAN_DEVICE        ((UINT32)1<<6) // new cmd
 #define EVENT_COMMUNICATE_ALL                              0xFFFFFFFF
 #else
-#define EVENT_COMMUNICATE_ACK               ((UINT32)1<<21) //8
 #define EVENT_COMMUNICATE_RX_HANDLE         ((UINT32)1<<22) //8
 #define EVENT_COMMUNICATE_RX_TO_FLASH       ((UINT32)1<<23) //8
 #define EVENT_COMMUNICATE_TX_FROM_FLASH     ((UINT32)1<<24) //A

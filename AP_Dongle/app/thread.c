@@ -173,9 +173,13 @@ void *mainThread(void *arg0)
 #ifdef GGG_RSSI_TEST
     //
     while(1){
-//#define CW
+        st_unmodulated_carrier p;
+#define CW
 #ifdef CW
-        rft_tx_null();
+        p.p = 0;
+        p.c = 168;
+        p.actor = EM_START;
+        rft_tx_null(&p);
 #else
         RSSI_test();
 #endif

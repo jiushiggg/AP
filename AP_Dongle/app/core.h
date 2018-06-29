@@ -77,8 +77,8 @@ typedef enum{
     EM_DOWN = (uint8_t)1
 }EM_DIRECTION;
 typedef enum{
-    EM_START   = (uint8_t)0,
-    EM_STOP    = (uint8_t)1
+    EM_STOP   = (uint8_t)0,
+    EM_START    = (uint8_t)1
 }EM_FLG;
 
 typedef struct{

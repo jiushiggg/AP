@@ -82,14 +82,6 @@ done:
 }
 
 
-void TIM_SetSoftInterrupt(UINT8 enable, void (*p)(void))
-{
-    tim_soft_callback = p;
-    if (1 == enable){
-        Event_communicateSet(EVENT_COMMUNICATE_ACK);
-    }
-}
-
 
 UINT32 Core_GetQuitStatus()
 {
@@ -270,12 +262,6 @@ void Core_Mainloop(void)
         if (event & EVENT_COMMUNICATE_TX_ESL_ACK){
             pinfo("core tx esl ack.\r\n");
             Event_Clear(EVENT_COMMUNICATE_TX_ESL_ACK);
-        }
-        if (event & EVENT_COMMUNICATE_ACK){
-            if (NULL != tim_soft_callback){
-                tim_soft_callback();
-            }
-            Event_Clear(EVENT_COMMUNICATE_ACK);
         }
         if(event & EVENT_COMMUNICATE_SCAN_DEVICE){
             pinfo("core uart send ack.\r\n");

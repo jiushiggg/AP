@@ -57,7 +57,7 @@ void Core_HandleRummanTest(core_task_t *task)
 	task->ack_len = 0;
 	task->ack_ptr = NULL;
 		
-	TIM_SetSoftInterrupt(1, Core_TxHandler);
+	Core_TxHandler();
 }
 
 static void _ack_busy(core_task_t *task)
@@ -65,7 +65,7 @@ static void _ack_busy(core_task_t *task)
 	task->ack = 0x10F1; // busy
 	task->ack_len = 0;
 	task->ack_ptr = NULL;	
-	TIM_SetSoftInterrupt(1, Core_TxHandler);
+	Core_TxHandler();
 }
 
 void Core_HandleFTBerTest(core_task_t *task)
@@ -76,7 +76,7 @@ void Core_HandleFTBerTest(core_task_t *task)
 		task->ack = 0x10F1; // busy
 		task->ack_len = 0;
 		task->ack_ptr = NULL;	
-		TIM_SetSoftInterrupt(1, Core_TxHandler);
+		Core_TxHandler();
 	}
 	else
 	{
@@ -92,7 +92,7 @@ void Core_HandleScanAck(core_task_t *task)
         task->ack = 0x10F1; // busy
         task->ack_len = 0;
         task->ack_ptr = NULL;
-        TIM_SetSoftInterrupt(1, Core_TxHandler);
+        Core_TxHandler();
     }
     else
     {
@@ -108,7 +108,7 @@ void Core_HandleScanBG(core_task_t *task)
 		task->ack = 0x10F1; // busy
 		task->ack_len = 0;
 		task->ack_ptr = NULL;	
-		TIM_SetSoftInterrupt(1, Core_TxHandler);
+		Core_TxHandler();
 	}
 	else
 	{
@@ -125,7 +125,7 @@ void Core_HandleEslUpdataReq(core_task_t *task)
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
 
-		TIM_SetSoftInterrupt(1, Core_TxHandler);
+		Core_TxHandler();
 	}
 	else
 	{
@@ -133,7 +133,7 @@ void Core_HandleEslUpdataReq(core_task_t *task)
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
 
-		Event_communicateSet(EVENT_COMMUNICATE_RX_TO_FLASH);
+		Core_TxHandler();
 	}
 }
 
@@ -146,7 +146,7 @@ void Core_HandleQueryEslUpdataAck(core_task_t *task)
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
 
-		TIM_SetSoftInterrupt(1, Core_TxHandler);
+		Core_TxHandler();
 	}
 	else
 	{
@@ -163,7 +163,7 @@ void Core_HandleG3Heartbeat(core_task_t *task)
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
 		
-		TIM_SetSoftInterrupt(1, Core_TxHandler);
+		Core_TxHandler();
 	}
 	else
 	{
@@ -184,7 +184,7 @@ void Core_HandleRcReqRequest(core_task_t *task)
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
 		
-		TIM_SetSoftInterrupt(1, Core_TxHandler);
+		Core_TxHandler();
 	}
 	else
 	{
@@ -212,7 +212,7 @@ void Core_HandleQuerySoftVer(core_task_t *task)
 	task->ack_buf[task->ack_len-1] = 0;
 	task->ack_ptr = task->ack_buf;
 	
-	TIM_SetSoftInterrupt(1, Core_TxHandler);
+	Core_TxHandler();
 }
 
 void Core_HandleQueryStatus(core_task_t *task)
@@ -224,7 +224,7 @@ void Core_HandleQueryStatus(core_task_t *task)
 	memcpy(task->ack_buf, &status, sizeof(status));
 	task->ack_ptr = task->ack_buf;
 	
-	TIM_SetSoftInterrupt(1, Core_TxHandler);
+	Core_TxHandler();
 }
 
 extern volatile UINT32 s_debug_level;
@@ -261,7 +261,7 @@ void Core_HandleScanWkup(core_task_t *task)
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
 		
-		TIM_SetSoftInterrupt(1, Core_TxHandler);
+		Core_TxHandler();
 	}
 	else
 	{	
@@ -277,7 +277,7 @@ void Core_HandleAssAck(core_task_t *task)
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
 		
-		TIM_SetSoftInterrupt(1, Core_TxHandler);
+		Core_TxHandler();
 	}
 	else
 	{	
@@ -292,7 +292,7 @@ void Core_HandleCalibrateFreq(core_task_t *task)
         task->ack_len = 0;
         task->ack_ptr = NULL;
 
-        TIM_SetSoftInterrupt(1, Core_TxHandler);
+        Core_TxHandler();
     }
     else
     {
@@ -307,7 +307,7 @@ void Core_HandleCalibratePower(core_task_t *task)
         task->ack_len = 0;
         task->ack_ptr = NULL;
 
-        TIM_SetSoftInterrupt(1, Core_TxHandler);
+        Core_TxHandler();
     }
     else
     {
