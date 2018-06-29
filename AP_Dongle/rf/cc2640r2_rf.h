@@ -24,6 +24,7 @@ typedef enum
 
 #pragma pack(1)
 typedef struct calib_value{
+    uint8_t flg;
     int32_t frequency_offset;
     int8_t power_offset;
 }st_calib_value;
@@ -60,7 +61,7 @@ extern st_calib_value calib;
 #define  DATA_RATE_2M       ((uint8_t)20)
 
 #define  RF_FREQUENCY_UNKNOW   -128
-#define RF_DEFAULT_POWER    0XFF
+#define RF_DEFAULT_POWER    (int8_t)0XFF
 
 #define  ALL_POWER_LEVEL 15
 #define  POWER_LEVEL        4

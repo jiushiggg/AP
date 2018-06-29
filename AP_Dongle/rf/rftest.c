@@ -451,7 +451,27 @@ INT32 rft_ber(UINT8 *ack_buf, INT32 size)
 
 void rft_tx_null(st_unmodulated_carrier *p)
 {
-    set_power_rate(p->p, DATA_RATE_500K);
+//    set_power_rate(p->p, DATA_RATE_500K);
+    int8_t n = 0;
+    switch(p->p){
+    case RF_TX_POWER_L0:
+        n = 0;
+        break;
+    case RF_TX_POWER_L1:
+        n = 1;
+        break;
+    case RF_TX_POWER_L2:
+        n = 2;
+        break;
+    case RF_TX_POWER_L3:
+        n = 3;
+        break;
+    default:
+        n = 2;
+        break;
+    }
+
+    set_power_rate(n, DATA_RATE_500K);
     set_frequence(p->c);
     tx_channel = p->c;
 	RF_carrierWave(p->actor==EM_START);
@@ -460,19 +480,24 @@ void rft_tx_null(st_unmodulated_carrier *p)
 INT32 calibrate_freq(core_task_t *task)
 {
     st_calibration_freq *tmp = &task->cmd_buf.calib_freq;
-    set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
-    
-    if (tmp->flg == EM_UP){
-        calib.frequency_offset += tmp->fract_freq;
-    }else{
-        calib.frequency_offset -= tmp->fract_freq;
-    }
 
 
-    if (TEST_PASS_SAVE == task->cmd_buf.calib_freq.result){
+    if (TEST_FAILED == task->cmd_buf.calib_freq.result){
+        calib.frequency_offset = 0;
+        return CORE_CMD_ACK;
+    }else if (TEST_PASS_SAVE == task->cmd_buf.calib_freq.result){
         Flash_writeInfo((uint8_t*)&calib, sizeof(calib));
+    }else{
+//        set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
+
+        if (tmp->flg == EM_UP){
+            calib.frequency_offset += tmp->fract_freq;
+        }else{
+            calib.frequency_offset -= tmp->fract_freq;
+        }
     }
     
+    set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
     set_frequence(tmp->channel);
     RF_carrierWave(true);
     return CORE_CMD_ACK;
@@ -482,36 +507,42 @@ INT32 calibrate_power(core_task_t *task)
 {
     int8_t n = 0;
 
+
     switch(task->cmd_buf.calib_power.power){
-    case RF_TX_POWER_L0:
-        n = DBM13_BASE;
-        break;
-    case RF_TX_POWER_L1:
-        n = DBM10_BASE;
-        break;
-    case RF_TX_POWER_L2:
-        n = DBM6_BASE;
-        break;
-    case RF_TX_POWER_L3:
-        n = DBM0_BASE;
-        break;
-    default:
-        break;
+        case RF_TX_POWER_L0:
+            n = DBM13_BASE;
+            break;
+        case RF_TX_POWER_L1:
+            n = DBM10_BASE;
+            break;
+        case RF_TX_POWER_L2:
+            n = DBM6_BASE;
+            break;
+        case RF_TX_POWER_L3:
+            n = DBM0_BASE;
+            break;
+        default:
+            n = DBM6_BASE;
+            break;
     }
 
-    if (EM_UP == task->cmd_buf.calib_power.flg){
-        calib.power_offset++;
-    }else{
-        calib.power_offset--;
-    }
-    n += calib.power_offset;
-
-    n = n<0 ? 0: n;
-    n = n>=ALL_POWER_LEVEL ? ALL_POWER_LEVEL-1: n;
-
-    if (TEST_PASS_SAVE == task->cmd_buf.calib_power.result){
+    if (TEST_FAILED == task->cmd_buf.calib_power.result){
+        calib.power_offset = 0;
+        return CORE_CMD_ACK;
+    }else if (TEST_PASS_SAVE == task->cmd_buf.calib_power.result){
         Flash_writeInfo((uint8_t*)&calib, sizeof(calib));
         config_power();
+        n += calib.power_offset;
+    } else{
+        if (EM_UP == task->cmd_buf.calib_power.flg){
+            calib.power_offset++;
+        }else{
+            calib.power_offset--;
+        }
+        n += calib.power_offset;
+
+        n = n<0 ? 0: n;
+        n = n>=ALL_POWER_LEVEL ? ALL_POWER_LEVEL-1: n;
     }
 
     RF_calib_power(n);

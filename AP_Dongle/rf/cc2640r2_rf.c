@@ -268,7 +268,7 @@ void set_power_rate(int8_t Tx_power, uint16_t Data_rate)
         break;
     }
 #ifdef ESLWORKING_SET
-    if (RF_DEFAULT_POWER != RF_cmdPropRadioSetup.txPower){
+    if (RF_DEFAULT_POWER != Tx_power){
         RF_cmdPropRadioSetup.txPower = rf_tx_power[Tx_power];
     }
 

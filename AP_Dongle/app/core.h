@@ -23,8 +23,9 @@
 #define CORE_CMD_FT_RF_BER				0x10A1
 #define CORE_CMD_SCAN_BG				0x10A2
 #define CORE_CMD_RF_TXRX				0x10A3
-#define CORE_CMD_CALIBRATE_FREQ         0x10A4
-#define CORE_CMD_CALIBRATE_POWER        0x10A5
+#define CORE_CMD_CALIBRATE_POWER        0x10A4
+#define CORE_CMD_CALIBRATE_FREQ         0x10A5
+
 
 #define CORE_CMD_SCAN_WKUP				0x10B1
 #define CORE_CMD_ASS_ACK				0x10B2
@@ -82,8 +83,6 @@ typedef enum{
 }EM_FLG;
 
 typedef struct{
-    uint16_t cmd;
-    uint32_t cmdlen;
     EM_RESULT result;
     uint8_t reserve;
     uint8_t channel;
@@ -93,8 +92,6 @@ typedef struct{
 }st_calibration_freq;
 
 typedef struct{
-    uint16_t cmd;
-    uint32_t cmdlen;
     EM_RESULT result;
     uint8_t reserve;
     uint8_t power;

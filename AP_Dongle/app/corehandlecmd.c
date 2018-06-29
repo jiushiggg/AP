@@ -42,7 +42,7 @@ void Core_HandleRummanTest(core_task_t *task)
 	else
 	{
 		/* check para */
-		if(task->cmd_buf.unmod_carrier.p < POWER_LEVEL)
+		if(task->cmd_buf.unmod_carrier.p <= RF_TX_POWER_L0)
 		{
             task->ack = CORE_CMD_ACK; // ack
             pinfo("Core cmd rumman test, channel: %d, power: %d\r\n", task->cmd_buf.unmod_carrier.c, task->cmd_buf.unmod_carrier.p);
