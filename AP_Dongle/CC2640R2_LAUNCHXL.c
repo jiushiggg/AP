@@ -448,7 +448,7 @@ const uint_least8_t I2C_count = CC2640R2_LAUNCHXL_I2CCOUNT;
 #include <ti/drivers/nvs/NVSCC26XX.h>
 
 #define SECTORSIZE 0x1000
-#define NVS_REGIONS_BASE 0x1B000
+//#define NVS_REGIONS_BASE 0x1B000
 
 static uint8_t verifyBuf[64];
 
@@ -461,9 +461,9 @@ static uint8_t verifyBuf[64];
 /*
  * Place uninitialized array at NVS_REGIONS_BASE
  */
-#pragma LOCATION(flashBuf, NVS_REGIONS_BASE);
-#pragma NOINIT(flashBuf);
-static char flashBuf[SECTORSIZE * 4];
+//#pragma LOCATION(flashBuf, NVS_REGIONS_BASE);
+//#pragma NOINIT(flashBuf);
+//static char flashBuf[SECTORSIZE * 4];
 
 #elif defined(__IAR_SYSTEMS_ICC__)
 
@@ -485,16 +485,16 @@ static char flashBuf[SECTORSIZE * 4];
 #endif
 
 /* Allocate objects for NVS and NVS SPI */
-NVSCC26XX_Object nvsCC26xxObjects[1];
+//NVSCC26XX_Object nvsCC26xxObjects[1];
 NVSSPI25X_Object nvsSPI25XObjects[1];
 
 /* Hardware attributes for NVS */
-const NVSCC26XX_HWAttrs nvsCC26xxHWAttrs[1] = {
-    {
-        .regionBase = (void *)flashBuf,
-        .regionSize = SECTORSIZE * 4,
-    },
-};
+//const NVSCC26XX_HWAttrs nvsCC26xxHWAttrs[1] = {
+//    {
+//        .regionBase = (void *)flashBuf,
+//        .regionSize = SECTORSIZE * 4,
+//    },
+//};
 
 /* Hardware attributes for NVS SPI */
 const NVSSPI25X_HWAttrs nvsSPI25XHWAttrs[1] = {
@@ -513,11 +513,11 @@ const NVSSPI25X_HWAttrs nvsSPI25XHWAttrs[1] = {
 
 /* NVS Region index 0 and 1 refer to NVS and NVS SPI respectively */
 const NVS_Config NVS_config[CC2640R2_LAUNCHXL_NVSCOUNT] = {
-    {
-        .fxnTablePtr = &NVSCC26XX_fxnTable,
-        .object = &nvsCC26xxObjects[0],
-        .hwAttrs = &nvsCC26xxHWAttrs[0],
-    },
+//    {
+//        .fxnTablePtr = &NVSCC26XX_fxnTable,
+//        .object = &nvsCC26xxObjects[0],
+//        .hwAttrs = &nvsCC26xxHWAttrs[0],
+//    },
     {
         .fxnTablePtr = &NVSSPI25X_fxnTable,
         .object = &nvsSPI25XObjects[0],
