@@ -133,7 +133,7 @@ void Core_HandleEslUpdataReq(core_task_t *task)
 		task->ack_len = 0;
 		task->ack_ptr = NULL;
 
-		Core_TxHandler();
+		Event_communicateSet(EVENT_COMMUNICATE_RX_TO_FLASH);
 	}
 }
 
