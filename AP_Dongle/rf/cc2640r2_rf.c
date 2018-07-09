@@ -167,13 +167,15 @@ const uint16_t rf_tx_power[POWER_LEVEL]={0x0cc5,0x0cc6, 0x0cc7, 0x0cc9,0x0ccb,0x
 
 #endif
 
-
+const int8_t dbm_base[POWER_LEVEL] = {DBM13_BASE, DBM10_BASE, DBM6_BASE, DBM0_BASE};
 void config_power(void)
 {
-    rf_tx_power[0] = rf_all_tx_power[DBM13_BASE+calib.power_offset];
-    rf_tx_power[1] = rf_all_tx_power[DBM10_BASE+calib.power_offset];
-    rf_tx_power[2] = rf_all_tx_power[DBM6_BASE+calib.power_offset];
-    rf_tx_power[3] = rf_all_tx_power[DBM0_BASE+calib.power_offset];
+    int8_t n=0, i;
+    for (i=0; i<POWER_LEVEL; i++){
+        n = dbm_base[i]+calib.power_offset >= ALL_POWER_LEVEL ? ALL_POWER_LEVEL-1 : dbm_base[i]+calib.power_offset;
+        n = dbm_base[i]+calib.power_offset < 0 ? DBM6_BASE : dbm_base[i]+calib.power_offset;
+        rf_tx_power[i] = rf_all_tx_power[n];
+    }
 }
 
 void set_frequence(uint8_t  Frequency)
@@ -194,7 +196,7 @@ void set_frequence(uint8_t  Frequency)
     }
 
     if (calib.frequency_offset>=32768 && RF_cmdFs.fractFreq==32768){
-        RF_cmdFs.fractFreq += calib.frequency_offset - 32768;
+        RF_cmdFs.fractFreq = calib.frequency_offset - 32768;
         RF_cmdFs.frequency++;
     }else if (calib.frequency_offset>=32768 && RF_cmdFs.fractFreq==0){
         RF_cmdFs.fractFreq = calib.frequency_offset;
