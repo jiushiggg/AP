@@ -20,8 +20,9 @@
 #include "apply_genfsk_rfe_patch.h"
 #include "rf_patch_cpe_prop.h"
 
+//#define COMPAT_E30_E31
 
-
+#ifdef COMPAT_E30_E31
 // TI-RTOS RF Mode Object
 RF_Mode RF_prop =
 {
@@ -30,7 +31,17 @@ RF_Mode RF_prop =
     .mcePatchFxn = &enterGenfskMcePatch,
     .rfePatchFxn = &enterGenfskRfePatch,
 };
+#else
+RF_Mode RF_prop =
+{
+    .rfMode = RF_MODE_PROPRIETARY_2_4,
+    .cpePatchFxn = &rf_patch_cpe_prop,  // Shape 2FSK => GFSK with BT 2,
+    .mcePatchFxn = 0,
+    .rfePatchFxn = 0,
+};
+#endif
 
+#ifdef COMPAT_E30_E31
 // Overrides for CMD_PROP_RADIO_SETUP
 uint32_t pOverrides500[] =
 {
@@ -75,7 +86,48 @@ uint32_t pOverrides100[] =
      HW_REG_OVERRIDE(0x6084, 0x35F1),         //This should make sure that the RSSI is not beeing updated after sync is found.
      (uint32_t)0xFFFFFFFF,
 };
+#else
+// Overrides for CMD_PROP_RADIO_SETUP
+uint32_t pOverrides500[] =
+{
+    HW_REG_OVERRIDE(0x6088,0x3F1F),          //PA trim ramping and AGC ref
+    HW_REG_OVERRIDE(0x608C,0x8213),          //PA IB ramping and AGC rssicount/wait, 50kbps-0x8213, 150kbps-0x0213, 200kbps-0x0113
+    (uint32_t)0x000484A3,                    // Synth: Set FREF = 6 MHz (24 MHz / 4)
+    (uint32_t)0x02010403,                    //Fixes phase error discard
+    HW32_ARRAY_OVERRIDE(0x2004, 1),          // Configure new CRC16 polynom
+    (uint32_t) 0x10210000,                   // The CRC16 polynome: CRC-16-CCITT normal form, 0x1021 is x^16 + x^15 + x^5 + 1
+    (uint32_t) 0xC0040051,                   // Configure new CRC init value
+    (uint32_t) 0x1D0F0000,                   // Change CRC init value to 0x1D0F
 
+    (uint32_t) 0x00018063,                   //cache used GPRAM,add
+
+    (uint32_t) 0x008F88B3,
+    HW_REG_OVERRIDE(0x1110,  RFC_DBELL_SYSGPOCTL_GPOCTL0_CPEGPO0 | RFC_DBELL_SYSGPOCTL_GPOCTL1_RATGPO0 | RFC_DBELL_SYSGPOCTL_GPOCTL2_MCEGPO1 | RFC_DBELL_SYSGPOCTL_GPOCTL3_RATGPO1),
+    HW_REG_OVERRIDE(0x6084, 0x35F1),         //This should make sure that the RSSI is not beeing updated after sync is found.
+    (uint32_t)0xFFFFFFFF,
+};
+
+// Overrides for CMD_PROP_RADIO_SETUP
+uint32_t pOverrides100[] =
+{
+     HW_REG_OVERRIDE(0x6088,0x3F1F),          //PA trim ramping and AGC ref
+     HW_REG_OVERRIDE(0x608C,0x8213),          //PA IB ramping and AGC rssicount/wait, 50kbps-0x8213, 150kbps-0x0213, 200kbps-0x0113
+     (uint32_t)0x000484A3,                    // Synth: Set FREF = 6 MHz (24 MHz / 4)
+     (uint32_t)0x02010403,                    //Fixes phase error discard
+     HW32_ARRAY_OVERRIDE(0x2004, 1),          // Configure new CRC16 polynom
+     (uint32_t) 0x10210000,                   // The CRC16 polynome: CRC-16-CCITT normal form, 0x1021 is x^16 + x^15 + x^5 + 1
+     (uint32_t) 0xC0040051,                   // Configure new CRC init value
+     (uint32_t) 0x1D0F0000,                   // Change CRC init value to 0x1D0F
+
+     (uint32_t) 0x00018063,                   //cache used GPRAM,add
+
+     (uint32_t) 0x008F88B3,
+     HW_REG_OVERRIDE(0x1110,  RFC_DBELL_SYSGPOCTL_GPOCTL0_CPEGPO0 | RFC_DBELL_SYSGPOCTL_GPOCTL1_RATGPO0 | RFC_DBELL_SYSGPOCTL_GPOCTL2_MCEGPO1 | RFC_DBELL_SYSGPOCTL_GPOCTL3_RATGPO1),
+     HW_REG_OVERRIDE(0x6084, 0x35F1),         //This should make sure that the RSSI is not beeing updated after sync is found.
+     (uint32_t)0xFFFFFFFF,
+};
+
+#endif
 
 // CMD_PROP_RADIO_SETUP
 rfc_CMD_PROP_RADIO_SETUP_t RF_cmdPropRadioSetup =
