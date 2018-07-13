@@ -208,9 +208,9 @@ void Core_HandleQuerySoftVer(core_task_t *task)
 {
 	task->ack = CORE_CMD_ACK; // ack
 	task->ack_len = strlen((const char *)APP_VERSION_STRING)+1;
-	strcpy((char *)task->ack_buf, (const char *)APP_VERSION_STRING);
-	task->ack_buf[task->ack_len-1] = 0;
-	task->ack_ptr = task->ack_buf;
+	strcpy((char *)task->ack_buf.buf, (const char *)APP_VERSION_STRING);
+	task->ack_buf.buf[task->ack_len-1] = 0;
+	task->ack_ptr = task->ack_buf.buf;
 	
 	Core_TxHandler();
 }
@@ -221,8 +221,8 @@ void Core_HandleQueryStatus(core_task_t *task)
 	
 	task->ack = CORE_CMD_ACK; // ack
 	task->ack_len = sizeof(status);
-	memcpy(task->ack_buf, &status, sizeof(status));
-	task->ack_ptr = task->ack_buf;
+	memcpy(task->ack_buf.buf, &status, sizeof(status));
+	task->ack_ptr = task->ack_buf.buf;
 	
 	Core_TxHandler();
 }

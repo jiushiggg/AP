@@ -500,6 +500,11 @@ INT32 calibrate_freq(core_task_t *task)
     set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
     set_frequence(tmp->channel);
     RF_carrierWave(true);
+
+    local_task.ack_len = sizeof(st_calibration_freq_ack);
+    local_task.ack_buf.freq.frequency = RF_cmdFs.frequency;
+    local_task.ack_buf.freq.fractFreq = RF_cmdFs.fractFreq;
+    local_task.ack_ptr = local_task.ack_buf.buf;
     return CORE_CMD_ACK;
 }
 
@@ -549,6 +554,9 @@ INT32 calibrate_power(core_task_t *task)
     set_frequence(tx_channel);
     RF_carrierWave(true);
 
+    local_task.ack_len = sizeof(st_calibration_power_ack);
+    local_task.ack_buf.power.power = RF_cmdPropRadioSetup.txPower;
+    local_task.ack_ptr = local_task.ack_buf.buf;
     return CORE_CMD_ACK;
 }
 

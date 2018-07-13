@@ -82,7 +82,7 @@ typedef enum{
     EM_START    = (uint8_t)1
 }EM_FLG;
 
-typedef struct{
+typedef struct st_calibration_freq{
     EM_RESULT result;
     uint8_t reserve;
     uint8_t channel;
@@ -91,7 +91,12 @@ typedef struct{
     uint16_t fract_freq;
 }st_calibration_freq;
 
-typedef struct{
+typedef struct st_calibration_freq_ack{
+    uint16_t frequency;
+    uint16_t fractFreq;
+}st_calibration_freq_ack;
+
+typedef struct st_calibration_power{
     EM_RESULT result;
     uint8_t reserve;
     uint8_t power;
@@ -100,19 +105,28 @@ typedef struct{
     uint16_t power_set;
 }st_calibration_power;
 
-typedef struct{
+typedef struct st_calibration_power_ack{
+    uint16_t power;
+}st_calibration_power_ack;
+
+typedef struct st_unmodulated_carrier{
     uint8_t c;
     int8_t  p;
     EM_FLG actor;
 }st_unmodulated_carrier;
 
-typedef union {
+typedef union  un_cmd_buf{
     UINT8                   buf[CORE_CMD_LEN];
     st_calibration_freq     calib_freq;
     st_calibration_power    calib_power;
     st_unmodulated_carrier  unmod_carrier;
 }un_cmd_buf;
 
+typedef union un_ack_buf{
+    UINT8                   buf[CORE_CMD_LEN];
+    st_calibration_freq_ack     freq;
+    st_calibration_power_ack    power;
+}un_ack_buf;
 
 typedef struct
 {
@@ -128,7 +142,7 @@ typedef struct
     UINT16 ack;
     UINT8 ack_len;
     UINT8 *ack_ptr;
-    UINT8 ack_buf[CORE_CMD_LEN];
+    un_ack_buf ack_buf;
 }core_task_t;
 
 

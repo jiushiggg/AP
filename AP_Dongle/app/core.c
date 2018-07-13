@@ -403,7 +403,7 @@ void Core_Mainloop(void)
             uint16_t ack;
             pinfo("calibrate frequency\r\n");
             ack = calibrate_freq(&local_task);
-            Core_SendCmd(ack, 0, NULL);
+            Core_SendCmd(ack, local_task.ack_len, local_task.ack_ptr);
             Event_Clear(EVENT_CALIBRATE_FREQ);
         }
         if (event & EVENT_CALIBRATE_POWER)
@@ -411,7 +411,7 @@ void Core_Mainloop(void)
             uint16_t ack;
             pinfo("calibrate power\r\n");
             ack = calibrate_power(&local_task);
-            Core_SendCmd(ack, 0, NULL);
+            Core_SendCmd(ack, local_task.ack_len, local_task.ack_ptr);
             Event_Clear(EVENT_CALIBRATE_POWER);
         }
         if(event & EVENT_SYSTEM_REBOOT)
@@ -434,12 +434,12 @@ void Core_Mainloop(void)
             else if(fret != 0) //test board
             {
                 Core_SendCmd(CORE_CMD_ACK, 0, NULL);
-                rft_ber(local_task.ack_buf, sizeof(local_task.ack_buf));
+                rft_ber(local_task.ack_buf.buf, sizeof(local_task.ack_buf.buf));
             }
             else //gold board
             {
-                fret = rft_ber(local_task.ack_buf, sizeof(local_task.ack_buf));
-                Core_SendCmd(CORE_CMD_ACK, fret, local_task.ack_buf);
+                fret = rft_ber(local_task.ack_buf.buf, sizeof(local_task.ack_buf.buf));
+                Core_SendCmd(CORE_CMD_ACK, fret, local_task.ack_buf.buf);
             }
             Event_Clear(EVENT_FT_BER);
         }
@@ -449,14 +449,14 @@ void Core_Mainloop(void)
         {
             INT32 fret = 0;
             pinfo("core scan bg\r\n");
-            fret = rft_scan_bg(local_task.cmd_buf.buf, local_task.cmd_len, local_task.ack_buf, sizeof(local_task.ack_buf));
+            fret = rft_scan_bg(local_task.cmd_buf.buf, local_task.cmd_len, local_task.ack_buf.buf, sizeof(local_task.ack_buf.buf));
             if(fret <= 0)
             {
                 Core_SendCmd(CORE_CMD_ERROR, 0, NULL);
             }
             else
             {
-                Core_SendCmd(CORE_CMD_ACK, fret, local_task.ack_buf);
+                Core_SendCmd(CORE_CMD_ACK, fret, local_task.ack_buf.buf);
             }
             Event_Clear(EVENT_SCAN_BG);
         }
@@ -519,8 +519,8 @@ void Core_Mainloop(void)
 
         if(event & EVENT_RF_TXRX)
         {
-            local_task.ack_len = rf_txrx(local_task.cmd_buf.buf, local_task.cmd_len, local_task.ack_buf, CORE_CMD_LEN);
-            Core_SendData(local_task.ack_buf, local_task.ack_len);
+            local_task.ack_len = rf_txrx(local_task.cmd_buf.buf, local_task.cmd_len, local_task.ack_buf.buf, CORE_CMD_LEN);
+            Core_SendData(local_task.ack_buf.buf, local_task.ack_len);
             Event_Clear(EVENT_RF_TXRX);
         }
 
