@@ -319,7 +319,7 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 			pinfo("numout 60000\r\n");
 			break;
 		}
-		len = recv_data_for_hb(table->id, ptr, table->recv_len, table->channel, 2000000);
+		len = recv_data_for_hb(table->id, ptr, table->recv_len, table->channel, 20000);
 		if(len <= 0)
 		{
 			BSP_Delay1MS(table->interval);

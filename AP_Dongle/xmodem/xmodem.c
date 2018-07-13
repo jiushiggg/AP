@@ -558,10 +558,14 @@ INT32 Xmodem_SendFromFlash(xmodem_t *x, INT32 dev, UINT32 addr, INT32 len, INT32
 
 	return send_len_total;
 }
-
+extern volatile UINT32 core_idel_flag;
 void readCallback(UART_Handle handle, void *rxBuf, size_t size)
 {
-    if (recCmdAckFlg == true && XMODEM_LEN_CMD==size){
+    if ((recv_once_buf[2] | (uint16_t)recv_once_buf[3]<<8)==CORE_CMD_BACK_TO_IDLE &&
+         XMODEM_LEN_CMD==size){
+        core_idel_flag = 1;
+
+    }else if (recCmdAckFlg == true && XMODEM_LEN_CMD==size){
         Device_Recv_post();
     }else if((XMODEM_LEN_CMD==size || XMODEM_LEN_ALL==size) && writeFlashFlg == true){
         Device_Recv_post();

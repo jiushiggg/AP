@@ -41,7 +41,7 @@
 
 #pragma location=(CORE_TASK_ADDR)
 core_task_t local_task;
-UINT32 core_idel_flag = 0;
+volatile UINT32 core_idel_flag = 0;
 void (*tim_soft_callback)(void);
 
 
@@ -168,9 +168,9 @@ void Core_RxHandler(void)
 		case CORE_CMD_SET_RF_LOG:
 			Core_SetRfLog(&local_task);
 			break;
-		case CORE_CMD_BACK_TO_IDLE:
-			Core_BackToIdel(&local_task);
-			break;
+//		case CORE_CMD_BACK_TO_IDLE:
+//			Core_BackToIdel(&local_task);
+//			break;
 		case CORE_CMD_SCAN_WKUP:
 			Core_HandleScanWkup(&local_task);
 			break;
