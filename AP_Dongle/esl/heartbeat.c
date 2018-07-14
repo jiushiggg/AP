@@ -7,6 +7,7 @@
 #include "crc16.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "core.h"
 
 #define NORMAL_DATA     0
 #define UPLINK_DATA     1
@@ -393,7 +394,7 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 	
 	if(recv_len_total >= 0)
 	{
-		cmd = 0x1020;
+		cmd = CORE_CMD_HB_ACK;
 		cmd_len = recv_len_total + 2; //data len + sizeof(num)
 		memcpy(table->data_buf, (UINT8 *)&cmd, 2);//set cmd
 		memcpy(table->data_buf+2, (UINT8 *)&cmd_len, 4);//set len

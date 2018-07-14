@@ -40,6 +40,7 @@
 #define CORE_CMD_PARA_ERROR				0x10F5
 #define CORE_CMD_ERROR					0x10FF
 
+#define CORE_CMD_HB_ACK                 0x1020
 
 
 /* Stack size in bytes */
