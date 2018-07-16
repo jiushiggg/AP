@@ -288,7 +288,7 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 		if(core_idel_flag == 1)
 		{
 			pinfo("back to idel\r\n");
-//			core_idel_flag = 0;
+			core_idel_flag = 0;
 //			recv_len_total = -1;
 			break;
 		}
