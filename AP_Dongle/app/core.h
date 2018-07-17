@@ -114,6 +114,8 @@ typedef struct st_unmodulated_carrier{
     uint8_t c;
     int8_t  p;
     EM_FLG actor;
+    uint8_t clear_c;
+    uint8_t clear_p;
 }st_unmodulated_carrier;
 
 typedef union  un_cmd_buf{

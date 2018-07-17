@@ -12,6 +12,9 @@
 #include "core.h"
 #include "flash.h"
 
+
+#define CLEAR_FREQ ((uint8_t)1)
+#define CLEAR_POWER ((uint8_t)1)
 //#define BER_DEBUG
 #define RF_BER_TIMOUT_20MS   (20000)
 
@@ -448,7 +451,6 @@ INT32 rft_ber(UINT8 *ack_buf, INT32 size)
     return ret;
 }
 
-
 void rft_tx_null(st_unmodulated_carrier *p)
 {
 //    set_power_rate(p->p, DATA_RATE_500K);
@@ -469,6 +471,15 @@ void rft_tx_null(st_unmodulated_carrier *p)
     default:
         n = 2;
         break;
+    }
+    if (p->clear_c == CLEAR_FREQ){
+        calib.frequency_offset = 0;
+        Flash_writeInfo((uint8_t*)&calib, sizeof(calib));
+    }
+    if (p->clear_p == CLEAR_POWER){
+        calib.power_offset = 0;
+        Flash_writeInfo((uint8_t*)&calib, sizeof(calib));
+        config_power();
     }
 
     set_power_rate(n, DATA_RATE_500K);
