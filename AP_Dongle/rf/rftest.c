@@ -451,10 +451,12 @@ INT32 rft_ber(UINT8 *ack_buf, INT32 size)
     return ret;
 }
 
-void rft_tx_null(st_unmodulated_carrier *p)
+void rft_tx_null(core_task_t *task)
 {
 //    set_power_rate(p->p, DATA_RATE_500K);
     int8_t n = 0;
+    st_unmodulated_carrier *p = &task->cmd_buf.unmod_carrier;
+
     switch(p->p){
     case RF_TX_POWER_L0:
         n = 0;
@@ -486,6 +488,15 @@ void rft_tx_null(st_unmodulated_carrier *p)
     set_frequence(p->c);
     tx_channel = p->c;
 	RF_carrierWave(p->actor==EM_START);
+
+    local_task.ack_len = sizeof(st_unmodulated_carrier_ack);
+    local_task.ack_buf.unmod_carrier.c = p->c;
+    local_task.ack_buf.unmod_carrier.p = p->p;
+    local_task.ack_buf.unmod_carrier.frequency = RF_cmdFs.frequency;
+    local_task.ack_buf.unmod_carrier.fractFreq = RF_cmdFs.fractFreq;
+    local_task.ack_buf.unmod_carrier.power= RF_cmdPropRadioSetup.txPower;
+    local_task.ack_ptr = local_task.ack_buf.buf;
+
 }
 
 INT32 calibrate_freq(core_task_t *task)

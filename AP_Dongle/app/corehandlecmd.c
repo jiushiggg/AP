@@ -46,7 +46,7 @@ void Core_HandleRummanTest(core_task_t *task)
 		{
             task->ack = CORE_CMD_ACK; // ack
             pinfo("Core cmd rumman test, channel: %d, power: %d\r\n", task->cmd_buf.unmod_carrier.c, task->cmd_buf.unmod_carrier.p);
-            rft_tx_null(&task->cmd_buf.unmod_carrier);
+            rft_tx_null(task);
 		}
 		else
 		{
@@ -54,8 +54,8 @@ void Core_HandleRummanTest(core_task_t *task)
 		}		
 	}
 	
-	task->ack_len = 0;
-	task->ack_ptr = NULL;
+//	task->ack_len = 0;
+//	task->ack_ptr = NULL;
 		
 	Core_TxHandler();
 }

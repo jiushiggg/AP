@@ -118,6 +118,14 @@ typedef struct st_unmodulated_carrier{
     uint8_t clear_p;
 }st_unmodulated_carrier;
 
+typedef struct st_unmodulated_carrier_ack{
+    uint8_t c;
+    int8_t  p;
+    uint16_t frequency;
+    uint16_t fractFreq;
+    uint16_t power;
+}st_unmodulated_carrier_ack;
+
 typedef union  un_cmd_buf{
     UINT8                   buf[CORE_CMD_LEN];
     st_calibration_freq     calib_freq;
@@ -129,6 +137,7 @@ typedef union un_ack_buf{
     UINT8                   buf[CORE_CMD_LEN];
     st_calibration_freq_ack     freq;
     st_calibration_power_ack    power;
+    st_unmodulated_carrier_ack  unmod_carrier;
 }un_ack_buf;
 
 typedef struct
