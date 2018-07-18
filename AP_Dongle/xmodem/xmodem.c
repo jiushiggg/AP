@@ -57,7 +57,7 @@ static UINT8 Xmodem_CheckCrc(UINT8 *xbuf)
 
 	if(crc1 != crc2)
 	{
-		return 1;
+		return 0;
 	}
 	else
 	{
