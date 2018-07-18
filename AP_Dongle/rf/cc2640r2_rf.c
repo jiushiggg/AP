@@ -180,7 +180,7 @@ void config_power(void)
 
 void set_frequence(uint8_t  Frequency)
 {
-    int8_t n;
+    int8_t n = 0;
     RF_cmdFs.frequency = 2400+Frequency/2;
     RF_cmdFs.fractFreq = (Frequency%2 ? 32768 : 0);
 

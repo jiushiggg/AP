@@ -506,7 +506,7 @@ INT32 calibrate_freq(core_task_t *task)
 
     if (TEST_FAILED == task->cmd_buf.calib_freq.result){
         calib.frequency_offset = 0;
-        return CORE_CMD_ACK;
+        Flash_writeInfo((uint8_t*)&calib, sizeof(calib));
     }else if (TEST_PASS_SAVE == task->cmd_buf.calib_freq.result){
         Flash_writeInfo((uint8_t*)&calib, sizeof(calib));
     }else{
@@ -517,12 +517,11 @@ INT32 calibrate_freq(core_task_t *task)
         }else{
             calib.frequency_offset -= tmp->fract_freq;
         }
+        set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
+        set_frequence(tmp->channel);
+        RF_carrierWave(true);
     }
     
-    set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
-    set_frequence(tmp->channel);
-    RF_carrierWave(true);
-
     local_task.ack_len = sizeof(st_calibration_freq_ack);
     local_task.ack_buf.freq.frequency = RF_cmdFs.frequency;
     local_task.ack_buf.freq.fractFreq = RF_cmdFs.fractFreq;
@@ -555,11 +554,11 @@ INT32 calibrate_power(core_task_t *task)
 
     if (TEST_FAILED == task->cmd_buf.calib_power.result){
         calib.power_offset = 0;
-        return CORE_CMD_ACK;
+        Flash_writeInfo((uint8_t*)&calib, sizeof(calib));
+        config_power();        
     }else if (TEST_PASS_SAVE == task->cmd_buf.calib_power.result){
         Flash_writeInfo((uint8_t*)&calib, sizeof(calib));
         config_power();
-        n += calib.power_offset;
     } else{
         if (EM_UP == task->cmd_buf.calib_power.flg){
             calib.power_offset++;
@@ -570,11 +569,11 @@ INT32 calibrate_power(core_task_t *task)
 
         n = n<0 ? 0: n;
         n = n>=ALL_POWER_LEVEL ? ALL_POWER_LEVEL-1: n;
+        RF_calib_power(n);
+        set_frequence(tx_channel);
+        RF_carrierWave(true);
     }
 
-    RF_calib_power(n);
-    set_frequence(tx_channel);
-    RF_carrierWave(true);
 
     local_task.ack_len = sizeof(st_calibration_power_ack);
     local_task.ack_buf.power.power = RF_cmdPropRadioSetup.txPower;
