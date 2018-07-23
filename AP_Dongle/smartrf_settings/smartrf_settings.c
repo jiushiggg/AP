@@ -20,7 +20,7 @@
 #include "apply_genfsk_rfe_patch.h"
 #include "rf_patch_cpe_prop.h"
 
-//#define COMPAT_E30_E31
+#define COMPAT_E30_E31
 
 #ifdef COMPAT_E30_E31
 // TI-RTOS RF Mode Object
