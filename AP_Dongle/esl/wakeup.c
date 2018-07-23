@@ -152,6 +152,7 @@ INT32 wakeup_start(UINT32 addr, UINT32 len, UINT8 type)
         if (PEND_STOP == pend_flg){
             pend_flg = PEND_START;
             result = send_chaningmode(id, data, data_len, 6000);
+            memcpy(((MyStruct*)write2buf->next)->tx->pPkt, data, data_len);
 			write2buf = List_next(write2buf);
         }else{
             RF_wait_cmd_finish();
