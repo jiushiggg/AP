@@ -12,6 +12,7 @@
 #include "sleep.h"
 #include "sys_cfg.h"
 #include "core.h"
+#include "ti\drivers\dpl\HwiP.h"
 
 UINT16 get_missed_sn_r(UINT8 *data, UINT8 offset)
 {
@@ -135,11 +136,7 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 	UINT8 id[4] = {0};
 	UINT8 ch = 0;
 	UINT8 len = 0;
-#ifdef RF_CHANING_MODE
-	UINT8 *data = NULL;
-#else
 	UINT8 data[SIZE_ESL_DATA_BUF] = {0};
-#endif
 	INT32 left_pkg_num = 0;
 	INT32 dummy_us = 0;
 	mode1_esl_t *pESL = (mode1_esl_t *)table->data;
@@ -148,11 +145,11 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 	UINT8 f = 0;
     uint16_t result=0;
     UINT8 rf_flg = RF_IDLE;
+    uint16_t  key;
 
 #ifdef RF_CHANING_MODE
     send_chaningmode_init();
     write2buf = listInit();
-    data = ((MyStruct*)write2buf)->tx->pPkt;
 #endif
 	set_power_rate(table->tx_power, table->tx_datarate);
 	
@@ -224,23 +221,28 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 //				pESL[i].failed_pkg_offset = (taddr-pESL[i].first_pkg_addr)/SIZE_ESL_DATA_SINGLE + 1;
 				pdebug("send miss 0x%02X-0x%02X-0x%02X-0x%02X pkg %d, ch=%d, len=%d\r\n", id[0], id[1], id[2], id[3], tsn, ch, len);
 			}
-#ifdef RF_CHANING_MODE
-			data = ((MyStruct*)write2buf)->tx->pPkt;
-#endif
+
  			if(get_one_data(taddr, id, &ch, &len, data, SIZE_ESL_DATA_BUF) == 0)
 			{
 				perr("m1_transmit() get data!\r\n");
 				goto user_continue;
 			}
-#ifdef RF_CHANING_MODE
- 			((MyStruct*)write2buf)->tx->syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+#ifdef RF_CHANING_MODE			
+ 			key = HwiP_disable();
+            memcpy(((MyStruct*)write2buf)->tx->pPkt, data ,SIZE_ESL_DATA_BUF);
+            ((MyStruct*)write2buf)->tx->syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+            HwiP_restore(key);
 #endif
  			pdebughex(data, len);
+ 			BSP_lowGPIO(DEBUG_TEST);
+
 #ifdef RF_CHANING_MODE
 			if (RF_IDLE == rf_flg){
 			    rf_flg = RF_WORKING;
 			    set_frequence(ch);
-			    result = send_chaningmode(id, data, len, 6000);
+			    memcpy(((MyStruct*)write2buf->next)->tx->pPkt, data ,SIZE_ESL_DATA_BUF);
+                result = send_chaningmode(id, data, len, 6000);
+                write2buf = List_next(write2buf);
 			}else{
 			    RF_wait_cmd_finish();
 			}
@@ -253,7 +255,7 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
             rf_flg = PEND_START;
 #endif
 		user_continue:
-		    write2buf = List_next(write2buf);
+//		    write2buf = List_next(write2buf);
 			left_pkg_num--;
 			k++;
 			t++;
@@ -263,7 +265,8 @@ static void m1_transmit(updata_table_t *table, UINT8 timer)
 		i++;
 		if(i == table->esl_num)
 		{
-			if((dummy_us=((uint16_t)table->tx_interval*1000-k*table->tx_duration))>=0 && rf_flg==RF_WORKING)
+			//if((dummy_us=((uint16_t)table->tx_interval*1000-k*table->tx_duration))>=0 && rf_flg==RF_WORKING)
+			if((dummy_us=((uint16_t)3*1000-k*table->tx_duration))>=0 && rf_flg==RF_WORKING)
 			{
 			    dummy_chaining_mode(table, dummy_us);
 				f = 1;

@@ -11,6 +11,7 @@
 #include <string.h>
 #include "sleep.h"
 #include "core.h"
+#include "ti\drivers\dpl\HwiP.h"
 
 #pragma pack(1)
 typedef struct {
@@ -44,12 +45,13 @@ void dummy_chaining_mode(updata_table_t *table, INT32 nus)
 
     UINT8 id[4] = {0};
     UINT8 channel = 0;
-    UINT8 *data = ((MyStruct*)write2buf)->tx->pPkt;
+    UINT8 data[SIZE_ESL_DATA_BUF];
     UINT8 data_len = 0;
     UINT32 addr = table->frame1_addr;
     UINT32 len = table->frame1_len;
     UINT32 *dummy_offset = (UINT32*)&table->frame1_offset;
     UINT8 dummy_num = nus/table->tx_duration;
+    uint16_t  key;
 
     while(tx_num < dummy_num)
     {
@@ -59,7 +61,7 @@ void dummy_chaining_mode(updata_table_t *table, INT32 nus)
                 *dummy_offset = addr+LEN_OF_FRAME1_PARA;
             }
 
-            data = ((MyStruct*)write2buf)->tx->pPkt;
+
             if(get_one_data(*dummy_offset, id, &channel, &data_len, data, PAYLOAD_LENGTH) == 0)
             {
                 perr("frame1 dummy get data\r\n");
@@ -69,9 +71,13 @@ void dummy_chaining_mode(updata_table_t *table, INT32 nus)
                     id[0], id[1], id[2], id[3], channel, data_len);
             pdebughex(data, data_len);
 
+            key = HwiP_disable();
+            memcpy(((MyStruct*)write2buf)->tx->pPkt, data ,SIZE_ESL_DATA_BUF);
             ((MyStruct*)write2buf)->tx->syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+            HwiP_restore(key);
+
             RF_wait_cmd_finish();
-            write2buf = List_next(write2buf);
+//            write2buf = List_next(write2buf);
 
             //result = send_without_wait(id, data, data_len, channel, 6000);
 

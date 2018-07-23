@@ -90,6 +90,7 @@ void txcallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
     if (e & RF_EventCmdDone)
     {
         /* Successful TX */
+        write2buf = List_next(write2buf);
         Semaphore_post(txDoneSem);
     }else {
 
