@@ -562,7 +562,7 @@ extern volatile UINT32 core_idel_flag;
 void readCallback(UART_Handle handle, void *rxBuf, size_t size)
 {
     if ((recv_once_buf[2] | (uint16_t)recv_once_buf[3]<<8)==CORE_CMD_BACK_TO_IDLE &&
-        recv_once_buf[0]==XMODEM_LEN_CMD && XMODEM_LEN_CMD==size){
+        recv_once_buf[0]==XMODEM_CMD_SOH && XMODEM_LEN_ALL==size){
         core_idel_flag = 1;
     }else if (recCmdAckFlg == true && XMODEM_LEN_CMD==size){
         Device_Recv_post();
