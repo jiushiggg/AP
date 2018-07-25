@@ -8,11 +8,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "core.h"
+#include "rcuplink.h"
 
 #define NORMAL_DATA     0
-#define UPLINK_DATA     1
+#define ESL_UPLINK_DATA 1
 #define SURVEY_DATA     2
+#define RC_UPLINK_DATA	3
 #define ERR_DATA        (-1)
+
+#define CTRL_HEARTBEAT      0x80
+#define CTRL_ESL_UPLINK_DATA    0x70
 
 static UINT8 hb_timer = 0;
 static INT32 _esl_uplink_num = 0;
@@ -92,17 +97,17 @@ len == 16
 len == 26
 0x80: new e31
 */
-#define SURVEY_CTRL 0X05
+
 static INT32 _check_hb_data(UINT8 *src, UINT8 len)
 {
 	UINT8 ctrl = 0;
 	UINT8 id[4] = {0};
 	UINT16 read_crc=0, cal_crc=0;
-	if (SURVEY_CTRL == src[0])
-	{
+	if (CTRL_OF_STREQ == src[0]){
 	    return SURVEY_DATA;
-	}
-	else{
+	}else if(CTRL_OF_RCREQ == src[0]){
+        return RC_UPLINK_DATA;
+    }else{
 	    ctrl = src[0] & 0xF0;
 	}
 	if(len == 16) 
@@ -130,10 +135,10 @@ static INT32 _check_hb_data(UINT8 *src, UINT8 len)
 	}
 	else if(len == 26)
 	{
-		if(ctrl == 0x80){
+		if(ctrl == CTRL_HEARTBEAT){
 			return NORMAL_DATA;
-		}else if (ctrl == 0x70){
-		    return UPLINK_DATA;
+		}else if (ctrl == CTRL_ESL_UPLINK_DATA){
+		    return ESL_UPLINK_DATA;
 		}else {
 		    return ERR_DATA;
 		}
@@ -258,6 +263,47 @@ static INT32 _ack_the_esl(UINT8 *uplink_data, INT32 len, UINT8 status)
 	//phex(ack_buf, sizeof(ack_buf));
 	return 0;
 }
+#pragma pack(1)
+typedef struct st_rc2ap{
+    uint8_t ctrl;
+    uint8_t rc_id[4];
+    uint8_t type;
+    uint8_t sn;
+    uint8_t esl_id[4];
+    uint8_t opt[5];
+    uint8_t succ;
+    uint16_t data;
+    uint8_t reserved[5];
+    uint16_t crc;
+}st_rc2ap;
+
+typedef struct st_ap2rc{
+    uint8_t ctrl;
+    uint8_t rc_id[4];
+    uint16_t ap_num;
+    uint8_t succ;
+    uint8_t reserved[16];
+    uint16_t crc;
+}st_ap2rc;
+#pragma pack()
+
+static INT32 _ack_the_rc(UINT8 *uplink_data, g3_hb_table_t *table)
+{
+    st_rc2ap *data = (st_rc2ap*)uplink_data;
+    st_ap2rc ack_buf = {0};
+
+    ack_buf.ctrl = data->ctrl + 1; //ctrl
+    memcpy(ack_buf.rc_id, data->rc_id, sizeof(ack_buf.rc_id));//id
+    ack_buf.ap_num = (uint8_t)table->apid;
+    ack_buf.succ = 1;
+    ack_buf.crc = CRC16_CaculateStepByStep(0, (uint8_t*)&ack_buf, sizeof(ack_buf)-sizeof(ack_buf.crc));
+
+    set_power_rate(RF_DEFAULT_POWER, DATA_RATE_500K);
+    set_frequence(table->channel);
+    send_data(ack_buf.rc_id, (uint8_t*)&ack_buf, sizeof(ack_buf), 2000);
+
+    return 0;
+}
 
 extern UINT32 core_idel_flag;
 
@@ -339,7 +385,7 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 			table->data_len += len+1;
 			recv_len_total += len+1;
 		}
-		else if(ret == UPLINK_DATA)
+		else if(ret == ESL_UPLINK_DATA)
 		{
 			if(table->apid > 0)
 			{
@@ -350,6 +396,10 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 			{
 				ret = 0;
 			}
+		}
+		else if(ret == RC_UPLINK_DATA)
+		{
+		    break;
 		}
 		else
 		{
@@ -363,12 +413,12 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 	exit_txrx();
 	rf_preset_hb_recv(false);
 	
-	if(ret == UPLINK_DATA) //need ack the esl and uplink the data
+	if(ret == ESL_UPLINK_DATA) //need response the esl and uplink the data
 	{
 		pesluplinkinfo = _handle_esl_uplink_data(table->esl_uplink_info, &_esl_uplink_num, ptr, len);
 		_ack_birang(table->apid, pesluplinkinfo->modby);
 		_ack_the_esl(ptr, len, 0);
-		cmd = 0x1021;
+		cmd = CORE_CMD_ESL_UPLINK_ACK;
 		cmd_len = len + 1;
 		memcpy(table->uplink_buf, &cmd, sizeof(cmd));
 		memcpy(table->uplink_buf+sizeof(cmd), &cmd_len, sizeof(cmd_len));
@@ -377,12 +427,23 @@ static INT32 _hb_recv(g3_hb_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 l
 		pinfo("_hb_recv() send esl uplink\r\n");
 //		BSP_Delay1MS(100);      //todo:delay 100ms, why?
 	}
+	else if(ret == RC_UPLINK_DATA)  //need response the esl and uplink the data
+	{
+	    BSP_Delay1MS(table->apid);
+	    _ack_the_rc(ptr, table);
+        cmd = CORE_CMD_RC_UPLINK_ACK;
+        cmd_len = len + 1;
+        memcpy(table->uplink_buf, &cmd, sizeof(cmd));
+        memcpy(table->uplink_buf+sizeof(cmd), &cmd_len, sizeof(cmd_len));
+        memcpy(table->uplink_buf+sizeof(cmd)+sizeof(cmd_len), ptr, cmd_len);
+        uplink(table->uplink_buf, sizeof(cmd)+sizeof(cmd_len)+cmd_len);
+	}
 	else if(ret == SURVEY_DATA)
 	{
 	    if (table->apid == ((st_survey_esl*)ptr)->ap_id)
 	    {
 	        _ack_the_esl(ptr, len, 0);
-	        cmd = 0x1021;
+	        cmd = CORE_CMD_ESL_UPLINK_ACK;
 	        cmd_len = len;
 	        memcpy(table->uplink_buf, &cmd, sizeof(cmd));
 	        memcpy(table->uplink_buf+sizeof(cmd), &cmd_len, sizeof(cmd_len));

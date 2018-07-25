@@ -8,11 +8,8 @@
 #include <stdio.h>
 #include "core.h"
 
-#define CTRL_OF_RCREQ		0x03 //rc uplink
-#define CTRL_OF_STREQ		0x05 //signal test
 
-#define IS_VALID_CTRL(c)		((c == CTRL_OF_RCREQ) \
-								|| (c == CTRL_OF_STREQ) )
+
 								
 #define OFFSET_OF_REQDATA		6 //cmd+cmd_len, UINT16+INT32
 

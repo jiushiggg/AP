@@ -32,6 +32,12 @@ typedef struct
 }rcreq_table_t;
 #pragma pack()
 
+#define CTRL_OF_RCREQ       0x03 //rc uplink
+#define CTRL_OF_STREQ       0x05 //signal test
+
+#define IS_VALID_CTRL(c)		((c == CTRL_OF_RCREQ) \
+								|| (c == CTRL_OF_STREQ) )
+
 INT32 RcReq_ParseCmd(UINT8 *pCmd, INT32 cmdLen, rcreq_table_t *table);
 INT32 RcReq_Mainloop(rcreq_table_t *table, UINT8 (*uplink)(UINT8 *src, UINT32 len));
 

@@ -41,6 +41,8 @@
 #define CORE_CMD_ERROR					0x10FF
 
 #define CORE_CMD_HB_ACK                 0x1020
+#define CORE_CMD_ESL_UPLINK_ACK         0x1021
+#define CORE_CMD_RC_UPLINK_ACK          0X1022
 
 
 /* Stack size in bytes */
