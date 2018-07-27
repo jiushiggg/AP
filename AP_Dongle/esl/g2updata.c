@@ -14,6 +14,7 @@
 #include "sleep.h"
 #include "sys_cfg.h"
 #include "core.h"
+#include "ti\drivers\dpl\HwiP.h"
 
 //INT32 search_pkg_sn_times = 0;
 //UINT16 search_pkg_history[40] = {0}; 
@@ -30,11 +31,7 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
     UINT8 id[4] = {0};
     UINT8 ch = 0;
     UINT8 len = 0;
-#ifdef G2_RF_CHANING_MODE
-    UINT8 *data = NULL;
-#else
     UINT8 data[SIZE_ESL_DATA_BUF] = {0};
-#endif
     INT32 left_pkg_num = 0;
     INT32 dummy_us = 0;
     mode1_esl_t *pESL = (mode1_esl_t *)table->data;
@@ -43,10 +40,11 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
     UINT8 f = 0;
     uint16_t result=0;
     UINT8 rf_flg = RF_IDLE;
+    uint16_t  key;
+
 #ifdef G2_RF_CHANING_MODE
     send_chaningmode_init();
     write2buf = listInit();
-    data = ((MyStruct*)write2buf)->tx->pPkt;
 #endif
     set_power_rate(table->tx_power, table->tx_datarate);
 
@@ -112,16 +110,17 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
 //              pESL[i].failed_pkg_offset = (taddr-pESL[i].first_pkg_addr)/SIZE_ESL_DATA_SINGLE + 1;
                 pdebug("send miss addr 0x%08X, sn = %d\r\n", taddr, tsn);
             }
-#ifdef G2_RF_CHANING_MODE
-            data = ((MyStruct*)write2buf)->tx->pPkt;
-#endif
+
             if(get_one_data(taddr, id, &ch, &len, data, SIZE_ESL_DATA_BUF) == 0)
             {
                 perr("g2_transmit get data!\r\n");
                 goto user_continue;
             }
-#ifdef RF_CHANING_MODE
+#ifdef G2_RF_CHANING_MODE
+            key = HwiP_disable();
+            memcpy(((MyStruct*)write2buf)->tx->pPkt, data ,SIZE_ESL_DATA_BUF);
             ((MyStruct*)write2buf)->tx->syncWord = ((uint32_t)id[0]<<24) | ((uint32_t)id[1]<<16) | ((uint32_t)id[2]<<8) | id[3];
+            HwiP_restore(key);
 #endif
             pdebug("0x%02X-0x%02X-0x%02X-0x%02X, ch=%d, len=%d\r\n", id[0], id[1], id[2], id[3], ch, len);
             pdebughex(data, len);
@@ -129,7 +128,9 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
             if (RF_IDLE == rf_flg){
                 rf_flg = RF_WORKING;
                 set_frequence(ch);
+                memcpy(((MyStruct*)write2buf->next)->tx->pPkt, data ,SIZE_ESL_DATA_BUF);
                 result = send_chaningmode(id, data, len, 6000);
+                write2buf = List_next(write2buf);
             }else{
                 RF_wait_cmd_finish();
             }
@@ -142,7 +143,6 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
             rf_flg = PEND_START;
 #endif
         user_continue:
-            write2buf = List_next(write2buf);
             left_pkg_num--;
             k++;
             t++;
@@ -177,26 +177,26 @@ static void g2_transmit(updata_table_t *table, UINT8 timer)
     RF_wait_cmd_finish(); //Wait for the last packet to be sent
     RF_cancle(result);
 #endif
-    if((i != table->esl_num) && (f == 0))
-    {
-        if((dummy_us=(table->tx_interval*1000-k*table->tx_duration)) >= 0)
-        {
-#ifdef G2_RF_CHANING_MODE
-                dummy_chaining_mode(table, dummy_us);
-#else
-                dummy(table, dummy_us);
-#endif
-            f = 1;
-        }
-        else
-        {
-#ifdef G2_RF_CHANING_MODE
-            dummy_chaining_mode(table, table->tx_duration);
-#else
-            dummy(table, table->tx_duration);
-#endif
-        }
-    }
+//    if((i != table->esl_num) && (f == 0))
+//    {
+//        if((dummy_us=(table->tx_interval*1000-k*table->tx_duration)) >= 0)
+//        {
+//#ifdef G2_RF_CHANING_MODE
+//                dummy_chaining_mode(table, dummy_us);
+//#else
+//                dummy(table, dummy_us);
+//#endif
+//            f = 1;
+//        }
+//        else
+//        {
+//#ifdef G2_RF_CHANING_MODE
+//            dummy_chaining_mode(table, table->tx_duration);
+//#else
+//            dummy(table, table->tx_duration);
+//#endif
+//        }
+//    }
 
     wait(2000);
 }
